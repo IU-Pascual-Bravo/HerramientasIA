@@ -1,0 +1,76 @@
+{
+  "analyses": [
+    {
+      "id": "comparacion_general",
+      "nombre": "Comparación general",
+      "descripcion": "Compara objetivos, enfoques y conclusiones",
+      "prompt": "Compara los documentos {A} y {B} en términos de objetivos, enfoque metodológico y conclusiones principales. Resume en {formato}."
+    },
+    {
+      "id": "posturas_comunes",
+      "nombre": "Posturas comunes",
+      "descripcion": "Identifica coincidencias clave",
+      "prompt": "Extrae las ideas, conceptos o conclusiones en las que los documentos {A} y {B} coinciden explícitamente."
+    },
+    {
+      "id": "discrepancias",
+      "nombre": "Discrepancias",
+      "descripcion": "Detecta contradicciones",
+      "prompt": "Señala las afirmaciones contradictorias entre los documentos {A} y {B}. Explica cada conflicto claramente."
+    },
+    {
+      "id": "analisis_critico",
+      "nombre": "Análisis crítico",
+      "descripcion": "Evalúa calidad argumentativa",
+      "prompt": "Evalúa cuál documento ({A} o {B}) presenta argumentos más sólidos y por qué. Considera evidencia, coherencia y rigor."
+    },
+    {
+      "id": "metodologia",
+      "nombre": "Comparación metodológica",
+      "descripcion": "Contrasta métodos de investigación",
+      "prompt": "Compara los métodos de investigación de los documentos {A} y {B}, incluyendo diseño, muestra y variables."
+    },
+    {
+      "id": "sintesis",
+      "nombre": "Síntesis integrada",
+      "descripcion": "Fusiona información",
+      "prompt": "Integra los hallazgos de {A} y {B} en una síntesis coherente que explique el tema de forma unificada."
+    },
+    {
+      "id": "relaciones",
+      "nombre": "Relación entre resultados",
+      "descripcion": "Analiza complementariedad",
+      "prompt": "Analiza cómo los resultados de {A} se relacionan con las conclusiones de {B}. ¿Se refuerzan o contradicen?"
+    },
+    {
+      "id": "evidencia",
+      "nombre": "Evaluación de evidencia",
+      "descripcion": "Compara calidad de fuentes",
+      "prompt": "Compara la calidad de la evidencia en {A} y {B}, considerando fuentes, datos y respaldo bibliográfico."
+    },
+    {
+      "id": "vacios",
+      "nombre": "Vacíos de investigación",
+      "descripcion": "Detecta temas no cubiertos",
+      "prompt": "Identifica vacíos de investigación al comparar {A} y {B}. ¿Qué temas importantes no se abordan?"
+    },
+    {
+      "id": "tabla",
+      "nombre": "Tabla comparativa",
+      "descripcion": "Organiza en formato estructurado",
+      "prompt": "Crea una tabla comparativa entre {A} y {B} con columnas: tema, postura, evidencia, conclusión."
+    },
+    {
+      "id": "citas",
+      "nombre": "Extracción de citas",
+      "descripcion": "Extrae citas clave",
+      "prompt": "Extrae citas textuales de {A} y {B} organizadas en: acuerdo, desacuerdo y neutralidad."
+    },
+    {
+      "id": "sesgos",
+      "nombre": "Detección de sesgos",
+      "descripcion": "Identifica posibles sesgos",
+      "prompt": "Identifica posibles sesgos en {A} y {B}, incluyendo conflictos de interés o inclinaciones teóricas."
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>Analiza artículo PDF</h1>
+<p>Aplicación web para analizar artículos académicos en PDF mediante inteligencia artificial. Carga un PDF, selecciona un modelo de IA y haz preguntas sobre el contenido. El sistema mantiene contexto de conversación, permitiendo diálogos profundos sobre el documento.</p>
+<h2>Apps incluidas</h2>
+<div class="table-responsive-wrapper"><table>
+<thead>
+<tr>
+<th>App</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>index.html</code></td>
+<td>Chat interactivo con PDF: carga un artículo, haz preguntas y obtén respuestas contextualizadas con memoria de conversación</td>
+</tr>
+<tr>
+<td><code>Modelo_texto.html</code></td>
+<td>Escritor de artículos académicos: ingresa un tema y genera un artículo estructurado con referencias</td>
+</tr>
+</tbody></table></div>
+<h2>Arquitectura</h2>
+<pre><code>Frontend (index.html / Modelo_texto.html)
+        |
+        | POST /api/ia/text  { model, prompt }
+        v
+Backend (node.proyectodescartes.org)
+        |
+        | API Key desde .env (nunca expuesta al frontend)
+        v
+Pollinations AI (gen.pollinations.ai)
+</code></pre>
+<p>La API key se gestiona exclusivamente desde el backend a través de variables de entorno. El frontend nunca tiene acceso a ella.</p>
+<h2>Modelos disponibles</h2>
+<h3>Chat con PDF (<code>index.html</code>)</h3>
+<p>openai, mistral, gemini-fast, openai-fast, gemini-search, nova-fast, perplexity-fast, deepseek</p>
+<h3>Escritor de artículos (<code>Modelo_texto.html</code>)</h3>
+<p>gemini-search, perplexity-fast, gemini-large</p>
+<h2>Funcionalidades</h2>
+<ul>
+<li>Carga de archivos PDF con extracción de texto mediante PDF.js</li>
+<li>Chat con memoria de conversación (mantiene contexto entre mensajes)</li>
+<li>20 preguntas predefinidas para analizar el artículo desde distintas perspectivas</li>
+<li>Visor de PDF integrado (toggle mostrar/ocultar)</li>
+<li>Exportación de la sesión a HTML o Word (.docx)</li>
+<li>Avatares generados por IA para cada mensaje</li>
+<li>Tema claro/oscuro con persistencia en localStorage</li>
+<li>Extracción automática de autores del PDF y formato de citas</li>
+<li>Backend proxy seguro: la API key nunca se expone al frontend</li>
+</ul>
+<h2>Requisitos del backend</h2>
+<p>El backend debe estar desplegado en <code>https://node.proyectodescartes.org/</code> con:</p>
+<ul>
+<li><code>app.js</code> como archivo principal</li>
+<li>Puerto <code>3000</code></li>
+<li>Archivo <code>.env</code> con la variable <code>API_KEY</code> (valor: <code>plln_sk_...</code>)</li>
+<li>Endpoint <code>POST /api/ia/text</code> que acepte <code>{ model, prompt }</code> y retorne texto plano</li>
+</ul>
+<h2>Configuración</h2>
+<p>No requiere configuración del lado del cliente. El frontend se conecta automáticamente al backend en <code>https://node.proyectodescartes.org/api/ia/text</code>.</p>
+<h3>Despliegue del backend (Plesk)</h3>
+<ol>
+<li>Subir <code>app.js</code> al servidor</li>
+<li>Configurar <code>.env</code> con la API key</li>
+<li>Asegurar que el endpoint <code>POST /api/ia/text</code> esté activo en puerto 3000</li>
+<li>El frontend apunta al backend por defecto; si cambia la URL, editar la constante <code>apiUrl</code> en <code>script.js</code></li>
+</ol>
+<h2>Uso</h2>
+<ol>
+<li>Abrir <code>index.html</code> en un navegador</li>
+<li>Click en <strong>Seleccionar PDF</strong> y elegir un archivo</li>
+<li>Esperar a que se procese el documento</li>
+<li>Seleccionar un modelo de IA</li>
+<li>Elegir una pregunta predefinida o escribir una personalizada</li>
+<li>Hacer clic en <strong>Enviar</strong></li>
+<li>Descargar la conversación como HTML o Word con los botones de la barra</li>
+</ol>
+<h2>Créditos</h2>
+<p>Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 3.1 Pro, IA agéntica Antigravity, y las API de Pollinations.</p>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>

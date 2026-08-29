@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiza artículo PDF</title>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+    </script>
+    <!-- Marked.js para interpretar Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- docx para descargar Word -->
+    <script src="https://unpkg.com/docx@7.3.0/build/index.js"></script>
+    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <!-- Estilos externos -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <div class="container">
+        <header class="header-inline-logo">
+            <a href="https://pascualbravo.edu.co/" target="_blank" rel="noopener noreferrer" class="header-logo-link" aria-label="Ir a la Red Descartes">
+                <img
+                    src="logo_pascual_bravo.png"
+                    alt="Logo de la aplicación"
+                    class="header-logo"
+                    title="Logo de la aplicación"
+                >
+            </a>
+            <h1>Analiza artículo PDF</h1>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <button id="new-chat-button">Nuevo Chat</button>
+                <div class="pdf-viewer-buttons">
+                    <button id="toggle-pdf-viewer-button-1" disabled>Ver PDF</button>
+                </div>
+            </div>
+            
+            <div class="toolbar-group selector-group">
+                <label for="model-selector" class="selector-label">Modelo:</label>
+                <select id="model-selector" title="Seleccionar Modelo" class="btn">
+                    <option value="gemini-flash-lite">Cargando modelos...</option>
+                </select>
+            </div>
+            
+            <div class="toolbar-group selector-group">
+                <label for="questions-selector" class="selector-label">Preguntas:</label>
+                <select id="questions-selector" title="Preguntas propuestas" class="btn">
+                    <option value="">Preguntas propuestas</option>
+                    <option value="malinterpretado">Malinterpretación común</option>
+                    <option value="revisor_externo">Como revisor externo</option>
+                    <option value="importancia_practica">Importancia práctica</option>
+                    <option value="suposicion_invalidante">Suposición invalidante</option>
+                    <option value="objeciones">Posibles objeciones</option>
+                    <option value="desactualizado">Afirmaciones desactualizadas</option>
+                    <option value="opinion_generalizada">Diferencia con opinión general</option>
+                    <option value="preguntas_ocultas">Preguntas que no consideré</option>
+                    <option value="pruebas_demoledoras">Pruebas demoledoras</option>
+                    <option value="terminos_tecnicos">Términos técnicos</option>
+                    <option value="contradicciones">Contradicciones internas</option>
+                    <option value="dialogo">Diálogo de puntos de vista</option>
+                    <option value="diapositiva">Diapositiva de resumen</option>
+                    <option value="analogia">Analogía o metáfora</option>
+                    <option value="cobertura_faltante">Cobertura faltante</option>
+                    <option value="investigacion_futura">Investigación futura</option>
+                    <option value="avances_recientes">Avances recientes</option>
+                    <option value="contexto_opuesto">Contexto opuesto</option>
+                    <option value="reproducibilidad">Reproducibilidad</option>
+                    <option value="sesgos_ocultos">Sesgos ocultos</option>
+					
+                </select>
+            </div>
+            
+            <div class="toolbar-group">
+                <button id="download-html-btn" class="btn" disabled>HTML</button>
+                <button id="download-word-btn" class="btn" disabled>Word</button>
+                <button id="toggle-theme-button">🌓 Tema</button>
+            </div>
+        </div>
+
+        <div class="main-content-area">
+            <div class="chat-and-loader-column">
+                <section class="pdf-loader">
+                    <h2>1. Cargar artículo PDF</h2>
+                    <div class="pdf-selectors-container">
+                        <input type="file" id="pdf-upload-1" accept=".pdf" style="display:none">
+
+                        <div class="pdf-load-row">
+                            <button id="select-pdf-btn" class="custom-file-upload">Seleccionar PDF</button>
+                            <div id="loaded-pdf-names" class="loaded-pdf-names"></div>
+                        </div>
+
+                        <div id="pdf-status-1"></div>
+                    </div>
+                </section>
+
+                <section class="chat-area">
+                    <h2>2. Chatea con el Documento</h2>
+                    <div id="chat-display" class="chat-display">
+                        <!-- Los mensajes del chat se añadirán aquí -->
+                    </div>
+                    <div class="question-input-area">
+                        <textarea id="question-input" rows="2" placeholder="Escribe tu pregunta aquí..." disabled></textarea>
+                        <button id="send-button" disabled>
+                            <span id="send-button-text">Enviar</span>
+                            <div class="loader" id="loading-spinner"></div>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="pdf-viewer-container" class="pdf-viewer-container">
+                <iframe id="pdf-iframe" title="Visor de PDF"></iframe>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 3.1 Pro y la IA agéntica Antigravity</p>
+    </footer>
+
+    <!-- Lógica Externa -->
+    <script src="script.js"></script>
+</body>
+</html>
