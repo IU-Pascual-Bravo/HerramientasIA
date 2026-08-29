@@ -1,0 +1,1377 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="app-title">Generador de Cuestionarios con IA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+    :root {
+      --color-primary: #4a148c;
+      --color-secondary: #7e57c2;
+      --color-hover: #673ab7;
+      --color-gradient-start: #6a11cb;
+      --color-gradient-end: #2575fc;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--color-gradient-start), var(--color-gradient-end));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 20px;
+      transition: background 0.5s ease;
+    }
+
+    #setup-container,
+    #quiz-container {
+      background-color: #fff;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      width: clamp(300px, 95%, 1000px);
+      max-width: 1000px;
+    }
+
+    #setup-container {
+      padding: 30px;
+      text-align: center;
+    }
+
+    #setup-title {
+      color: var(--color-primary);
+      margin-top: 0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .primary-btn {
+      background-color: var(--color-primary);
+    }
+
+    .secondary-btn {
+      background-color: var(--color-secondary);
+      margin-top: 15px;
+    }
+
+    .primary-btn:hover:not(:disabled),
+    .secondary-btn:hover:not(:disabled) {
+      background-color: var(--color-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .primary-btn:disabled {
+      background-color: #9e9e9e;
+      cursor: not-allowed;
+    }
+
+    .question-header {
+      background-color: var(--color-primary);
+      color: #fff;
+      padding: 20px;
+      font-size: clamp(1.1em, 3vw, 1.4em);
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      line-height: 1.3;
+      word-wrap: break-word;
+      hyphens: auto;
+    }
+
+    .question-content {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .question-image-container {
+      flex: 0 0 auto;
+      width: clamp(200px, 40%, 350px);
+      min-width: 200px;
+    }
+
+    .question-image {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      background-color: #f0f0f0;
+      display: block;
+    }
+
+    .image-controls-container {
+      margin-top: 10px;
+    }
+
+    .image-prompt-input {
+      width: 100%;
+      padding: 8px;
+      font-size: clamp(0.7em, 2vw, 0.9em);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      box-sizing: border-box;
+    }
+
+    .regenerate-image-btn {
+      width: 100%;
+      padding: 8px;
+      background-color: var(--color-secondary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: clamp(0.8em, 2vw, 0.95em);
+      transition: background-color 0.3s;
+    }
+
+    .regenerate-image-btn:hover {
+      background-color: var(--color-hover);
+    }
+
+    .options {
+      flex: 1;
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      min-width: 0;
+    }
+
+    .options li {
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .options label {
+      display: block;
+      padding: 12px 15px;
+      background-color: var(--color-secondary);
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: clamp(0.9em, 2.5vw, 1.1em);
+      font-weight: 600;
+      word-wrap: break-word;
+      hyphens: auto;
+      line-height: 1.4;
+    }
+
+    .options label:hover {
+      background-color: var(--color-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    input[type="radio"]:checked+label {
+      background-color: var(--color-hover);
+    }
+
+    .correct {
+      background-color: #4caf50 !important;
+    }
+
+    .incorrect {
+      background-color: #f44336 !important;
+    }
+
+    .btn-container {
+      padding: 0 20px 20px 20px;
+    }
+
+    .quiz-progress-header {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      padding: 18px 25px;
+      border-bottom: 3px solid var(--color-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-text {
+      text-align: center;
+      font-weight: 700;
+      font-size: clamp(1em, 2.8vw, 1.2em);
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .progress-container {
+      background-color: #e0e0e0;
+      height: 14px;
+      width: 100%;
+      border-radius: 7px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
+      border: 1px solid #d0d0d0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 7px;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .timer-container {
+      background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+      padding: 15px 20px;
+      border-top: 2px solid #f39c12;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .timer-text {
+      text-align: center;
+      font-weight: 700;
+      font-size: clamp(0.9em, 2.5vw, 1.1em);
+      color: #d68910;
+      margin-bottom: 8px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .timer-bar-container {
+      background-color: #f8d7da;
+      height: 8px;
+      width: 100%;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #f5c6cb;
+    }
+
+    .timer-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+      transition: width 0.1s linear;
+      border-radius: 4px;
+    }
+
+    .timer-warning {
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    #result {
+      text-align: center;
+      padding: 30px;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* Estilos para el clon descargado */
+    .downloaded-quiz .question.hidden,
+    .downloaded-quiz .result-screen.hidden {
+      display: none;
+    }
+
+    .downloaded-quiz .question {
+      border-bottom: none;
+    }
+
+    .downloaded-btn-container {
+      padding: 20px;
+    }
+
+    /* Responsive breakpoints */
+    @media (max-width: 1200px) {
+      .question-image-container {
+        width: clamp(180px, 35%, 300px);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .question-content {
+        gap: 15px;
+        padding: 15px;
+      }
+
+      .question-image-container {
+        width: clamp(160px, 32%, 250px);
+      }
+
+      .options label {
+        padding: 10px 12px;
+        font-size: clamp(0.85em, 2.8vw, 1em);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .question-content {
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .question-image-container {
+        width: clamp(140px, 30%, 200px);
+      }
+
+      .question-header {
+        padding: 15px;
+        font-size: clamp(1em, 3.5vw, 1.2em);
+      }
+    }
+
+    @media (max-width: 550px) {
+      .question-content {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .question-image-container {
+        width: clamp(200px, 70%, 300px);
+        max-width: 300px;
+      }
+
+      .options {
+        width: 100%;
+      }
+
+      .options label {
+        font-size: clamp(0.9em, 4vw, 1.1em);
+        padding: 12px 15px;
+      }
+
+      .quiz-progress-header {
+        padding: 12px 15px;
+      }
+
+      .progress-text {
+        font-size: clamp(0.8em, 3.5vw, 1em);
+        margin-bottom: 8px;
+      }
+
+      .timer-container {
+        padding: 12px 15px;
+      }
+
+      .timer-text {
+        font-size: clamp(0.8em, 3.5vw, 1em);
+        margin-bottom: 6px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      body {
+        padding: 10px;
+      }
+
+      .question-content {
+        padding: 10px;
+      }
+
+      .question-image-container {
+        width: clamp(180px, 80%, 250px);
+      }
+
+      .question-header {
+        padding: 12px;
+        font-size: clamp(0.95em, 4vw, 1.1em);
+      }
+
+      .options label {
+        font-size: clamp(0.85em, 4.5vw, 1em);
+        padding: 10px 12px;
+      }
+
+      .quiz-progress-header {
+        padding: 10px 12px;
+      }
+
+      .progress-text {
+        font-size: clamp(0.75em, 4vw, 0.9em);
+        margin-bottom: 6px;
+      }
+
+      .progress-container {
+        height: 10px;
+      }
+
+      .timer-container {
+        padding: 10px 12px;
+      }
+
+      .timer-text {
+        font-size: clamp(0.75em, 4vw, 0.9em);
+        margin-bottom: 5px;
+      }
+
+      .timer-bar-container {
+        height: 6px;
+      }
+    }
+
+    /* Loading overlay para descarga */
+    .download-loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .download-loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .download-progress-text {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    .download-progress-bar {
+      width: 300px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .download-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6a11cb, #2575fc);
+      transition: width 0.3s ease;
+      border-radius: 5px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+  </script>
+<base target="_blank">
+</head>
+
+<body>
+
+  <div id="setup-container">
+    <div style="position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+      <a href="https://pascualbravo.edu.co/" target="_blank" style="position: absolute; left: 0;">
+        <img src="logo_pascual_bravo.png" alt="Red Proyecto Descartes" style="height: 45px; width: auto;">
+      </a>
+      <h1 id="setup-title" style="margin: 0;">Generador de Cuestionarios con IA</h1>
+    </div>
+    <div class="form-group">
+      <label id="pdf-label">Cargar documento PDF:</label>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="file" id="pdf-upload" accept=".pdf" style="display:none">
+        <button id="select-pdf-btn" class="secondary-btn" style="width: auto; margin: 0; padding: 10px 15px; font-size: 0.9em;">Seleccionar PDF</button>
+        <span id="pdf-file-name" style="font-size: 0.9em; color: var(--color-primary); font-weight: 600;"></span>
+      </div>
+      <div id="pdf-status" style="font-size: 0.85em; margin-top: 5px; color: var(--color-secondary);"></div>
+    </div>
+    <div class="form-group"><label for="num-questions-select" id="questions-label">Número de Preguntas:</label><select
+        id="num-questions-select">
+        <option value="4">4</option>
+        <option value="8" selected>8</option>
+        <option value="12">12</option>
+        <option value="16">16</option>
+        <option value="20">20</option>
+      </select></div>
+    <div class="form-group"><label for="language-select" id="language-label">Idioma:</label><select
+        id="language-select">
+        <option value="es" selected>Español</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select></div>
+    <div class="form-group"><label for="time-limit-select" id="time-limit-label">Tiempo por Pregunta:</label><select
+        id="time-limit-select">
+        <option value="15">15 segundos</option>
+        <option value="30" selected>30 segundos</option>
+        <option value="45">45 segundos</option>
+        <option value="60">60 segundos</option>
+        <option value="90">90 segundos</option>
+        <option value="0">Sin límite</option>
+      </select></div>
+    <div class="form-group"><label for="art-style-select" id="art-style-label">Estilo Artístico:</label><select
+        id="art-style-select">
+        <option value="photorealistic" selected>Fotográfico</option>
+        <option value="oil painting">Pintura al óleo</option>
+        <option value="watercolor">Acuarela</option>
+        <option value="digital art">Arte digital</option>
+        <option value="cartoon">Caricatura</option>
+        <option value="cartoon 3D">Cartoon 3D</option>
+        <option value="anime">Anime</option>
+        <option value="sketch">Boceto</option>
+        <option value="pop art">Pop art</option>
+        <option value="impressionist">Impresionista</option>
+        <option value="abstract">Abstracto</option>
+        <option value="minimalist">Minimalista</option>
+        <option value="vintage">Vintage</option>
+        <option value="cyberpunk">Cyberpunk</option>
+        <option value="steampunk">Steampunk</option>
+        <option value="surreal">Surrealista</option>
+        <option value="gothic">Gótico</option>
+        <option value="art nouveau">Art nouveau</option>
+        <option value="art deco">Art déco</option>
+        <option value="cubist">Cubista</option>
+        <option value="expressionist">Expresionista</option>
+        <option value="renaissance">Renacentista</option>
+        <option value="baroque">Barroco</option>
+        <option value="noir">Noir</option>
+        <option value="neon">Neón</option>
+        <option value="pastel">Pastel</option>
+        <option value="monochrome">Monocromático</option>
+        <option value="graffiti">Graffiti</option>
+        <option value="pixel art">Pixel art</option>
+        <option value="3d render">Render 3D</option>
+        <option value="comic book">Cómic</option>
+      </select></div>
+    <div class="form-group"><label for="image-model-select" id="image-model-label">Modelo de Imagen:</label><select
+        id="image-model-select">
+        <option value="zimage" selected>zimage</option>
+        <option value="flux">flux</option>
+        <option value="gptimage">gptimage</option>
+        <option value="klein">klein</option>
+      </select></div>
+    <div class="form-group"><label for="text-model-select" id="text-model-label">Modelo de Texto:</label><select
+        id="text-model-select">
+        <option value="openai" selected>openai</option>
+        <option value="mistral">mistral</option>
+        <option value="gemini-fast">gemini-fast</option>
+        <option value="openai-fast">openai-fast</option>
+        <option value="gemini-search">gemini-search</option>
+        <option value="nova-fast">nova-fast</option>
+        <option value="perplexity-fast">perplexity-fast</option>
+        <option value="deepseek">deepseek</option>
+      </select></div>
+
+    <button id="generate-btn" class="primary-btn">Generar Cuestionario</button>
+    <button id="change-palette-btn" class="secondary-btn">Cambiar Paleta</button>
+    <div id="loading-message" style="display: none; margin-top: 15px; color: var(--color-primary); font-weight: bold;">
+    </div>
+  </div>
+
+  <div id="quiz-container" style="display: none;">
+    <div class="quiz-progress-header">
+      <div class="progress-text" id="progress-text">Pregunta 1 de 8</div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progress"></div>
+      </div>
+    </div>
+    <div id="quiz">
+      <div class="question active" id="question-container">
+        <div class="question-header"><span id="question-number">1</span>. <span id="question-text"></span></div>
+        <div class="question-content">
+          <div class="question-image-container"><img class="question-image" id="question-image" src=""
+              alt="Imagen ilustrativa">
+            <div class="image-controls-container"><input type="text" class="image-prompt-input"
+                id="image-prompt"><button class="regenerate-image-btn" id="regenerate-btn"></button><button class="regenerate-image-btn" id="upload-image-btn" style="margin-top: 4px;">Subir imagen</button><input type="file" id="image-upload-input" accept="image/*" style="display:none"></div>
+          </div>
+          <ul class="options">
+            <li><input type="radio" name="question" value="a"><label></label></li>
+            <li><input type="radio" name="question" value="b"><label></label></li>
+            <li><input type="radio" name="question" value="c"><label></label></li>
+            <li><input type="radio" name="question" value="d"><label></label></li>
+          </ul>
+        </div>
+      </div>
+      <div class="btn-container"><button id="next-btn" class="primary-btn"></button></div>
+    </div>
+    <div class="timer-container" id="timer-container" style="display: none;">
+      <div class="timer-text" id="timer-text">Tiempo: 30s</div>
+      <div class="timer-bar-container">
+        <div class="timer-bar" id="timer-bar"></div>
+      </div>
+    </div>
+    <div id="result" style="display: none;"></div>
+  </div>
+
+  <div id="download-section"
+    style="display: none; max-width: 1000px; width: clamp(300px, 95%, 1000px); margin: 0 auto;">
+    <div style="display: flex; gap: 15px; align-items: end; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 200px;">
+        <button id="download-btn" class="primary-btn" style="width: 100%; margin: 0;"></button>
+      </div>
+      <div style="flex: 0 0 auto; min-width: 150px;">
+        <label for="clone-timer-input"
+          style="display: block; margin-bottom: 5px; font-size: 0.9em; color: #333; font-weight: 600;">Tiempo del
+          clon:</label>
+        <input type="number" id="clone-timer-input" min="15" max="300" value="30"
+          style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; box-sizing: border-box;">
+        <small style="display: block; margin-top: 2px; color: #666; font-size: 0.8em;">segundos</small>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+    <button class="primary-btn" style="width: auto; display: inline-block; padding: 12px 24px; font-size: 1.1em;" onclick="location.reload()">Otro cuestionario</button>
+  </div>
+
+  <script>
+    const dom = {
+      appTitle: document.getElementById('app-title'), setupContainer: document.getElementById('setup-container'), quizContainer: document.getElementById('quiz-container'), generateBtn: document.getElementById('generate-btn'), pdfUpload: document.getElementById('pdf-upload'), selectPdfBtn: document.getElementById('select-pdf-btn'), pdfFileNameDisplay: document.getElementById('pdf-file-name'), pdfStatus: document.getElementById('pdf-status'), numQuestionsSelect: document.getElementById('num-questions-select'), languageSelect: document.getElementById('language-select'), timeLimitSelect: document.getElementById('time-limit-select'), artStyleSelect: document.getElementById('art-style-select'), imageModelSelect: document.getElementById('image-model-select'), textModelSelect: document.getElementById('text-model-select'), loadingMessage: document.getElementById('loading-message'), quizElement: document.getElementById('quiz'), resultElement: document.getElementById('result'), nextButton: document.getElementById('next-btn'), downloadBtn: document.getElementById('download-btn'), downloadSection: document.getElementById('download-section'), cloneTimerInput: document.getElementById('clone-timer-input'), questionContainer: document.getElementById('question-container'), questionNumberEl: document.getElementById('question-number'), questionTextEl: document.getElementById('question-text'), questionImageEl: document.getElementById('question-image'), imagePromptInput: document.getElementById('image-prompt'), regenerateBtn: document.getElementById('regenerate-btn'), uploadImageBtn: document.getElementById('upload-image-btn'), imageUploadInput: document.getElementById('image-upload-input'), optionsContainer: document.querySelector('.options'), progressBar: document.getElementById('progress'), progressText: document.getElementById('progress-text'), timerContainer: document.getElementById('timer-container'), timerText: document.getElementById('timer-text'), timerBar: document.getElementById('timer-bar'), setupTitle: document.getElementById('setup-title'), pdfLabel: document.getElementById('pdf-label'), questionsLabel: document.getElementById('questions-label'), languageLabel: document.getElementById('language-label'), timeLimitLabel: document.getElementById('time-limit-label'), artStyleLabel: document.getElementById('art-style-label'), imageModelLabel: document.getElementById('image-model-label'), textModelLabel: document.getElementById('text-model-label'), changePaletteBtn: document.getElementById('change-palette-btn'),
+
+    };
+    let state = { generatedQuestions: [], currentQuestion: 0, score: 0, totalQuestions: 0, lang: 'es', currentPalette: 0, timerInterval: null, timeLimit: 30, timeRemaining: 30, pdfText: '', pdfFileName: '' };
+
+    const translations = {
+      es: { appTitle: "Generador de Cuestionarios con IA", setupTitle: "Generador de Cuestionarios con IA", pdfLabel: "Cargar documento PDF:", pdfButton: "Seleccionar PDF", pdfLoading: "Procesando PDF...", pdfReady: "PDF cargado", pdfError: "Error al procesar PDF", imageModelLabel: "Modelo de Imagen:", textModelLabel: "Modelo de Texto:", questionsLabel: "Número de Preguntas:", languageLabel: "Idioma:", timeLimitLabel: "Tiempo por Pregunta:", artStyleLabel: "Estilo Artístico:", generateButton: "Generar Cuestionario", changePaletteButton: "Cambiar Paleta", loadingQuestions: "Generando preguntas...", loadingImages: "Generando imágenes...", loadingError: "Error al generar. Por favor, inténtalo de nuevo.", attempt: "Intento", regenerateButton: "Regenerar Imagen", uploadImageButton: "Subir imagen", nextButton: "Siguiente", downloadButton: "Descargar Cuestionario", quizComplete: "¡Cuestionario completado!", yourScoreIs: "Tu puntuación es:", of: "de", excellentWork: "¡Excelente trabajo!", keepLearning: "¡Sigue aprendiendo!", showResults: "Ver Resultados", startOverButton: "Inicio", questionProgress: "Pregunta", timerText: "Tiempo:", timeUp: "¡Tiempo agotado!", languageNameForAI: "Spanish", downloadingImages: "Descargando imágenes...", imageOf: "Imagen", of: "de" },
+      en: { appTitle: "AI Quiz Generator", setupTitle: "AI Quiz Generator", pdfLabel: "Load PDF document:", pdfButton: "Select PDF", pdfLoading: "Processing PDF...", pdfReady: "PDF loaded", pdfError: "Error processing PDF", imageModelLabel: "Image Model:", textModelLabel: "Text Model:", questionsLabel: "Number of Questions:", languageLabel: "Language:", timeLimitLabel: "Time per Question:", artStyleLabel: "Art Style:", generateButton: "Generate Quiz", changePaletteButton: "Change Palette", loadingQuestions: "Generating questions...", loadingImages: "Generating images...", loadingError: "Error during generation. Please try again.", attempt: "Attempt", regenerateButton: "Regenerate Image", uploadImageButton: "Upload image", nextButton: "Next", downloadButton: "Download Quiz", quizComplete: "Quiz Complete!", yourScoreIs: "Your score is:", of: "of", excellentWork: "Excellent work!", keepLearning: "Keep learning!", showResults: "Show Results", startOverButton: "Start Over", questionProgress: "Question", timerText: "Time:", timeUp: "Time's up!", languageNameForAI: "English", downloadingImages: "Downloading images...", imageOf: "Image" },
+      fr: { appTitle: "Générateur de Quiz IA", setupTitle: "Générateur de Quiz IA", pdfLabel: "Charger un document PDF:", pdfButton: "Sélectionner PDF", pdfLoading: "Traitement du PDF...", pdfReady: "PDF chargé", pdfError: "Erreur lors du traitement du PDF", imageModelLabel: "Modèle d'Image:", textModelLabel: "Modèle de Texte:", questionsLabel: "Nombre de Questions:", languageLabel: "Langue:", timeLimitLabel: "Temps par Question:", artStyleLabel: "Style Artistique:", generateButton: "Générer le Quiz", changePaletteButton: "Changer de Palette", loadingQuestions: "Génération des questions...", loadingImages: "Génération des images...", loadingError: "Erreur lors de la génération. Veuillez réessayer.", attempt: "Essai", regenerateButton: "Régénérer l'image", uploadImageButton: "Charger une image", nextButton: "Suivant", downloadButton: "Télécharger le Quiz", quizComplete: "Quiz terminé !", yourScoreIs: "Votre score est de :", of: "sur", excellentWork: "Excellent travail !", keepLearning: "Continuez à apprendre !", showResults: "Voir les Résultats", startOverButton: "Recommencer", questionProgress: "Question", timerText: "Temps:", timeUp: "Temps écoulé!", languageNameForAI: "French", downloadingImages: "Téléchargement des images...", imageOf: "Image" }
+    };
+    const palettes = [
+      { primary: '#4a148c', secondary: '#7e57c2', hover: '#673ab7', gradientStart: '#6a11cb', gradientEnd: '#2575fc' }, // Púrpura original
+      { primary: '#004d40', secondary: '#00897b', hover: '#00695c', gradientStart: '#004d40', gradientEnd: '#009688' }, // Verde esmeralda
+      { primary: '#b71c1c', secondary: '#f44336', hover: '#d32f2f', gradientStart: '#b71c1c', gradientEnd: '#ff5722' }, // Rojo intenso
+      { primary: '#1a237e', secondary: '#3f51b5', hover: '#303f9f', gradientStart: '#1a237e', gradientEnd: '#3f51b5' }, // Azul índigo
+      { primary: '#e65100', secondary: '#ff9800', hover: '#f57c00', gradientStart: '#e65100', gradientEnd: '#ff5722' }, // Naranja vibrante
+      { primary: '#2e7d32', secondary: '#4caf50', hover: '#388e3c', gradientStart: '#2e7d32', gradientEnd: '#66bb6a' }, // Verde natural
+      { primary: '#6a1b9a', secondary: '#9c27b0', hover: '#7b1fa2', gradientStart: '#6a1b9a', gradientEnd: '#ba68c8' }, // Magenta
+      { primary: '#0277bd', secondary: '#03a9f4', hover: '#0288d1', gradientStart: '#0277bd', gradientEnd: '#29b6f6' }, // Azul cielo
+      { primary: '#5d4037', secondary: '#8d6e63', hover: '#6d4c41', gradientStart: '#5d4037', gradientEnd: '#a1887f' }, // Marrón tierra
+      { primary: '#37474f', secondary: '#607d8b', hover: '#455a64', gradientStart: '#37474f', gradientEnd: '#78909c' }, // Gris azulado
+      { primary: '#ad1457', secondary: '#e91e63', hover: '#c2185b', gradientStart: '#ad1457', gradientEnd: '#f06292' }, // Rosa intenso
+      { primary: '#00695c', secondary: '#009688', hover: '#00796b', gradientStart: '#00695c', gradientEnd: '#26a69a' }, // Turquesa
+      { primary: '#bf360c', secondary: '#ff5722', hover: '#d84315', gradientStart: '#bf360c', gradientEnd: '#ff7043' }, // Naranja rojizo
+      { primary: '#4527a0', secondary: '#673ab7', hover: '#512da8', gradientStart: '#4527a0', gradientEnd: '#9575cd' }, // Violeta profundo
+      { primary: '#1565c0', secondary: '#2196f3', hover: '#1976d2', gradientStart: '#1565c0', gradientEnd: '#42a5f5' }, // Azul real
+      { primary: '#2e7d32', secondary: '#4caf50', hover: '#388e3c', gradientStart: '#1b5e20', gradientEnd: '#4caf50' }, // Verde bosque
+      { primary: '#f57f17', secondary: '#ffeb3b', hover: '#fbc02d', gradientStart: '#f57f17', gradientEnd: '#fff176' }, // Amarillo dorado
+      { primary: '#6a4c93', secondary: '#9b59b6', hover: '#8e44ad', gradientStart: '#6a4c93', gradientEnd: '#bb8fce' }, // Lavanda
+      { primary: '#d32f2f', secondary: '#f44336', hover: '#c62828', gradientStart: '#b71c1c', gradientEnd: '#ef5350' }, // Rojo carmesí
+      { primary: '#00838f', secondary: '#00acc1', hover: '#0097a7', gradientStart: '#00838f', gradientEnd: '#26c6da' }, // Cian
+      { primary: '#558b2f', secondary: '#8bc34a', hover: '#689f38', gradientStart: '#558b2f', gradientEnd: '#aed581' }, // Verde lima
+      { primary: '#f9a825', secondary: '#ffc107', hover: '#ffb300', gradientStart: '#f9a825', gradientEnd: '#ffcc02' }, // Ámbar
+      { primary: '#3e2723', secondary: '#795548', hover: '#5d4037', gradientStart: '#3e2723', gradientEnd: '#8d6e63' }, // Chocolate
+      { primary: '#1a1a2e', secondary: '#16213e', hover: '#0f3460', gradientStart: '#1a1a2e', gradientEnd: '#533483' }  // Azul nocturno
+    ];
+
+    const setLanguage = (lang) => {
+      state.lang = lang; const t = translations[lang]; dom.appTitle.textContent = t.appTitle; dom.setupTitle.textContent = t.setupTitle; dom.pdfLabel.textContent = t.pdfLabel; dom.selectPdfBtn.textContent = t.pdfButton; dom.questionsLabel.textContent = t.questionsLabel; dom.languageLabel.textContent = t.languageLabel; dom.timeLimitLabel.textContent = t.timeLimitLabel; dom.artStyleLabel.textContent = t.artStyleLabel; dom.imageModelLabel.textContent = t.imageModelLabel; dom.textModelLabel.textContent = t.textModelLabel; dom.generateBtn.textContent = t.generateButton; dom.changePaletteBtn.textContent = t.changePaletteButton; dom.regenerateBtn.textContent = t.regenerateButton; dom.uploadImageBtn.textContent = t.uploadImageButton; dom.nextButton.textContent = t.nextButton; dom.downloadBtn.textContent = t.downloadButton;
+    };
+
+    // Funciones del temporizador
+    const startTimer = () => {
+      const timeLimitSelect = document.getElementById('time-limit-select');
+      const timerContainer = document.getElementById('timer-container');
+
+      if (!timeLimitSelect || !timerContainer) {
+        console.log('Timer elements not found');
+        return;
+      }
+
+      const timeLimit = parseInt(timeLimitSelect.value, 10);
+      console.log('Starting timer with limit:', timeLimit);
+
+      if (timeLimit === 0) {
+        timerContainer.style.display = 'none';
+        return;
+      }
+
+      state.timeLimit = timeLimit;
+      state.timeRemaining = timeLimit;
+      timerContainer.style.display = 'block';
+
+      updateTimerDisplay();
+
+      state.timerInterval = setInterval(() => {
+        state.timeRemaining--;
+        updateTimerDisplay();
+
+        if (state.timeRemaining <= 0) {
+          timeUp();
+        }
+      }, 1000);
+    };
+
+    const stopTimer = () => {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    };
+
+    const updateTimerDisplay = () => {
+      const timerText = document.getElementById('timer-text');
+      const timerBar = document.getElementById('timer-bar');
+      const timerContainer = document.getElementById('timer-container');
+
+      const t = translations[state.lang];
+      if (timerText) {
+        timerText.textContent = `${t.timerText} ${state.timeRemaining}s`;
+      }
+
+      const percentage = (state.timeRemaining / state.timeLimit) * 100;
+      if (timerBar) {
+        timerBar.style.width = `${percentage}%`;
+        console.log('Timer updated:', state.timeRemaining, 'seconds,', percentage + '%');
+      }
+
+      // Cambiar color según el tiempo restante
+      if (timerContainer && timerBar) {
+        if (percentage <= 25) {
+          timerContainer.classList.add('timer-warning');
+          timerBar.style.background = '#dc3545';
+        } else if (percentage <= 50) {
+          timerContainer.classList.remove('timer-warning');
+          timerBar.style.background = 'linear-gradient(90deg, #ffc107, #dc3545)';
+        } else {
+          timerContainer.classList.remove('timer-warning');
+          timerBar.style.background = 'linear-gradient(90deg, #28a745, #ffc107, #dc3545)';
+        }
+      }
+    };
+
+    const timeUp = () => {
+      stopTimer();
+      const t = translations[state.lang];
+
+      // Marcar como incorrecta automáticamente
+      dom.optionsContainer.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = true);
+
+      // Mostrar la respuesta correcta
+      const question = state.generatedQuestions[state.currentQuestion];
+      const correctLabel = dom.optionsContainer.querySelector(`input[value="${question.answer}"]`).nextElementSibling;
+      if (correctLabel) correctLabel.classList.add('correct');
+
+      // Mostrar mensaje de tiempo agotado
+      dom.timerText.textContent = t.timeUp;
+      dom.timerContainer.classList.add('timer-warning');
+
+      dom.nextButton.disabled = false;
+    };
+
+    const changePalette = () => {
+      state.currentPalette = (state.currentPalette + 1) % palettes.length;
+      const p = palettes[state.currentPalette]; const root = document.documentElement;
+      Object.keys(p).forEach(key => root.style.setProperty(`--color-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, p[key]));
+    };
+
+    const resetApp = () => {
+      stopTimer(); // Detener temporizador
+      dom.timerContainer.style.display = 'none'; // Ocultar temporizador
+      dom.quizContainer.style.display = 'none'; dom.resultElement.style.display = 'none'; dom.downloadSection.style.display = 'none'; dom.setupContainer.style.display = 'block';
+      state.generatedQuestions = []; state.currentQuestion = 0; state.score = 0; state.totalQuestions = 0; state.pdfText = ''; state.pdfFileName = '';
+      dom.progressBar.style.width = '0%'; dom.progressText.textContent = ''; dom.pdfFileNameDisplay.textContent = ''; dom.pdfStatus.textContent = ''; dom.pdfUpload.value = ''; dom.generateBtn.disabled = false; dom.loadingMessage.style.display = 'none';
+    };
+
+    const getRandomSeed = () => Math.floor(Math.random() * (3000 - 100 + 1)) + 100;
+
+
+
+    const generateImage = async (prompt, seed, style = 'photorealistic') => {
+      const imageModel = dom.imageModelSelect.value;
+      try {
+        const response = await fetch('https://node.proyectodescartes.org/api/ia/image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: `${prompt}, ${style}`,
+            model: imageModel,
+            seed: seed,
+            width: 512,
+            height: 512
+          })
+        });
+        if (!response.ok) return '';
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          return data.url || '';
+        } else {
+          const blob = await response.blob();
+          return URL.createObjectURL(blob);
+        }
+      } catch (e) {
+        return '';
+      }
+    };
+    const shuffleArray = (array) => { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[array[i], array[j]] = [array[j], array[i]]; } return array; };
+
+    const fetchQuiz = async (pdfText, pdfFileName, numQuestions, lang) => {
+      const langName = translations[lang].languageNameForAI;
+      const truncatedPdf = pdfText.length > 150000 ? pdfText.substring(0, 150000) + "\n... (truncado)" : pdfText;
+
+      const prompt = `Basado en el siguiente documento PDF "${pdfFileName}", genera exactamente ${numQuestions} preguntas de opción múltiple en ${langName} con fundamento en el contenido del documento. IMPORTANTE: Las preguntas NO deben incluir expresiones como "en el documento", "según el documento", "de acuerdo con el texto", "el documento menciona" o similares. Las preguntas deben redactarse como si el conocimiento fuera general, sin mencionar que provienen de un documento.
+      Return only a JSON array in this format:
+      [
+        {
+          "question": "Question text?",
+          "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+          "answer": "Option 1",
+          "image_prompt": "A detailed visual description of the subject in English, high quality, no text"
+        }
+      ]
+      The 'image_prompt' must describe the correct answer or the concept visually in English (e.g., 'Golden bitcoin coin on a digital circuit board background').
+      Make sure each question has exactly 4 options.
+
+      Document content:
+      ${truncatedPdf}`;
+
+      try {
+        const response = await fetch('https://node.proyectodescartes.org/api/ia/text', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: dom.textModelSelect.value,
+            prompt: prompt
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const text = await response.text();
+
+        let cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const match = cleanText.match(/\[[\s\S]*\]/);
+        if (!match) return [];
+
+        const questions = JSON.parse(match[0]);
+        if (!Array.isArray(questions)) return [];
+
+        return questions.filter(q =>
+          q && q.question && Array.isArray(q.options) &&
+          q.options.length === 4 && q.answer &&
+          q.options.includes(q.answer)
+        );
+
+      } catch (error) {
+        console.error('Error:', error);
+        return [];
+      }
+    };
+
+
+
+    const startQuiz = async () => {
+      if (!state.pdfText) { alert('Por favor, carga un documento PDF primero.'); return; }
+      state.totalQuestions = parseInt(dom.numQuestionsSelect.value, 10);
+
+      dom.generateBtn.disabled = true;
+      dom.loadingMessage.style.display = 'block';
+
+      // Estrategia simple con múltiples intentos
+      let rawQuestions = [];
+      const maxRetries = 3;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        dom.loadingMessage.textContent = `${translations[state.lang].loadingQuestions} (${attempt}/${maxRetries})`;
+
+        const questions = await fetchQuiz(state.pdfText, state.pdfFileName, state.totalQuestions, state.lang);
+
+        if (questions && questions.length > 0) {
+          rawQuestions = questions;
+          break;
+        }
+
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      }
+
+      if (rawQuestions.length === 0) {
+        dom.loadingMessage.textContent = translations[state.lang].loadingError;
+        dom.generateBtn.disabled = false;
+        setTimeout(() => {
+          dom.loadingMessage.style.display = 'none';
+        }, 3000);
+        return;
+      }
+
+      // Usar las preguntas obtenidas
+      state.totalQuestions = rawQuestions.length;
+      dom.loadingMessage.textContent = translations[state.lang].loadingImages;
+      const selectedStyle = dom.artStyleSelect.value;
+
+      // Procesar las preguntas obtenidas
+      state.generatedQuestions = rawQuestions.map(q => {
+        const correctAnswerText = q.answer;
+        const shuffledOptions = shuffleArray([...q.options]);
+        const newCorrectIndex = shuffledOptions.findIndex(opt => opt === correctAnswerText);
+        const newAnswerLetter = String.fromCharCode(97 + newCorrectIndex);
+
+        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+        // Antes tenías: `Illustration for a quiz about ${topic}...`
+        // Ahora usamos el prompt visual que nos dio la IA o construimos uno mejor usando la RESPUESTA correcta.
+
+        let finalPrompt = "";
+
+        if (q.image_prompt) {
+          // Si la IA nos dio una descripción visual, la usamos directamente
+          finalPrompt = q.image_prompt;
+        } else {
+          finalPrompt = `${state.pdfFileName}, ${q.answer}, detailed visual`;
+        }
+
+        // Limpiamos comillas extrañas que puedan romper el código
+        finalPrompt = finalPrompt.replace(/"/g, '');
+
+        return {
+          question: q.question,
+          options: shuffledOptions,
+          answer: newAnswerLetter,
+          imagePrompt: finalPrompt, // Asignamos el prompt limpio
+          imageSeed: getRandomSeed(),
+          artStyle: selectedStyle
+        };
+      });
+
+      state.currentQuestion = 0; state.score = 0;
+      dom.setupContainer.style.display = 'none';
+      dom.quizContainer.style.display = 'block';
+      dom.downloadSection.style.display = 'block';
+      showQuestion(state.currentQuestion);
+    };
+
+    const showQuestion = async (index) => {
+      const question = state.generatedQuestions[index];
+      const optionElements = dom.optionsContainer.querySelectorAll('li');
+      optionElements.forEach((li, i) => {
+        const radio = li.querySelector('input'); const label = li.querySelector('label');
+        const optionLetter = String.fromCharCode(97 + i); const id = `q${index}-opt${optionLetter}`;
+        radio.checked = false; radio.disabled = false; radio.name = `question-${index}`; radio.id = id; radio.value = optionLetter;
+        label.htmlFor = id; label.className = ''; label.textContent = `${String.fromCharCode(65 + i)}. ${question.options[i]}`;
+      });
+      dom.questionNumberEl.textContent = index + 1; dom.questionTextEl.textContent = question.question;
+      dom.questionImageEl.src = question.customImage || await generateImage(question.imagePrompt, question.imageSeed, question.artStyle);
+      dom.questionImageEl.alt = question.imagePrompt; dom.imagePromptInput.value = question.imagePrompt;
+      dom.nextButton.disabled = true;
+      updateProgressBar();
+
+      // Iniciar temporizador para la nueva pregunta
+      stopTimer(); // Detener temporizador anterior si existe
+      startTimer();
+    };
+
+    const checkAnswer = (selectedInput) => {
+      console.log('checkAnswer called with:', selectedInput.value);
+
+      // Detener el temporizador al responder
+      stopTimer();
+
+      const question = state.generatedQuestions[state.currentQuestion];
+      const correct = selectedInput.value === question.answer;
+      const selectedLabel = selectedInput.nextElementSibling;
+
+      if (correct) {
+        selectedLabel.classList.add('correct');
+        state.score++;
+        console.log('Correct answer! Score:', state.score);
+      } else {
+        selectedLabel.classList.add('incorrect');
+        const correctLabel = dom.optionsContainer.querySelector(`input[value="${question.answer}"]`).nextElementSibling;
+        if (correctLabel) correctLabel.classList.add('correct');
+        console.log('Incorrect answer. Correct was:', question.answer);
+      }
+
+      dom.optionsContainer.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = true);
+      dom.nextButton.disabled = false;
+      console.log('Next button enabled');
+    };
+
+    const updateProgressBar = () => {
+      const currentProgress = state.currentQuestion + 1;
+      const percentage = (currentProgress / state.totalQuestions) * 100;
+      const t = translations[state.lang];
+      dom.progressBar.style.width = `${percentage}%`;
+      dom.progressText.textContent = `${t.questionProgress} ${currentProgress} ${t.of} ${state.totalQuestions}`;
+    };
+    const handleNextQuestion = async () => { state.currentQuestion++; if (state.currentQuestion < state.totalQuestions) await showQuestion(state.currentQuestion); else showResults(); };
+
+    const showResults = () => {
+      const t = translations[state.lang];
+      dom.quizElement.style.display = 'none'; dom.resultElement.style.display = 'block';
+      const percentage = Math.round((state.score / state.totalQuestions) * 100);
+      dom.resultElement.innerHTML = `<h2>${t.quizComplete}</h2><p>${t.yourScoreIs} ${state.score} ${t.of} ${state.totalQuestions} (${percentage}%)</p><p>${percentage > 60 ? t.excellentWork : t.keepLearning}</p><div class="btn-container" style="padding-top: 20px;"><button id="start-over-btn" class="primary-btn">${t.startOverButton}</button></div>`;
+    };
+
+    const regenerateImage = async () => {
+      const currentQ = state.generatedQuestions[state.currentQuestion];
+      currentQ.imagePrompt = dom.imagePromptInput.value; currentQ.imageSeed = getRandomSeed();
+      currentQ.customImage = null;
+      dom.questionImageEl.style.opacity = '0.5';
+      dom.questionImageEl.src = await generateImage(currentQ.imagePrompt, currentQ.imageSeed, currentQ.artStyle);
+      dom.questionImageEl.onload = () => { dom.questionImageEl.style.opacity = '1'; };
+    };
+
+    const uploadImage = (file) => {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const currentQ = state.generatedQuestions[state.currentQuestion];
+        currentQ.customImage = e.target.result;
+        dom.questionImageEl.src = currentQ.customImage;
+        dom.questionImageEl.style.opacity = '1';
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // Función para convertir URL de imagen a Base64
+    const imageToBase64 = async (url) => {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error('Error converting image to base64:', error);
+        return null;
+      }
+    };
+
+    // Función para mostrar el overlay de carga
+    const showDownloadLoading = (current, total) => {
+      const t = translations[state.lang];
+      let overlay = document.getElementById('download-loading-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'download-loading-overlay';
+        overlay.className = 'download-loading-overlay';
+        overlay.innerHTML = `
+          <div class="download-loading-spinner"></div>
+          <div class="download-progress-text">${t.downloadingImages}</div>
+          <div class="download-progress-text" id="download-image-progress">${t.imageOf} 1 ${t.of} ${total}</div>
+          <div class="download-progress-bar">
+            <div class="download-progress-fill" id="download-progress-fill" style="width: 0%"></div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      }
+      const progressText = document.getElementById('download-image-progress');
+      const progressFill = document.getElementById('download-progress-fill');
+      if (progressText) progressText.textContent = `${t.imageOf} ${current} ${t.of} ${total}`;
+      if (progressFill) progressFill.style.width = `${(current / total) * 100}%`;
+    };
+
+    // Función para ocultar el overlay de carga
+    const hideDownloadLoading = () => {
+      const overlay = document.getElementById('download-loading-overlay');
+      if (overlay) overlay.remove();
+    };
+
+    const downloadQuiz = async () => {
+      const t = translations[state.lang];
+      const p = palettes[state.currentPalette];
+      const cloneTimeLimit = parseInt(dom.cloneTimerInput.value, 10) || 30;
+      
+      // Deshabilitar botón de descarga mientras se procesan las imágenes
+      dom.downloadBtn.disabled = true;
+      dom.downloadBtn.textContent = t.downloadingImages;
+      
+      const paletteStyle = `:root { --color-primary: ${p.primary}; --color-secondary: ${p.secondary}; --color-hover: ${p.hover}; --color-gradient-start: ${p.gradientStart}; --color-gradient-end: ${p.gradientEnd}; }`;
+      const mainStyle = document.querySelector('style').innerHTML;
+      
+      // Convertir todas las imágenes a Base64
+      const totalImages = state.generatedQuestions.length;
+      const imagesBase64 = [];
+      
+      for (let i = 0; i < totalImages; i++) {
+        showDownloadLoading(i + 1, totalImages);
+        const q = state.generatedQuestions[i];
+        if (q.customImage) {
+          imagesBase64.push(q.customImage);
+        } else {
+          const imageUrl = await generateImage(q.imagePrompt, q.imageSeed, q.artStyle);
+          const base64 = await imageToBase64(imageUrl);
+          imagesBase64.push(base64 || imageUrl);
+        }
+      }
+      
+      hideDownloadLoading();
+      
+      let questionsHtml = state.generatedQuestions.map((q, index) => {
+        const isLastQuestion = index === state.generatedQuestions.length - 1;
+        const imageSrc = imagesBase64[index];
+        return `<div class="question ${index > 0 ? 'hidden' : ''}" data-correct-answer="${q.answer}"><div class="question-header"><span>${index + 1}</span>. <span>${q.question}</span></div><div class="question-content"><div class="question-image-container"><img class="question-image" src="${imageSrc}" alt="${q.imagePrompt}"></div><ul class="options">${q.options.map((opt, i) => `<li><input type="radio" name="question-${index}" id="q${index}-opt${String.fromCharCode(97 + i)}" value="${String.fromCharCode(97 + i)}"><label for="q${index}-opt${String.fromCharCode(97 + i)}">${String.fromCharCode(65 + i)}. ${opt}</label></li>`).join('')}</ul></div><div class="btn-container downloaded-btn-container"><button class="primary-btn downloaded-next-btn">${isLastQuestion ? t.showResults : t.nextButton}</button></div></div>`;
+      }).join('');
+
+      const fullHtml = `<!DOCTYPE html><html lang="${state.lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cuestionario: ${state.pdfFileName.replace(/\.pdf$/i, '')}</title><style>${mainStyle} ${paletteStyle}</style></head><body><div id="quiz-container" class="downloaded-quiz"><div class="quiz-progress-header"><div class="progress-text" id="progress-text">${t.questionProgress} 1 ${t.of} ${state.totalQuestions}</div><div class="progress-container"><div class="progress-bar" id="progress-bar" style="width: ${(1 / state.totalQuestions) * 100}%"></div></div></div>${questionsHtml}<div class="timer-container" id="timer-container" style="display: ${cloneTimeLimit > 0 ? 'block' : 'none'};"><div class="timer-text" id="timer-text">${t.timerText} ${cloneTimeLimit}s</div><div class="timer-bar-container"><div class="timer-bar" id="timer-bar" style="width: 100%;"></div></div></div><div class="result-screen hidden"><h2>${t.quizComplete}</h2><p id="final-score-text"></p><p id="final-message"></p><div class="btn-container" style="padding-top: 20px;"><button class="primary-btn" onclick="location.reload()">${t.startOverButton}</button></div></div></div><script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let score = 0; 
+            const totalQuestions = ${state.totalQuestions};
+            const timeLimit = ${cloneTimeLimit};
+            let timeRemaining = timeLimit;
+            let timerInterval = null;
+            
+            const timerContainer = document.getElementById('timer-container');
+            const timerText = document.getElementById('timer-text');
+            const timerBar = document.getElementById('timer-bar');
+            
+            const startTimer = () => {
+                if (timeLimit <= 0) return;
+                timeRemaining = timeLimit;
+                updateTimerDisplay();
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                    if (timeRemaining <= 0) {
+                        timeUp();
+                    }
+                }, 1000);
+            };
+            
+            const stopTimer = () => {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            };
+            
+            const updateTimerDisplay = () => {
+                if (timerText) timerText.textContent = \`${t.timerText} \${timeRemaining}s\`;
+                const percentage = (timeRemaining / timeLimit) * 100;
+                if (timerBar) {
+                    timerBar.style.width = \`\${percentage}%\`;
+                    if (percentage <= 25) {
+                        timerContainer.classList.add('timer-warning');
+                        timerBar.style.background = '#dc3545';
+                    } else if (percentage <= 50) {
+                        timerContainer.classList.remove('timer-warning');
+                        timerBar.style.background = 'linear-gradient(90deg, #ffc107, #dc3545)';
+                    } else {
+                        timerContainer.classList.remove('timer-warning');
+                        timerBar.style.background = 'linear-gradient(90deg, #28a745, #ffc107, #dc3545)';
+                    }
+                }
+            };
+            
+            const timeUp = () => {
+                stopTimer();
+                const currentQuestion = document.querySelector('.question:not(.hidden)');
+                if (currentQuestion) {
+                    const correctAnswer = currentQuestion.dataset.correctAnswer;
+                    const correctLabel = currentQuestion.querySelector(\`input[value="\${correctAnswer}"]\`).nextElementSibling;
+                    if (correctLabel) correctLabel.classList.add('correct');
+                    currentQuestion.querySelectorAll('input').forEach(i => i.disabled = true);
+                    if (timerText) timerText.textContent = '${t.timeUp}';
+                    timerContainer.classList.add('timer-warning');
+                }
+            };
+            
+            // Iniciar temporizador para la primera pregunta
+            if (timeLimit > 0) startTimer();
+            
+            document.getElementById('quiz-container').addEventListener('click', (e) => {
+                const questionDiv = e.target.closest('.question'); if (!questionDiv) return;
+                if (e.target.tagName === 'INPUT' && e.target.type === 'radio' && !e.target.disabled) {
+                    stopTimer(); // Detener temporizador al responder
+                    const correctAnswer = questionDiv.dataset.correctAnswer; if (e.target.value === correctAnswer) score++;
+                    const selectedLabel = e.target.nextElementSibling; selectedLabel.classList.add(e.target.value === correctAnswer ? 'correct' : 'incorrect');
+                    if (e.target.value !== correctAnswer) { questionDiv.querySelector('input[value="' + correctAnswer + '"]').nextElementSibling.classList.add('correct'); }
+                    questionDiv.querySelectorAll('input').forEach(i => i.disabled = true);
+                }
+                if (e.target.classList.contains('downloaded-next-btn')) {
+                    questionDiv.classList.add('hidden'); const nextQuestion = questionDiv.nextElementSibling;
+                    if (nextQuestion && nextQuestion.classList.contains('question')) { 
+                        nextQuestion.classList.remove('hidden'); 
+                        // Actualizar barra de progreso
+                        const currentQ = Array.from(document.querySelectorAll('.question')).indexOf(nextQuestion) + 1;
+                        const progressBar = document.getElementById('progress-bar');
+                        const progressText = document.getElementById('progress-text');
+                        if (progressBar) progressBar.style.width = \`\${(currentQ/totalQuestions)*100}%\`;
+                        if (progressText) progressText.textContent = \`${t.questionProgress} \${currentQ} ${t.of} \${totalQuestions}\`;
+                        // Iniciar temporizador para la nueva pregunta
+                        if (timeLimit > 0) startTimer();
+                    } else {
+                        stopTimer(); // Detener temporizador al finalizar
+                        const resultScreen = document.querySelector('.result-screen'); const percentage = Math.round((score / totalQuestions) * 100);
+                        resultScreen.querySelector('#final-score-text').textContent = \`${t.yourScoreIs} \${score} ${t.of} \${totalQuestions} (\${percentage}%)\`;
+                        resultScreen.querySelector('#final-message').textContent = percentage > 60 ? \`${t.excellentWork}\` : \`${t.keepLearning}\`;
+                        resultScreen.classList.remove('hidden');
+                        // Ocultar barras de progreso y temporizador en resultados
+                        const progressHeader = document.querySelector('.quiz-progress-header');
+                        if (progressHeader) progressHeader.style.display = 'none';
+                        if (timerContainer) timerContainer.style.display = 'none';
+                    }
+                }
+            });
+        });<\/script></body></html>`;
+      
+      const blob = new Blob([fullHtml], { type: 'text/html' }); const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = `quiz-${state.pdfFileName.replace(/\.pdf$/i, '').replace(/[\s\W]+/g, '-').toLowerCase()}.html`; a.click(); URL.revokeObjectURL(a.href);
+      
+      // Restaurar botón de descarga
+      dom.downloadBtn.disabled = false;
+      dom.downloadBtn.textContent = t.downloadButton;
+    };
+
+    // --- Event Listeners ---
+    dom.generateBtn.addEventListener('click', startQuiz);
+    dom.nextButton.addEventListener('click', handleNextQuestion);
+    dom.downloadBtn.addEventListener('click', downloadQuiz);
+    dom.regenerateBtn.addEventListener('click', regenerateImage);
+    dom.uploadImageBtn.addEventListener('click', () => { dom.imageUploadInput.click(); });
+    dom.imageUploadInput.addEventListener('change', (e) => { uploadImage(e.target.files[0]); e.target.value = ''; });
+    dom.changePaletteBtn.addEventListener('click', changePalette);
+    dom.languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+    dom.optionsContainer.addEventListener('click', (event) => {
+      if (event.target.tagName === 'LABEL') {
+        const radio = document.getElementById(event.target.htmlFor);
+        if (radio && !radio.disabled) {
+          console.log('Calling checkAnswer for:', radio.value);
+          checkAnswer(radio);
+        }
+      }
+    });
+    document.body.addEventListener('click', (e) => { if (e.target.id === 'start-over-btn') resetApp(); });
+
+    // PDF Upload handler
+    dom.selectPdfBtn.addEventListener('click', () => {
+      dom.pdfUpload.click();
+    });
+
+    dom.pdfUpload.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        dom.pdfStatus.textContent = 'El archivo no es un PDF válido.';
+        dom.pdfStatus.style.color = '#f44336';
+        return;
+      }
+      state.pdfFileName = file.name;
+      dom.pdfFileNameDisplay.textContent = file.name;
+      dom.pdfStatus.textContent = translations[state.lang].pdfLoading;
+      dom.pdfStatus.style.color = 'var(--color-primary)';
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const typedarray = new Uint8Array(e.target.result);
+        try {
+          const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+          let text = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            textContent.items.forEach(item => text += item.str + ' ');
+            text += '\n';
+          }
+          state.pdfText = text;
+          dom.pdfStatus.textContent = translations[state.lang].pdfReady;
+          dom.pdfStatus.style.color = '#4caf50';
+        } catch (error) {
+          console.error('Error al procesar PDF:', error);
+          state.pdfText = '';
+          dom.pdfStatus.textContent = translations[state.lang].pdfError;
+          dom.pdfStatus.style.color = '#f44336';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    setLanguage(state.lang);
+  </script>
+</body>
+
+</html>
