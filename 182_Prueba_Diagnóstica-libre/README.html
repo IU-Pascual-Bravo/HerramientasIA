@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>Evaluación Diagnóstica (Generador con Semáforo de Retroalimentación)</h1>
+<p>Aplicación web de un solo archivo (<code>index.html</code>) que crea <strong>evaluaciones diagnósticas interactivas</strong> con inteligencia artificial. El objetivo no es calificar contenido nuevo, sino detectar <strong>saberes previos</strong> y <strong>concepciones erróneas</strong> antes de enseñar, usando un <em>semáforo de retroalimentación</em> (verde / amarillo / rojo) que explica al estudiante por qué cada respuesta es correcta, incompleta o un error conceptual.</p>
+<p>No requiere instalación ni servidor propio: se abre directamente en el navegador. La generación de texto e imágenes se realiza a través del servicio de IA de Proyecto Descartes (<code>node.proyectodescartes.org</code>), por lo que <strong>necesita conexión a internet</strong>.</p>
+<hr>
+<h2>Cómo usarla</h2>
+<ol>
+<li>Abre <code>index.html</code> en cualquier navegador moderno (doble clic).</li>
+<li>Rellena los <strong>datos de la evaluación</strong> (los dos primeros son obligatorios):<ul>
+<li><strong>Materia / Experto</strong> (ej. <em>Matemáticas</em>, <em>Biología</em>).</li>
+<li><strong>Tema o Unidad a evaluar</strong> (ej. <em>Fracciones</em>, <em>Fotosíntesis</em>).</li>
+<li><strong>Número de preguntas</strong> (de 3 a 15; estándar 6).</li>
+<li><strong>Tipo de prueba</strong>:<ul>
+<li><em>Formativa</em> → el alumno recibe retroalimentación inmediata al responder.</li>
+<li><em>Sumativa</em> → el alumno envía la prueba por correo y la retroalimentación queda oculta hasta el envío.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>(Opcional) Despliega <strong>Personalizar / Afinar Parámetros</strong> para indicar nivel del alumnado, aprendizaje posterior, restricciones, finalidad o pegar/cargar un estándar o criterio curricular (PDF/TXT).</li>
+<li>(Opcional) En <strong>Configuración del Modelo e Interfaz</strong> elige paleta de colores, estilo visual, modelo de imagen, modelo de texto y si incluir MathJax (fórmulas matemáticas).</li>
+<li>Elige uno de los <strong>dos modos de generación</strong> (ver abajo) y espera a que la IA genere la evaluación.</li>
+<li>Cuando termine, descarga los materiales desde los botones que aparecen:<ul>
+<li><strong>HTML Alumno (Ejecutable)</strong> – cuestionario interactivo para el estudiante.</li>
+<li><strong>HTML Profesor (Ficha Técnica)</strong> – con respuestas, distractores y criterios.</li>
+<li><strong>Word Profesor</strong> – documento <code>.docx</code> de la ficha.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2>Los dos modos de generación</h2>
+<p>La aplicación ofrece dos formas de producir la evaluación. Ambos usan los mismos datos de entrada y generan el mismo tipo de producto final (cuestionario + semáforo + ficha de profesor).</p>
+<h3>1. Modo Guiado (Paso a Paso) — botón verde oscuro</h3>
+<p>Genera la evaluación <strong>por fases, una a una</strong>, mostrando un <em>stepper</em> de 4 bloques. Es ideal para revisar y corregir el contenido antes de avanzar:</p>
+<div class="table-responsive-wrapper"><table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Bloque</th>
+<th>Qué genera</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td><strong>Contexto Inicial</strong></td>
+<td>Captura materia, tema, nivel, restricciones y estándar.</td>
+</tr>
+<tr>
+<td>1</td>
+<td><strong>Saberes Previos</strong></td>
+<td>Preguntas diagnósticas sobre conocimientos previos y conceptos fundamento.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Criterios del Semáforo</strong></td>
+<td>Rúbrica verde/amarillo/rojo que define qué demuestra cada nivel de respuesta.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Cuestionario Diagnóstico</strong></td>
+<td>Cuestionario completo (3 apartados: saberes previos, comprensión aplicada e identificación de concepciones erróneas).</td>
+</tr>
+</tbody></table></div>
+<p>En cada fase puedes <strong>Confirmar</strong> (guarda la fase y habilita la siguiente) o <strong>Replantear</strong> (regenera esa fase). El stepper marca las fases completadas y conserva lo ya validado, así puedes iterar sin perder el trabajo. Recomendado cuando quieres control fino sobre la prueba o usarla con alumnado real.</p>
+<h3>2. Modo Rápido (1 Clic Directo) — botón naranja</h3>
+<p>Genera <strong>toda la evaluación completa en una sola llamada</strong> a la IA, sin paradas intermedias. Es la opción más rápida para obtener un borrador terminado de inmediato. Recomendado para prototipar, explorar ideas o cuando no necesitas revisar fase a fase.</p>
+<blockquote>
+<p>Consejo: usa <strong>Modo Rápido</strong> para iterar rápido y <strong>Modo Guiado</strong> para afinar la versión definitiva que entregarás a tus estudiantes.</p>
+</blockquote>
+<hr>
+<h2>Semáforo de Retroalimentación</h2>
+<p>Cada pregunta clasifica la respuesta del estudiante en uno de tres niveles, con explicación pedagógica automática:</p>
+<ul>
+<li>🟢 <strong>Verde</strong> – domina el saber previo; se muestran los puntos clave correctos.</li>
+<li>🟡 <strong>Amarillo</strong> – base intermedia con imprecisiones; se sugiere repaso.</li>
+<li>🔴 <strong>Rojo</strong> – concepción errónea o ausencia de saber previo; se explica el error conceptual.</li>
+</ul>
+<p>En pruebas <em>formativas</em> esta retroalimentación aparece al instante; en <em>sumativas</em> queda oculta hasta que el alumno envía la prueba por correo.</p>
+<hr>
+<h2>Archivos del proyecto</h2>
+<ul>
+<li><code>index.html</code> — aplicación principal (todo en un archivo: HTML, CSS y JS).</li>
+<li><code>index_Elena.html</code> / <code>index_v.html</code> — variantes de la interfaz.</li>
+<li><code>ejemplos/</code> — evaluaciones ya generadas de muestra (conectivismo, constructivismo, IoT, etc.).</li>
+<li><code>logo_pascual_bravo.png</code> / <code>.svg</code> — logotipo institucional (puedes reemplazarlo con el botón <strong>Logo</strong>).</li>
+</ul>
+<hr>
+<h2>Notas</h2>
+<ul>
+<li>La evaluación debe medir <strong>exclusivamente saberes previos</strong>, no el contenido nuevo del tema.</li>
+<li>Necesita conexión a internet para la generación (servicio de IA de Proyecto Descartes).</li>
+<li>Modelos de texto disponibles: GPT 5.4 Nano, GPT 5 Nano, Gemini 2.5 Flash y Gemini 2.5 Search.</li>
+<li>Diseñado por Juan Guillermo Rivera Berrío y Elena Álvarez Saiz con tecnología de IA y asistencia de Open Code.</li>
+</ul>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>
