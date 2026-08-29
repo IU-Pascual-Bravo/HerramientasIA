@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extractor Imágenes PDF (Objetos Reales)</title>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<!-- JSZip -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="app-header">
+        <a class="app-logo" href="https://pascualbravo.edu.co/" target="_blank" rel="noopener noreferrer" aria-label="Proyecto Descartes">
+            <img src="logo_pascual_bravo.png" alt="Proyecto Descartes">
+        </a>
+        <div class="app-title-wrap">
+            <h2>Extractor Universal de Imágenes - V2</h2>
+            <p class="subtitle">PDF (Objetos puros) • PowerPoint • HTML • Web • Video</p>
+        </div>
+    </header>
+
+    <!-- ZONA DE ARCHIVOS -->
+    <div class="input-section drop-zone" id="dropZone">
+        <h3>Arrastra tu archivo o carpeta aquí</h3>
+    <p style="font-size:0.85em; color:#666;">PDF, PPTX, HTML, Imágenes sueltas o Videos (MP4/WebM)</p>
+    
+    <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+        <button onclick="document.getElementById('fileInput').click()" class="secondary" style="padding: 5px 10px; font-size: 0.8em;">Seleccionar Archivos</button>
+        <button onclick="document.getElementById('folderInput').click()" class="secondary" style="padding: 5px 10px; font-size: 0.8em;">Seleccionar Carpeta</button>
+        <button onclick="document.getElementById('videoInput').click()" class="secondary" style="padding: 5px 10px; font-size: 0.8em;">🎬 Subir Video</button>
+    </div>
+
+    <input type="file" id="fileInput" accept=".pdf, .pptx, .html, .jpg, .jpeg, .png, .webp, .mp4, .webm" multiple hidden>
+    <!-- Nuevo input para carpetas -->
+    <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+    <!-- Input oculto para video -->
+    <input type="file" id="videoInput" accept=".mp4, .webm, video/mp4, video/webm" hidden>
+</div>
+
+    <div class="separator">O ingresa una URL web</div>
+
+    <!-- ZONA DE URL -->
+    <div class="input-section" style="padding: 20px;">
+        <div class="url-input-box">
+            <input type="text" id="urlInput" placeholder="Ej: https://es.wikipedia.org/wiki/Colombia">
+            <button id="urlBtn">Extraer de URL</button>
+        </div>
+        <p style="font-size:0.75em; color:#888;">Usa un proxy CORS público. Puede ser lento dependiendo de la página.</p>
+    </div>
+
+    <!-- ZONA DE VIDEO -->
+    <div class="separator">O sube un video</div>
+    <div class="input-section" style="padding: 20px;">
+        <h3 style="margin:0 0 6px;">🎬 Extraer fotogramas de un video</h3>
+        <p style="font-size:0.85em; color:#666; margin:0 0 12px;">Selecciona el video con el botón <b>Subir Video</b> de arriba · MP4 o WebM · Máximo 150 minutos</p>
+        <p id="videoInfo" style="font-size:0.8em; color:#888; margin:0 0 10px;">Ningún video seleccionado.</p>
+        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+            <label style="display:flex; align-items:center; gap:6px; font-size:0.9em; color:#4a5568;">
+                Fotograma cada
+                <input type="number" id="videoInterval" value="20" min="1" max="60" style="width:70px; padding:8px; border:1px solid #cbd5e0; border-radius:6px;">
+                segundos
+            </label>
+            <button id="videoBtn">🎬 Extraer fotogramas</button>
+        </div>
+    </div>
+
+
+    <div class="controls-panel">
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="compressToggle" checked> 
+                <span>Activar Compresión</span>
+            </label>
+            <button id="autoCompress" class="secondary">⚡ Web Presets</button>
+        </div>
+
+        <div class="control-row">
+            <div class="control-group">
+                <label>Formato Salida</label>
+                <select id="formatSelect" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="image/webp" selected>WEBP</option>
+                    <option value="image/jpeg">JPEG</option>
+                    <option value="image/png">PNG</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Calidad: <span id="qualityValue">0.8</span></label>
+                <input type="range" id="qualityRange" min="0.1" max="1" step="0.1" value="0.8">
+            </div>
+            <div class="control-group">
+                <label>Escala: <span id="scaleValue">1.0x</span></label>
+                <input type="range" id="scaleRange" min="0.2" max="1.5" step="0.1" value="1.0">
+            </div>
+        </div>
+        <div style="margin-top:15px; text-align: right;">
+            <button id="applyBtn">🔄 Actualizar Resultados</button>
+        </div>
+    </div>
+
+    <div class="stats" style="display: flex; justify-content: space-between; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 10px;">
+        <span>Original Estimado: <b id="originalSize">0 KB</b></span>
+        <span>Optimizado: <b id="compressedSize">0 KB</b></span>
+    </div>
+
+    <div id="loading">⏳ Procesando...</div>
+    <div class="preview-grid" id="preview"></div>
+
+    <br>
+    <button id="downloadZip" class="full-width" style="display:none; font-size:1.1em;">📦 Descargar Todo en ZIP</button>
+
+    <div id="presentationSection" style="display:none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+        <label style="font-weight:600; font-size:0.9em; color:#4a5568; margin-bottom:8px; display:block;">Tamaño de diapositiva:</label>
+        <label style="display:flex; align-items:center; gap:6px; margin-bottom:10px; font-size:0.9em; color:#4a5568; cursor:pointer;">
+            <input type="checkbox" id="useOptimizedCheck" checked>
+            Generar con imágenes optimizadas
+        </label>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <select id="sizeSelector" style="padding: 10px; border-radius: 6px; border: 1px solid #ccc; flex: 1;">
+                <option value="horizontal">Horizontal (16:9)</option>
+                <option value="responsive">Responsive (Pantalla completa)</option>
+                <option value="ppt-4-3">PowerPoint (4:3)</option>
+                <option value="square-1-1">Instagram Cuadrado (1:1)</option>
+                <option value="ig-post-4-5">Instagram Post (4:5)</option>
+                <option value="tiktok-9-16">TikTok/Stories (9:16)</option>
+                <option value="poster-3-2">Poster (3:2)</option>
+                <option value="a4-portrait">A4 Vertical (210x297)</option>
+                <option value="vertical">Vertical (3:4)</option>
+            </select>
+            <button id="generatePresentationBtn" style="white-space:nowrap;">📽 Generar y descargar presentación</button>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    Diseñado por Juan Guillermo Rivera Berrío con tecnología Hy3 (Hunyuan 3 ) y asistencia de OpenCode
+</footer>
+
+
+ <script src="js/main.js"></script>
+
+
+</body>
+</html>
