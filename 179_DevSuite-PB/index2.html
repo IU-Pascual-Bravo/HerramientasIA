@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validador de JSON</title>
+  
+  <!-- CodeMirror (Editor de código para JSON) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; background-color: #f8f9fa; }
+    
+    header {
+      padding: 10px 20px;
+      background-color: #24292e;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      background-color: #2ea44f;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      font-size: 14px;
+    }
+
+    .btn:hover { background-color: #2c974b; }
+    .btn-secondary { background-color: #0366d6; }
+    .btn-secondary:hover { background-color: #0255b3; }
+    
+    input[type="file"] { display: none; }
+    
+    .container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 90px);
+      overflow: hidden;
+    }
+    
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      overflow: hidden;
+    }
+    
+    .left-panel { border-right: 2px solid #ddd; }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .panel-title {
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* Editor CodeMirror */
+    .CodeMirror {
+      height: 100%;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #ffffff;
+    }
+    
+    /* Colores del editor JSON */
+    .cm-string { color: #008000 !important; }
+    .cm-property { color: #0000d0 !important; font-weight: bold; }
+    .cm-number { color: #007acc !important; }
+    .cm-atom, .cm-keyword { color: #d66000 !important; font-weight: bold; }
+
+    /* Banners de estado de validación */
+    .status-box {
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .status-box.success { background-color: #dafbe1; color: #1a7f37; border: 1px solid #4ac26b; }
+    .status-box.error { background-color: #ffebe9; color: #cf222e; border: 1px solid #ff8182; }
+    .status-box.info { background-color: #ddf4ff; color: #0969da; border: 1px solid #54aeff; }
+
+    /* Vista estructurada JSON */
+    .preview-box {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+      overflow: auto;
+      background-color: white;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Resaltado para la vista estructurada */
+    .json-key { color: #0000d0; font-weight: bold; }
+    .json-string { color: #008000; }
+    .json-number { color: #1c00cf; }
+    .json-boolean { color: #d66000; font-weight: bold; }
+    .json-null { color: #808080; font-style: italic; }
+
+    /* Pie de página */
+    footer {
+      background-color: #1b1f23;
+      color: #c6cbd1;
+      text-align: center;
+      padding: 10px 15px;
+      font-size: 0.85rem;
+      border-top: 1px solid #30363d;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>Validador de JSON</h2>
+    <div class="header-actions">
+      <label for="fileInput" class="btn">Abrir archivo .json</label>
+      <input type="file" id="fileInput" accept=".json,.txt">
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Panel Izquierdo (Editor JSON) -->
+    <div class="panel left-panel">
+      <div class="panel-header">
+        <span class="panel-title">Código JSON</span>
+        <div>
+          <button id="btnFormat" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Dar formato</button>
+          <button id="btnMinify" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Minificar</button>
+        </div>
+      </div>
+      <textarea id="editor"></textarea>
+    </div>
+
+    <!-- Panel Derecho (Estado y Estructura) -->
+    <div class="panel">
+      <div class="panel-title">Resultado de Validación</div>
+      <div id="statusBox" class="status-box info">Cargando validador...</div>
+      <div id="preview" class="preview-box"></div>
+    </div>
+  </div>
+
+  <footer>
+    Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 3.6 Flash
+  </footer>
+
+  <script>
+    const preview = document.getElementById('preview');
+    const statusBox = document.getElementById('statusBox');
+    const fileInput = document.getElementById('fileInput');
+    const btnFormat = document.getElementById('btnFormat');
+    const btnMinify = document.getElementById('btnMinify');
+
+    // Configuración de CodeMirror para sintaxis JSON
+    const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+      mode: { name: "javascript", json: true },
+      lineNumbers: true,
+      lineWrapping: true
+    });
+
+    // Función para colorear el JSON formateado del panel derecho
+    function syntaxHighlightJSON(jsonStr) {
+      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'json-key';
+          } else {
+            cls = 'json-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    // Validación del contenido JSON
+    function validateJSON() {
+      const content = editor.getValue().trim();
+
+      if (!content) {
+        statusBox.className = 'status-box info';
+        statusBox.innerHTML = 'ℹ️ <strong>Sin contenido</strong><br><small>Escribe o carga un archivo JSON para validar.</small>';
+        preview.innerHTML = '';
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(content);
+        statusBox.className = 'status-box success';
+        statusBox.innerHTML = '✅ <strong>JSON VÁLIDO</strong><br><small>El formato y la sintaxis son correctos.</small>';
+        
+        const prettyStr = JSON.stringify(parsed, null, 2);
+        preview.innerHTML = syntaxHighlightJSON(prettyStr);
+      } catch (err) {
+        statusBox.className = 'status-box error';
+        statusBox.innerHTML = `❌ <strong>JSON INVÁLIDO</strong><br><small>${escapeHTML(err.message)}</small>`;
+        preview.innerText = 'El código JSON contiene un error de sintaxis en el panel izquierdo. Corrígelo para ver la estructura.';
+      }
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Evento de escritura
+    editor.on('change', validateJSON);
+
+    // Botón "Dar formato"
+    btnFormat.addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse(editor.getValue());
+        editor.setValue(JSON.stringify(parsed, null, 2));
+      } catch (e) {
+        alert('No se puede dar formato a un JSON con errores de sintaxis.');
+      }
+    });
+
+    // Botón "Minificar"
+    btnMinify.addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse(editor.getValue());
+        editor.setValue(JSON.stringify(parsed));
+      } catch (e) {
+        alert('No se puede minificar un JSON con errores de sintaxis.');
+      }
+    });
+
+    // Cargar archivo .json
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          editor.setValue(event.target.result);
+          validateJSON();
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // JSON de ejemplo inicial
+    const initialJSON = `{
+  "proyecto": "Proyecto Integrador",
+  "version": 1.0,
+  "valido": true,
+  "archivos": [
+    "config.json",
+    "slides.json",
+    "quiz.json",
+    "image_prompt.json"
+  ]
+}`;
+
+    editor.setValue(initialJSON);
+    validateJSON();
+  </script>
+</body>
+</html>

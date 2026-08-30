@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevSuite: Markdown & JSON</title>
+  
+  <!-- Librería Marked para Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Estilos GitHub Markdown -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+  
+  <!-- CodeMirror CSS y JS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/stex/stex.min.js"></script>
+
+  <!-- KaTeX (local, desde la subcarpeta latex) -->
+  <link rel="stylesheet" href="latex/css/katex.min.css">
+  <script src="latex/js/katex.min.js"></script>
+  <script src="latex/katex/auto-render.min.js"></script>
+  <script src="latex/katex/mhchem.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; background-color: #f8f9fa; }
+    
+    header {
+      background-color: #24292e;
+      color: white;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      height: 55px;
+      position: relative;
+    }
+
+    .header-logo-link {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      height: 100%;
+      text-decoration: none;
+    }
+
+    .header-logo {
+      height: 45px;
+      width: auto;
+      display: block;
+    }
+
+    .header-title {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.2rem;
+      font-weight: bold;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 5px;
+      height: 100%;
+      align-items: flex-end;
+      margin-left: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      color: #8b949e;
+      border: none;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover { color: #c9d1d9; }
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom-color: #2ea44f;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn {
+      background-color: #2ea44f;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      font-size: 13px;
+      display: inline-block;
+    }
+    .btn:hover { background-color: #2c974b; }
+    .btn-secondary { background-color: #0366d6; }
+    .btn-secondary:hover { background-color: #0255b3; }
+    input[type="file"] { display: none; }
+
+    .view-container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 95px);
+      overflow: hidden;
+    }
+
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      overflow: hidden;
+    }
+    
+    .left-panel { border-right: 2px solid #ddd; }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .panel-title { font-weight: bold; color: #333; }
+
+    .CodeMirror {
+      height: 100%;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #ffffff;
+    }
+
+    .line-error { background-color: #ffebe9 !important; }
+
+    /* Estilos estilo Notepad++ */
+    .cm-header { color: #e65100 !important; font-weight: bold; }
+    .cm-strong { color: #0000d0 !important; font-weight: bold; }
+    .cm-comment, .cm-quote { color: #008000 !important; }
+
+    .cm-string { color: #008000 !important; }
+    .cm-property { color: #0000d0 !important; font-weight: bold; }
+    .cm-number { color: #007acc !important; }
+    .cm-atom { color: #d66000 !important; font-weight: bold; }
+
+    .preview-box {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: white;
+    }
+
+    .status-box {
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .status-box.success { background-color: #dafbe1; color: #1a7f37; border: 1px solid #4ac26b; }
+    .status-box.error { background-color: #ffebe9; color: #cf222e; border: 1px solid #ff8182; }
+
+    .json-key { color: #0000d0; font-weight: bold; }
+    .json-string { color: #008000; }
+    .json-number { color: #007acc; }
+    .json-boolean { color: #d66000; font-weight: bold; }
+    .json-null { color: #808080; font-style: italic; }
+
+    footer {
+      background-color: #1b1f23;
+      color: #c6cbd1;
+      text-align: center;
+      padding: 10px 15px;
+      font-size: 0.85rem;
+      border-top: 1px solid #30363d;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="header-logo-link" href="https://pascualbravo.edu.co/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Proyecto Descartes">
+      <img class="header-logo" src="logoPB.png" alt="Logo Proyecto Descartes">
+    </a>
+    <div class="header-title">🛠️ DevSuite</div>
+    <nav class="nav-tabs">
+      <button id="tabMD" class="tab-btn active" onclick="switchTool('md')">📝 Visor Markdown</button>
+      <button id="tabJSON" class="tab-btn" onclick="switchTool('json')">🔍 Validador JSON</button>
+      <button id="tabLATEX" class="tab-btn" onclick="switchTool('latex')">∑ Visor LaTeX</button>
+    </nav>
+  </header>
+
+  <!-- VISTA 1: MARKDOWN -->
+  <div id="viewMD" class="view-container">
+    <div class="panel left-panel">
+      <div class="panel-header">
+        <span class="panel-title">Código Markdown</span>
+        <label for="fileMD" class="btn">Abrir .md</label>
+        <input type="file" id="fileMD" accept=".md,.markdown,.txt">
+      </div>
+      <textarea id="editorMD"></textarea>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Previsualización HTML</span></div>
+      <div id="previewMD" class="preview-box markdown-body"></div>
+    </div>
+  </div>
+
+  <!-- VISTA 2: JSON -->
+  <div id="viewJSON" class="view-container" style="display: none;">
+    <div class="panel left-panel">
+      <div class="panel-header">
+        <span class="panel-title">Código JSON</span>
+        <div>
+          <button id="btnFormatJSON" class="btn btn-secondary">Dar formato</button>
+          <button id="btnMinifyJSON" class="btn btn-secondary">Minificar</button>
+          <label for="fileJSON" class="btn">Abrir .json</label>
+          <input type="file" id="fileJSON" accept=".json,.txt">
+        </div>
+      </div>
+      <textarea id="editorJSON"></textarea>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Resultado de Validación</span></div>
+      <div id="statusJSON" class="status-box"></div>
+      <div id="previewJSON" class="preview-box" style="font-family: monospace; white-space: pre-wrap;"></div>
+    </div>
+  </div>
+
+  <!-- VISTA 3: LATEX (KaTeX) -->
+  <div id="viewLATEX" class="view-container" style="display: none;">
+    <div class="panel left-panel">
+      <div class="panel-header">
+        <span class="panel-title">Código LaTeX</span>
+        <div>
+          <label for="fileLATEX" class="btn">Abrir .tex</label>
+          <input type="file" id="fileLATEX" accept=".tex,.txt">
+        </div>
+      </div>
+      <textarea id="editorLATEX"></textarea>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Previsualización KaTeX</span>
+        <label style="font-size: 12px; color: #333; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+          <input type="checkbox" id="displayModeLATEX" checked> displayMode
+        </label>
+      </div>
+      <div id="previewLATEX" class="preview-box"></div>
+    </div>
+  </div>
+
+  <footer>
+    Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 3.6 Flash
+  </footer>
+
+  <script>
+    // Asegurar opciones GFM en Marked
+    marked.use({ gfm: true, breaks: true });
+
+    const tabMD = document.getElementById('tabMD');
+    const tabJSON = document.getElementById('tabJSON');
+    const tabLATEX = document.getElementById('tabLATEX');
+    const viewMD = document.getElementById('viewMD');
+    const viewJSON = document.getElementById('viewJSON');
+    const viewLATEX = document.getElementById('viewLATEX');
+
+    const cmMD = CodeMirror.fromTextArea(document.getElementById('editorMD'), {
+      mode: 'markdown',
+      lineNumbers: true,
+      lineWrapping: true
+    });
+
+    const cmJSON = CodeMirror.fromTextArea(document.getElementById('editorJSON'), {
+      mode: { name: "javascript", json: true },
+      lineNumbers: true,
+      lineWrapping: true
+    });
+
+    const cmLATEX = CodeMirror.fromTextArea(document.getElementById('editorLATEX'), {
+      mode: 'stex',
+      lineNumbers: true,
+      lineWrapping: true
+    });
+
+    let errorLineHandle = null;
+
+    function clearErrorHighlight() {
+      if (errorLineHandle !== null) {
+        cmJSON.removeLineClass(errorLineHandle, 'background', 'line-error');
+        errorLineHandle = null;
+      }
+    }
+
+    function switchTool(tool) {
+      const views = { md: viewMD, json: viewJSON, latex: viewLATEX };
+      const tabs = { md: tabMD, json: tabJSON, latex: tabLATEX };
+
+      Object.keys(views).forEach((key) => {
+        views[key].style.display = (key === tool) ? 'flex' : 'none';
+        tabs[key].classList.toggle('active', key === tool);
+      });
+
+      if (tool === 'md') setTimeout(() => cmMD.refresh(), 10);
+      if (tool === 'json') setTimeout(() => cmJSON.refresh(), 10);
+      if (tool === 'latex') setTimeout(() => cmLATEX.refresh(), 10);
+    }
+
+    // --- MARKDOWN ---
+    const previewMD = document.getElementById('previewMD');
+    const fileMD = document.getElementById('fileMD');
+
+    function renderMD() {
+      let rawText = cmMD.getValue() || '';
+      
+      // Limpia automáticamente renglones en blanco entre filas de tablas
+      let cleanedText = rawText.replace(/(\|[^\n\r]+\|)\r?\n\s*\r?\n+(?=\|[^\n\r]+\|)/g, '$1\n');
+      
+      previewMD.innerHTML = marked.parse(cleanedText);
+    }
+    cmMD.on('change', renderMD);
+
+    fileMD.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          cmMD.setValue(evt.target.result);
+          renderMD();
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // --- JSON ---
+    const previewJSON = document.getElementById('previewJSON');
+    const statusJSON = document.getElementById('statusJSON');
+    const fileJSON = document.getElementById('fileJSON');
+
+    function highlightJSON(jsonStr) {
+      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          cls = (/:$/.test(match)) ? 'json-key' : 'json-string';
+        } else if (/true|false/.test(match)) cls = 'json-boolean';
+        else if (/null/.test(match)) cls = 'json-null';
+        return `<span class="${cls}">${match}</span>`;
+      });
+    }
+
+    function validateJSON() {
+      clearErrorHighlight();
+      const content = cmJSON.getValue().trim();
+      if (!content) {
+        statusJSON.className = 'status-box';
+        statusJSON.innerHTML = 'ℹ️ Ingresa o carga un archivo JSON para validar.';
+        previewJSON.innerHTML = '';
+        return;
+      }
+      try {
+        const parsed = JSON.parse(content);
+        statusJSON.className = 'status-box success';
+        statusJSON.innerHTML = '✅ <strong>JSON VÁLIDO</strong>: La sintaxis es correcta.';
+        previewJSON.innerHTML = highlightJSON(JSON.stringify(parsed, null, 2));
+      } catch (err) {
+        statusJSON.className = 'status-box error';
+        
+        const lineMatch = err.message.match(/line (\d+)/i);
+        if (lineMatch) {
+          const lineNum = parseInt(lineMatch[1], 10) - 1;
+          if (lineNum >= 0 && lineNum < cmJSON.lineCount()) {
+            errorLineHandle = cmJSON.addLineClass(lineNum, 'background', 'line-error');
+          }
+        }
+
+        let extraInfo = '';
+        const trailingCommaMatch = content.match(/,\s*[\}\]]/);
+        if (trailingCommaMatch) {
+          const commaPos = content.indexOf(trailingCommaMatch[0]);
+          const commaLine = content.substring(0, commaPos).split('\n').length;
+          extraInfo = `<br>💡 <strong>Sugerencia:</strong> Se detectó una coma sobrante en la <strong>Línea ${commaLine}</strong> antes de '}' o ']'. En JSON no se permiten comas después del último elemento.`;
+        }
+
+        statusJSON.innerHTML = `❌ <strong>JSON INVÁLIDO</strong>: ${err.message}${extraInfo}`;
+        previewJSON.innerText = 'Corrige el error en el panel izquierdo.';
+      }
+    }
+    cmJSON.on('change', validateJSON);
+
+    document.getElementById('btnFormatJSON').addEventListener('click', () => {
+      try { cmJSON.setValue(JSON.stringify(JSON.parse(cmJSON.getValue()), null, 2)); }
+      catch (e) { alert('No se puede dar formato a un JSON con errores de sintaxis.'); }
+    });
+
+    document.getElementById('btnMinifyJSON').addEventListener('click', () => {
+      try { cmJSON.setValue(JSON.stringify(JSON.parse(cmJSON.getValue()))); }
+      catch (e) { alert('No se puede minificar un JSON con errores de sintaxis.'); }
+    });
+
+    fileJSON.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          cmJSON.setValue(evt.target.result);
+          validateJSON();
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // --- LATEX (KaTeX) ---
+    const previewLATEX = document.getElementById('previewLATEX');
+    const displayModeLATEX = document.getElementById('displayModeLATEX');
+    const fileLATEX = document.getElementById('fileLATEX');
+
+    function renderLATEX() {
+      const content = cmLATEX.getValue().trim();
+      if (!content) {
+        previewLATEX.innerHTML = '<p style="color: #888; margin: 0;">Ingresa o carga una expresión LaTeX para renderizarla con KaTeX.</p>';
+        return;
+      }
+      try {
+        katex.render(content, previewLATEX, {
+          displayMode: displayModeLATEX.checked,
+          throwOnError: false,
+          output: 'htmlAndMathml'
+        });
+      } catch (err) {
+        previewLATEX.innerHTML = `<span style="color: #cf222e;">${err.message}</span>`;
+      }
+    }
+    cmLATEX.on('change', renderLATEX);
+    displayModeLATEX.addEventListener('change', renderLATEX);
+
+    fileLATEX.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          cmLATEX.setValue(evt.target.result);
+          renderLATEX();
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // --- VALORES INICIALES ---
+    cmMD.setValue(`## Proyecto integrador
+
+Como actividad de cierre, cada participante puede desarrollar un pequeño proyecto completo:
+
+1. Documentar el proyecto en **Markdown** (\`README.md\`).
+2. Definir la configuración en un archivo **JSON** (\`config.json\`).
+
+### Tabla de ejemplo:
+
+| Fruta | Color | Sabor |
+|-----------|--------|-----------|
+| Manzana | Rojo | Dulce |
+| Plátano | Amarillo | Dulce |`);
+
+    cmJSON.setValue(`{\n  "proyecto": "DevSuite",\n  "version": 1.0,\n  "herramientas": ["Visor Markdown", "Validador JSON"],\n  "activo": true\n}`);
+
+    cmLATEX.setValue(`\\text{Ecuación cuadrática: } ax^2 + bx + c = 0`);
+
+    renderMD();
+    validateJSON();
+    renderLATEX();
+  </script>
+</body>
+</html>

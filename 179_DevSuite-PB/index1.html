@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Previsualizador de Markdown</title>
+  
+  <!-- Librería para convertir Markdown a HTML -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <!-- Estilos de GitHub para la previsualización -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+  
+  <!-- CodeMirror (Editor con resaltado de sintaxis tipo Notepad++) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; background-color: #f8f9fa; }
+    
+    header {
+      padding: 10px 20px;
+      background-color: #24292e;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .btn {
+      background-color: #2ea44f;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    input[type="file"] { display: none; }
+    
+    .container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 90px);
+      overflow: hidden;
+    }
+    
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      overflow: hidden;
+    }
+    
+    .left-panel { border-right: 2px solid #ddd; }
+    
+    .panel-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    /* Estilos personalizados del editor estilo Notepad++ */
+    .CodeMirror {
+      height: 100%;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #ffffff;
+    }
+    
+    /* Reglas de color exactas al estilo Notepad++ */
+    .cm-header { color: #e65100 !important; font-weight: bold; } /* Encabezados en Naranja */
+    .cm-strong { color: #0000d0 !important; font-weight: bold; } /* Negrita en Azul */
+    .cm-comment, .cm-string, .cm-quote { color: #008000 !important; } /* Código en verde (`archivo.ext`) */
+    .cm-variable-2, .cm-number { color: #007acc !important; } /* Listas numeradas en azul claro */
+
+    .preview-box {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: white;
+    }
+
+    /* Pie de página */
+    footer {
+      background-color: #1b1f23;
+      color: #c6cbd1;
+      text-align: center;
+      padding: 10px 15px;
+      font-size: 0.85rem;
+      border-top: 1px solid #30363d;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>Visor de Markdown</h2>
+    <label for="fileInput" class="btn">Abrir archivo .md</label>
+    <input type="file" id="fileInput" accept=".md,.markdown,.txt">
+  </header>
+
+  <div class="container">
+    <!-- Panel Izquierdo (Editor con resaltado de sintaxis) -->
+    <div class="panel left-panel">
+      <div class="panel-title">Código Markdown</div>
+      <textarea id="editor"></textarea>
+    </div>
+
+    <!-- Panel Derecho (Previsualización HTML) -->
+    <div class="panel">
+      <div class="panel-title">Previsualización</div>
+      <div id="preview" class="preview-box markdown-body"></div>
+    </div>
+  </div>
+
+  <footer>
+    Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 3.6 Flash
+  </footer>
+
+  <script>
+    // Configuración de Marked (Habilitar GFM para tablas y saltos de línea)
+    marked.use({ gfm: true, breaks: true });
+
+    const preview = document.getElementById('preview');
+    const fileInput = document.getElementById('fileInput');
+
+    // Configuración del editor CodeMirror
+    const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+      mode: 'markdown',
+      lineNumbers: true,
+      lineWrapping: true
+    });
+
+    // Función para renderizar el Markdown a HTML
+    function renderMarkdown() {
+      const rawText = editor.getValue() || '';
+      
+      // Limpia automáticamente renglones en blanco entre filas de tablas
+      const cleanedText = rawText.replace(/(\|[^\n\r]+\|)\r?\n\s*\r?\n+(?=\|[^\n\r]+\|)/g, '$1\n');
+      
+      preview.innerHTML = marked.parse(cleanedText);
+    }
+
+    // Escucha cambios en el editor en tiempo real
+    editor.on('change', renderMarkdown);
+
+    // Cargar archivo .md desde el botón
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          editor.setValue(event.target.result);
+          renderMarkdown();
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Texto de ejemplo cargado por defecto
+    const initialText = `## Proyecto integrador
+
+Como actividad de cierre, cada participante puede desarrollar un pequeño proyecto completo:
+
+1. Documentar el proyecto en **Markdown** (\`README.md\`).
+2. Definir la configuración en un archivo **JSON** (\`config.json\`).
+3. Crear una presentación en **JSON** (\`slides.json\`).
+4. Generar un conjunto de preguntas de evaluación (\`quiz.json\`).
+5. Diseñar un prompt estructurado para una IA generativa (\`image_prompt.json\`).
+
+### Tabla de ejemplo:
+
+| Fruta | Color | Sabor |
+|-----------|--------|-----------|
+| Manzana | Rojo | Dulce |
+| Plátano | Amarillo | Dulce |`;
+
+    editor.setValue(initialText);
+    renderMarkdown();
+  </script>
+</body>
+</html>

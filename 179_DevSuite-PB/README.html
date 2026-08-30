@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>🛠️ DevSuite: Visor de Markdown, Validador de JSON &amp; Visor LaTeX</h1>
+<p><strong>DevSuite</strong> es una aplicación web <em>standalone</em> ligera, portátil e interactiva diseñada para facilitar la edición, previsualización y validación de archivos <strong>Markdown</strong>, <strong>JSON</strong> y <strong>LaTeX</strong> en tiempo real. </p>
+<p>Funciona directamente desde el navegador en un solo archivo HTML, sin necesidad de instalaciones, Node.js ni servidores backend.</p>
+<hr>
+<h2>✨ Características Principales</h2>
+<h3>📝 1. Visor y Editor de Markdown</h3>
+<ul>
+<li><strong>Edición con sintaxis coloreada:</strong> Colores inspirados en Notepad++ (encabezados en naranja, texto en negrita en azul, fragmentos de código en verde).</li>
+<li><strong>Previsualización HTML en tiempo real:</strong> Renderizado instantáneo utilizando la hoja de estilos oficial de GitHub (<em>GitHub Markdown CSS</em>).</li>
+<li><strong>Carga de archivos:</strong> Abre archivos <code>.md</code>, <code>.markdown</code> o <code>.txt</code> directamente desde tu equipo.</li>
+</ul>
+<h3>🔍 2. Validador y Formateador de JSON</h3>
+<ul>
+<li><strong>Validación instantánea:</strong> Detecta errores de sintaxis mientras escribes y muestra un estado claro (<strong>JSON VÁLIDO</strong> / <strong>JSON INVÁLIDO</strong>).</li>
+<li><strong>Resaltado de líneas con error:</strong> Marca en rojo la línea exacta donde el analizador detecta el fallo sintáctico.</li>
+<li><strong>Detección inteligente de comas sobrantes (<em>Trailing Commas</em>):</strong> Identifica automáticamente cuando el error es causado por una coma sobrante antes de un cierre <code>}</code> o <code>]</code> y señala la línea exacta del origen.</li>
+<li><strong>Herramientas rápidas:</strong> <ul>
+<li><strong>Dar formato (<em>Pretty Print</em>):</strong> Identación automática a 2 espacios.</li>
+<li><strong>Minificar:</strong> Comprime el JSON eliminando espacios y saltos de línea.</li>
+</ul>
+</li>
+</ul>
+<h3>∑ 3. Visor LaTeX (KaTeX)</h3>
+<ul>
+<li><strong>Renderizado KaTeX en tiempo real:</strong> Convierte expresiones matemáticas escritas en LaTeX a HTML+MathML conforme escribes.</li>
+<li><strong>Modo <em>displayMode</em>:</strong> Alterna entre fórmulas en línea (<code>displayMode</code> desactivado) y en bloque centrado (<code>displayMode</code> activado).</li>
+<li><strong>Editor con resaltado sintáctico:</strong> Edición de código LaTeX con CodeMirror (modo <code>stex</code>).</li>
+<li><strong>Carga de archivos:</strong> Abre archivos <code>.tex</code> o <code>.txt</code> directamente desde tu equipo.</li>
+<li><strong>Librerías locales:</strong> KaTeX (con soporte de química <em>mhchem</em>) se incluye desde la subcarpeta <code>latex/</code>, sin depender de CDN.</li>
+</ul>
+<hr>
+<h2>🛠️ Tecnologías Utilizadas</h2>
+<ul>
+<li><strong>HTML5 / CSS3 / JavaScript (ES6+)</strong>: Estructura, diseño responsivo por paneles y lógica pura de cliente.</li>
+<li><strong><a href="https://codemirror.net/5/">CodeMirror 5</a></strong>: Editor de código embebido con soporte para numeración de líneas y resaltado sintáctico.</li>
+<li><strong><a href="https://marked.js.org/">Marked.js</a></strong>: Convertidor ultrarrápido de Markdown a HTML.</li>
+<li><strong><a href="https://github.com/sindresorhus/github-markdown-css">GitHub Markdown CSS</a></strong>: Estilos para la previsualización fiel a la interfaz de GitHub.</li>
+<li><strong><a href="https://katex.org/">KaTeX</a></strong>: Renderizador de fórmulas matemáticas en el navegador (local, en <code>latex/</code>).</li>
+</ul>
+<hr>
+<h2>🚀 Cómo Ejecutar la Aplicación</h2>
+<p>No requiere ningún proceso de compilación ni dependencias locales.</p>
+<ol>
+<li>Descarga o clona este repositorio.</li>
+<li>Abre el archivo <strong><code>index.html</code></strong> haciendo doble clic en él o arrastrándolo a cualquier navegador web moderno (<em>Google Chrome, Mozilla Firefox, Microsoft Edge, Safari</em>).</li>
+<li>¡Listo! Utiliza las pestañas superiores para alternar entre el visor de Markdown, el validador de JSON y el visor LaTeX.</li>
+</ol>
+<blockquote>
+<p><strong>Nota:</strong> La subcarpeta <code>latex/</code> es necesaria, ya que contiene las librerías KaTeX que usa el visor LaTeX.</p>
+</blockquote>
+<hr>
+<h2>📂 Estructura del Proyecto</h2>
+<pre><code class="language-text">├── index.html        # Aplicación completa (HTML, CSS y JS integrado)
+├── README.md         # Documentación del proyecto
+└── latex/            # Librerías KaTeX locales (css, js, katex, fonts)
+</code></pre>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>
