@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="app-title">Generador de Cuestionarios con IA</title>
+  <title id="app-title">Generador de Cuestionarios con PDF</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
@@ -353,6 +353,14 @@
       color: #333;
     }
 
+    .app-footer {
+      text-align: center;
+      padding: 10px 20px 0;
+      font-size: 0.8em;
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
     /* Estilos para el clon descargado */
     .downloaded-quiz .question.hidden,
     .downloaded-quiz .result-screen.hidden {
@@ -562,7 +570,7 @@
       <a href="https://pascualbravo.edu.co/" target="_blank" style="position: absolute; left: 0;">
         <img src="logo_pascual_bravo.png" alt="Red Proyecto Descartes" style="height: 45px; width: auto;">
       </a>
-      <h1 id="setup-title" style="margin: 0;">Generador de Cuestionarios con IA</h1>
+      <h1 id="setup-title" style="margin: 0;">Generador de Cuestionarios con PDF</h1>
     </div>
     <div class="form-group">
       <label id="pdf-label">Cargar documento PDF:</label>
@@ -719,32 +727,32 @@
     let state = { generatedQuestions: [], currentQuestion: 0, score: 0, totalQuestions: 0, lang: 'es', currentPalette: 0, timerInterval: null, timeLimit: 30, timeRemaining: 30, pdfText: '', pdfFileName: '' };
 
     const translations = {
-      es: { appTitle: "Generador de Cuestionarios con IA", setupTitle: "Generador de Cuestionarios con IA", pdfLabel: "Cargar documento PDF:", pdfButton: "Seleccionar PDF", pdfLoading: "Procesando PDF...", pdfReady: "PDF cargado", pdfError: "Error al procesar PDF", imageModelLabel: "Modelo de Imagen:", textModelLabel: "Modelo de Texto:", questionsLabel: "Número de Preguntas:", languageLabel: "Idioma:", timeLimitLabel: "Tiempo por Pregunta:", artStyleLabel: "Estilo Artístico:", generateButton: "Generar Cuestionario", changePaletteButton: "Cambiar Paleta", loadingQuestions: "Generando preguntas...", loadingImages: "Generando imágenes...", loadingError: "Error al generar. Por favor, inténtalo de nuevo.", attempt: "Intento", regenerateButton: "Regenerar Imagen", uploadImageButton: "Subir imagen", nextButton: "Siguiente", downloadButton: "Descargar Cuestionario", quizComplete: "¡Cuestionario completado!", yourScoreIs: "Tu puntuación es:", of: "de", excellentWork: "¡Excelente trabajo!", keepLearning: "¡Sigue aprendiendo!", showResults: "Ver Resultados", startOverButton: "Inicio", questionProgress: "Pregunta", timerText: "Tiempo:", timeUp: "¡Tiempo agotado!", languageNameForAI: "Spanish", downloadingImages: "Descargando imágenes...", imageOf: "Imagen", of: "de" },
+      es: { appTitle: "Generador de Cuestionarios con PDF", setupTitle: "Generador de Cuestionarios con PDF", pdfLabel: "Cargar documento PDF:", pdfButton: "Seleccionar PDF", pdfLoading: "Procesando PDF...", pdfReady: "PDF cargado", pdfError: "Error al procesar PDF", imageModelLabel: "Modelo de Imagen:", textModelLabel: "Modelo de Texto:", questionsLabel: "Número de Preguntas:", languageLabel: "Idioma:", timeLimitLabel: "Tiempo por Pregunta:", artStyleLabel: "Estilo Artístico:", generateButton: "Generar Cuestionario", changePaletteButton: "Cambiar Paleta", loadingQuestions: "Generando preguntas...", loadingImages: "Generando imágenes...", loadingError: "Error al generar. Por favor, inténtalo de nuevo.", attempt: "Intento", regenerateButton: "Regenerar Imagen", uploadImageButton: "Subir imagen", nextButton: "Siguiente", downloadButton: "Descargar Cuestionario", quizComplete: "¡Cuestionario completado!", yourScoreIs: "Tu puntuación es:", of: "de", excellentWork: "¡Excelente trabajo!", keepLearning: "¡Sigue aprendiendo!", showResults: "Ver Resultados", startOverButton: "Inicio", questionProgress: "Pregunta", timerText: "Tiempo:", timeUp: "¡Tiempo agotado!", languageNameForAI: "Spanish", downloadingImages: "Descargando imágenes...", imageOf: "Imagen", of: "de" },
       en: { appTitle: "AI Quiz Generator", setupTitle: "AI Quiz Generator", pdfLabel: "Load PDF document:", pdfButton: "Select PDF", pdfLoading: "Processing PDF...", pdfReady: "PDF loaded", pdfError: "Error processing PDF", imageModelLabel: "Image Model:", textModelLabel: "Text Model:", questionsLabel: "Number of Questions:", languageLabel: "Language:", timeLimitLabel: "Time per Question:", artStyleLabel: "Art Style:", generateButton: "Generate Quiz", changePaletteButton: "Change Palette", loadingQuestions: "Generating questions...", loadingImages: "Generating images...", loadingError: "Error during generation. Please try again.", attempt: "Attempt", regenerateButton: "Regenerate Image", uploadImageButton: "Upload image", nextButton: "Next", downloadButton: "Download Quiz", quizComplete: "Quiz Complete!", yourScoreIs: "Your score is:", of: "of", excellentWork: "Excellent work!", keepLearning: "Keep learning!", showResults: "Show Results", startOverButton: "Start Over", questionProgress: "Question", timerText: "Time:", timeUp: "Time's up!", languageNameForAI: "English", downloadingImages: "Downloading images...", imageOf: "Image" },
       fr: { appTitle: "Générateur de Quiz IA", setupTitle: "Générateur de Quiz IA", pdfLabel: "Charger un document PDF:", pdfButton: "Sélectionner PDF", pdfLoading: "Traitement du PDF...", pdfReady: "PDF chargé", pdfError: "Erreur lors du traitement du PDF", imageModelLabel: "Modèle d'Image:", textModelLabel: "Modèle de Texte:", questionsLabel: "Nombre de Questions:", languageLabel: "Langue:", timeLimitLabel: "Temps par Question:", artStyleLabel: "Style Artistique:", generateButton: "Générer le Quiz", changePaletteButton: "Changer de Palette", loadingQuestions: "Génération des questions...", loadingImages: "Génération des images...", loadingError: "Erreur lors de la génération. Veuillez réessayer.", attempt: "Essai", regenerateButton: "Régénérer l'image", uploadImageButton: "Charger une image", nextButton: "Suivant", downloadButton: "Télécharger le Quiz", quizComplete: "Quiz terminé !", yourScoreIs: "Votre score est de :", of: "sur", excellentWork: "Excellent travail !", keepLearning: "Continuez à apprendre !", showResults: "Voir les Résultats", startOverButton: "Recommencer", questionProgress: "Question", timerText: "Temps:", timeUp: "Temps écoulé!", languageNameForAI: "French", downloadingImages: "Téléchargement des images...", imageOf: "Image" }
     };
     const palettes = [
       { primary: '#4a148c', secondary: '#7e57c2', hover: '#673ab7', gradientStart: '#6a11cb', gradientEnd: '#2575fc' }, // Púrpura original
-      { primary: '#004d40', secondary: '#00897b', hover: '#00695c', gradientStart: '#004d40', gradientEnd: '#009688' }, // Verde esmeralda
-      { primary: '#b71c1c', secondary: '#f44336', hover: '#d32f2f', gradientStart: '#b71c1c', gradientEnd: '#ff5722' }, // Rojo intenso
+      { primary: '#003547', secondary: '#01658a', hover: '#014f6b', gradientStart: '#003547', gradientEnd: '#01769e' }, // Azul petróleo
+      { primary: '#4a0e36', secondary: '#7d1f5c', hover: '#6a1a4d', gradientStart: '#4a0e36', gradientEnd: '#9c2f74' }, // Púrpura ciruela
       { primary: '#1a237e', secondary: '#3f51b5', hover: '#303f9f', gradientStart: '#1a237e', gradientEnd: '#3f51b5' }, // Azul índigo
       { primary: '#e65100', secondary: '#ff9800', hover: '#f57c00', gradientStart: '#e65100', gradientEnd: '#ff5722' }, // Naranja vibrante
-      { primary: '#2e7d32', secondary: '#4caf50', hover: '#388e3c', gradientStart: '#2e7d32', gradientEnd: '#66bb6a' }, // Verde natural
+      { primary: '#1c3d5a', secondary: '#34618f', hover: '#2a4f75', gradientStart: '#1c3d5a', gradientEnd: '#4a77a8' }, // Azul acero
       { primary: '#6a1b9a', secondary: '#9c27b0', hover: '#7b1fa2', gradientStart: '#6a1b9a', gradientEnd: '#ba68c8' }, // Magenta
       { primary: '#0277bd', secondary: '#03a9f4', hover: '#0288d1', gradientStart: '#0277bd', gradientEnd: '#29b6f6' }, // Azul cielo
       { primary: '#5d4037', secondary: '#8d6e63', hover: '#6d4c41', gradientStart: '#5d4037', gradientEnd: '#a1887f' }, // Marrón tierra
       { primary: '#37474f', secondary: '#607d8b', hover: '#455a64', gradientStart: '#37474f', gradientEnd: '#78909c' }, // Gris azulado
       { primary: '#ad1457', secondary: '#e91e63', hover: '#c2185b', gradientStart: '#ad1457', gradientEnd: '#f06292' }, // Rosa intenso
       { primary: '#00695c', secondary: '#009688', hover: '#00796b', gradientStart: '#00695c', gradientEnd: '#26a69a' }, // Turquesa
-      { primary: '#bf360c', secondary: '#ff5722', hover: '#d84315', gradientStart: '#bf360c', gradientEnd: '#ff7043' }, // Naranja rojizo
+      { primary: '#8a6d00', secondary: '#c9a227', hover: '#a8850a', gradientStart: '#8a6d00', gradientEnd: '#d4af37' }, // Mostaza
       { primary: '#4527a0', secondary: '#673ab7', hover: '#512da8', gradientStart: '#4527a0', gradientEnd: '#9575cd' }, // Violeta profundo
       { primary: '#1565c0', secondary: '#2196f3', hover: '#1976d2', gradientStart: '#1565c0', gradientEnd: '#42a5f5' }, // Azul real
-      { primary: '#2e7d32', secondary: '#4caf50', hover: '#388e3c', gradientStart: '#1b5e20', gradientEnd: '#4caf50' }, // Verde bosque
+      { primary: '#2f3e46', secondary: '#52677d', hover: '#3f4f5c', gradientStart: '#2f3e46', gradientEnd: '#6b8298' }, // Gris pizarra
       { primary: '#f57f17', secondary: '#ffeb3b', hover: '#fbc02d', gradientStart: '#f57f17', gradientEnd: '#fff176' }, // Amarillo dorado
       { primary: '#6a4c93', secondary: '#9b59b6', hover: '#8e44ad', gradientStart: '#6a4c93', gradientEnd: '#bb8fce' }, // Lavanda
-      { primary: '#d32f2f', secondary: '#f44336', hover: '#c62828', gradientStart: '#b71c1c', gradientEnd: '#ef5350' }, // Rojo carmesí
+      { primary: '#3b0a45', secondary: '#6a1b7a', hover: '#551465', gradientStart: '#3b0a45', gradientEnd: '#7d2e8a' }, // Berenjena
       { primary: '#00838f', secondary: '#00acc1', hover: '#0097a7', gradientStart: '#00838f', gradientEnd: '#26c6da' }, // Cian
-      { primary: '#558b2f', secondary: '#8bc34a', hover: '#689f38', gradientStart: '#558b2f', gradientEnd: '#aed581' }, // Verde lima
+      { primary: '#002d62', secondary: '#0047ab', hover: '#003b82', gradientStart: '#002d62', gradientEnd: '#1c5faa' }, // Azul cobalto
       { primary: '#f9a825', secondary: '#ffc107', hover: '#ffb300', gradientStart: '#f9a825', gradientEnd: '#ffcc02' }, // Ámbar
       { primary: '#3e2723', secondary: '#795548', hover: '#5d4037', gradientStart: '#3e2723', gradientEnd: '#8d6e63' }, // Chocolate
       { primary: '#1a1a2e', secondary: '#16213e', hover: '#0f3460', gradientStart: '#1a1a2e', gradientEnd: '#533483' }  // Azul nocturno
@@ -1372,6 +1380,8 @@
 
     setLanguage(state.lang);
   </script>
+
+  <footer class="app-footer">Diseñado por Juan Guillermo Rivera Berrío con tecnología Claude 5 Sonnet</footer>
 </body>
 
 </html>

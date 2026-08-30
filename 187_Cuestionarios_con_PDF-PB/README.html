@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>📚 Generador de Cuestionarios con PDF</h1>
+<p>Aplicación web interactiva que permite <strong>crear cuestionarios de opción múltiple a partir del contenido de un documento PDF utilizando Inteligencia Artificial</strong>.</p>
+<p>La aplicación analiza el texto del PDF, genera preguntas relacionadas con su contenido y crea una experiencia de evaluación interactiva que incluye imágenes generadas por IA, temporizador, retroalimentación inmediata y resultados finales.</p>
+<p>Además, permite descargar el cuestionario generado como un archivo <strong>HTML independiente</strong>, que puede compartirse y ejecutarse en cualquier navegador web.</p>
+<hr>
+<h2>✨ Características principales</h2>
+<ul>
+<li>📄 Carga de documentos en formato PDF.</li>
+<li>🔍 Extracción automática del texto del documento.</li>
+<li>🤖 Generación automática de preguntas mediante IA.</li>
+<li>❓ Preguntas de opción múltiple con cuatro respuestas.</li>
+<li>🔀 Organización aleatoria de las opciones de respuesta.</li>
+<li>🖼️ Generación de imágenes ilustrativas para cada pregunta.</li>
+<li>🎨 Selección de diferentes estilos artísticos.</li>
+<li>🧠 Selección de diferentes modelos de IA para texto.</li>
+<li>🖌️ Selección de diferentes modelos para generación de imágenes.</li>
+<li>🌍 Soporte para español, inglés y francés.</li>
+<li>⏱️ Temporizador configurable por pregunta.</li>
+<li>📊 Barra de progreso durante el cuestionario.</li>
+<li>✅ Retroalimentación inmediata sobre respuestas correctas e incorrectas.</li>
+<li>🏆 Resultado final y porcentaje de desempeño.</li>
+<li>🎨 Cambio dinámico de paletas de colores.</li>
+<li>🖼️ Regeneración de imágenes mediante nuevos prompts.</li>
+<li>📤 Posibilidad de subir imágenes personalizadas.</li>
+<li>💾 Descarga del cuestionario como un archivo HTML autónomo.</li>
+<li>📱 Diseño adaptable para computadores, tabletas y dispositivos móviles.</li>
+</ul>
+<hr>
+<h1>🚀 Cómo usar la aplicación</h1>
+<h2>1. Abrir la aplicación</h2>
+<p>Abra el archivo:</p>
+<pre><code class="language-text">index.html
+</code></pre>
+<p>en un navegador web moderno.</p>
+<blockquote>
+<p>Para garantizar el funcionamiento de las funciones de Inteligencia Artificial y de las bibliotecas externas, se recomienda disponer de conexión a Internet.</p>
+</blockquote>
+<hr>
+<h2>2. Cargar un documento PDF</h2>
+<p>En la pantalla principal:</p>
+<ol>
+<li>Pulse el botón <strong>Seleccionar PDF</strong>.</li>
+<li>Busque el documento que desea utilizar.</li>
+<li>Seleccione un archivo con extensión <code>.pdf</code>.</li>
+<li>Espere mientras la aplicación procesa y extrae el contenido textual.</li>
+</ol>
+<p>Cuando el proceso finalice, aparecerá un mensaje indicando que el PDF ha sido cargado correctamente.</p>
+<hr>
+<h2>3. Configurar el cuestionario</h2>
+<p>Antes de generar el cuestionario puede configurar diferentes opciones.</p>
+<h3>🔢 Número de preguntas</h3>
+<p>Puede seleccionar:</p>
+<ul>
+<li>4 preguntas</li>
+<li>8 preguntas</li>
+<li>12 preguntas</li>
+<li>16 preguntas</li>
+<li>20 preguntas</li>
+</ul>
+<p>La IA generará las preguntas tomando como referencia el contenido extraído del documento PDF.</p>
+<hr>
+<h3>🌍 Idioma</h3>
+<p>Actualmente están disponibles:</p>
+<ul>
+<li>🇪🇸 Español</li>
+<li>🇺🇸 English</li>
+<li>🇫🇷 Français</li>
+</ul>
+<p>El idioma seleccionado determina la interfaz y el idioma en el que se solicitará la generación del cuestionario.</p>
+<hr>
+<h3>⏱️ Tiempo por pregunta</h3>
+<p>Puede establecer un límite de:</p>
+<ul>
+<li>15 segundos</li>
+<li>30 segundos</li>
+<li>45 segundos</li>
+<li>60 segundos</li>
+<li>90 segundos</li>
+<li>Sin límite</li>
+</ul>
+<p>Cuando el temporizador está activo, la aplicación muestra el tiempo restante mediante una barra visual.</p>
+<p>Si el tiempo llega a cero:</p>
+<ul>
+<li>La pregunta se marca como no respondida.</li>
+<li>Se muestra la respuesta correcta.</li>
+<li>El usuario puede continuar con la siguiente pregunta.</li>
+</ul>
+<hr>
+<h3>🎨 Estilo artístico</h3>
+<p>Las imágenes generadas para las preguntas pueden utilizar diferentes estilos, entre ellos:</p>
+<ul>
+<li>Fotográfico</li>
+<li>Pintura al óleo</li>
+<li>Acuarela</li>
+<li>Arte digital</li>
+<li>Caricatura</li>
+<li>Cartoon 3D</li>
+<li>Anime</li>
+<li>Boceto</li>
+<li>Pop art</li>
+<li>Impresionista</li>
+<li>Abstracto</li>
+<li>Minimalista</li>
+<li>Vintage</li>
+<li>Cyberpunk</li>
+<li>Steampunk</li>
+<li>Surrealista</li>
+<li>Gótico</li>
+<li>Art nouveau</li>
+<li>Art déco</li>
+<li>Cubista</li>
+<li>Expresionista</li>
+<li>Renacentista</li>
+<li>Barroco</li>
+<li>Noir</li>
+<li>Neón</li>
+<li>Pastel</li>
+<li>Monocromático</li>
+<li>Graffiti</li>
+<li>Pixel art</li>
+<li>Render 3D</li>
+<li>Cómic</li>
+</ul>
+<hr>
+<h3>🖼️ Modelo de imagen</h3>
+<p>Puede seleccionar diferentes modelos para generar las imágenes:</p>
+<ul>
+<li><code>zimage</code></li>
+<li><code>flux</code></li>
+<li><code>gptimage</code></li>
+<li><code>klein</code></li>
+</ul>
+<hr>
+<h3>🤖 Modelo de texto</h3>
+<p>También puede elegir el modelo que utilizará la IA para generar las preguntas:</p>
+<ul>
+<li><code>openai</code></li>
+<li><code>mistral</code></li>
+<li><code>gemini-fast</code></li>
+<li><code>openai-fast</code></li>
+<li><code>gemini-search</code></li>
+<li><code>nova-fast</code></li>
+<li><code>perplexity-fast</code></li>
+<li><code>deepseek</code></li>
+</ul>
+<hr>
+<h2>4. Generar el cuestionario</h2>
+<p>Después de configurar las opciones:</p>
+<ol>
+<li>Pulse <strong>Generar Cuestionario</strong>.</li>
+<li>La aplicación procesará el contenido del PDF.</li>
+<li>La IA generará las preguntas y respuestas.</li>
+<li>Las opciones de cada pregunta se reorganizarán.</li>
+<li>Se prepararán los prompts visuales para las imágenes.</li>
+<li>Comenzará automáticamente el cuestionario.</li>
+</ol>
+<p>Durante este proceso puede aparecer información sobre el estado de generación.</p>
+<hr>
+<h1>📝 Cómo responder el cuestionario</h1>
+<p>Cada pregunta incluye:</p>
+<ul>
+<li>El número de la pregunta.</li>
+<li>El enunciado.</li>
+<li>Una imagen ilustrativa.</li>
+<li>Cuatro opciones de respuesta.</li>
+</ul>
+<p>Seleccione una respuesta haciendo clic sobre ella.</p>
+<h3>Si la respuesta es correcta</h3>
+<p>La opción seleccionada se mostrará en color verde.</p>
+<h3>Si la respuesta es incorrecta</h3>
+<ul>
+<li>La respuesta seleccionada se mostrará en color rojo.</li>
+<li>La respuesta correcta se mostrará en color verde.</li>
+</ul>
+<p>Después podrá pulsar <strong>Siguiente</strong> para continuar.</p>
+<hr>
+<h1>📊 Barra de progreso</h1>
+<p>En la parte superior del cuestionario encontrará una barra que indica:</p>
+<pre><code class="language-text">Pregunta X de Y
+</code></pre>
+<p>Esto permite conocer el avance durante la actividad.</p>
+<hr>
+<h1>🖼️ Personalización de imágenes</h1>
+<p>Cada pregunta permite modificar su imagen.</p>
+<h2>Regenerar una imagen</h2>
+<p>Puede editar el texto del prompt visual y pulsar:</p>
+<pre><code class="language-text">Regenerar Imagen
+</code></pre>
+<p>La aplicación generará una nueva imagen utilizando el prompt actualizado.</p>
+<hr>
+<h2>Subir una imagen propia</h2>
+<p>También puede reemplazar la imagen generada por una imagen personalizada:</p>
+<ol>
+<li>Pulse <strong>Subir imagen</strong>.</li>
+<li>Seleccione una imagen desde su dispositivo.</li>
+<li>La imagen seleccionada reemplazará la ilustración original de esa pregunta.</li>
+</ol>
+<hr>
+<h1>🎨 Cambiar la paleta de colores</h1>
+<p>Desde la pantalla inicial puede pulsar:</p>
+<pre><code class="language-text">Cambiar Paleta
+</code></pre>
+<p>La aplicación cambiará dinámicamente los colores principales de la interfaz.</p>
+<p>Existen diferentes combinaciones visuales, incluyendo tonos:</p>
+<ul>
+<li>Púrpura.</li>
+<li>Verde.</li>
+<li>Rojo.</li>
+<li>Azul.</li>
+<li>Naranja.</li>
+<li>Magenta.</li>
+<li>Turquesa.</li>
+<li>Marrón.</li>
+<li>Rosa.</li>
+<li>Cian.</li>
+<li>Ámbar.</li>
+<li>Azul nocturno.</li>
+</ul>
+<hr>
+<h1>🏆 Resultados finales</h1>
+<p>Al finalizar todas las preguntas, la aplicación muestra:</p>
+<ul>
+<li>Número de respuestas correctas.</li>
+<li>Número total de preguntas.</li>
+<li>Porcentaje obtenido.</li>
+<li>Mensaje de retroalimentación.</li>
+</ul>
+<p>Por ejemplo:</p>
+<pre><code class="language-text">Tu puntuación es: 7 de 8 (88%)
+</code></pre>
+<hr>
+<h1>💾 Descargar el cuestionario</h1>
+<p>Una de las características principales de la aplicación es la posibilidad de descargar el cuestionario generado.</p>
+<p>Para hacerlo:</p>
+<ol>
+<li>Configure el tiempo del cuestionario descargado.</li>
+<li>Pulse <strong>Descargar Cuestionario</strong>.</li>
+<li>La aplicación procesará las imágenes.</li>
+<li>Se generará un archivo HTML independiente.</li>
+</ol>
+<p>El archivo descargado contiene:</p>
+<ul>
+<li>Las preguntas.</li>
+<li>Las opciones.</li>
+<li>Las respuestas correctas.</li>
+<li>Las imágenes.</li>
+<li>La barra de progreso.</li>
+<li>El temporizador.</li>
+<li>El diseño visual seleccionado.</li>
+<li>La pantalla de resultados.</li>
+</ul>
+<p>Esto permite compartir el cuestionario sin necesidad de volver a generar las preguntas.</p>
+<hr>
+<h1>📁 Estructura básica del proyecto</h1>
+<pre><code class="language-text">/
+├── index.html
+└── logo_pascual_bravo.png
+</code></pre>
+<p>El archivo principal de la aplicación es:</p>
+<pre><code class="language-text">index.html
+</code></pre>
+<p>Este contiene:</p>
+<ul>
+<li>HTML.</li>
+<li>CSS.</li>
+<li>JavaScript.</li>
+<li>Configuración de la interfaz.</li>
+<li>Procesamiento de PDF.</li>
+<li>Comunicación con los servicios de IA.</li>
+<li>Generación del cuestionario.</li>
+<li>Generación de imágenes.</li>
+<li>Descarga del cuestionario.</li>
+</ul>
+<hr>
+<h1>🔧 Tecnologías utilizadas</h1>
+<h2>HTML5</h2>
+<p>Se utiliza para construir la estructura de la interfaz.</p>
+<h2>CSS3</h2>
+<p>Se utiliza para:</p>
+<ul>
+<li>Diseño responsive.</li>
+<li>Gradientes.</li>
+<li>Animaciones.</li>
+<li>Barras de progreso.</li>
+<li>Temporizador visual.</li>
+<li>Botones e ինտeracciones visuales.</li>
+</ul>
+<h2>JavaScript</h2>
+<p>Gestiona la lógica de:</p>
+<ul>
+<li>Carga de archivos.</li>
+<li>Procesamiento del PDF.</li>
+<li>Comunicación con APIs.</li>
+<li>Generación de preguntas.</li>
+<li>Control del temporizador.</li>
+<li>Evaluación de respuestas.</li>
+<li>Generación de resultados.</li>
+<li>Descarga del cuestionario.</li>
+</ul>
+<h2>PDF.js</h2>
+<p>La aplicación utiliza <strong>PDF.js</strong> para leer el documento PDF y extraer su contenido textual.</p>
+<h2>Servicios de Inteligencia Artificial</h2>
+<p>La aplicación se comunica con servicios de IA para:</p>
+<ul>
+<li>Generar preguntas.</li>
+<li>Crear respuestas de opción múltiple.</li>
+<li>Generar prompts visuales.</li>
+<li>Crear imágenes ilustrativas.</li>
+</ul>
+<hr>
+<h1>⚠️ Consideraciones importantes</h1>
+<h2>Calidad del PDF</h2>
+<p>Los resultados dependerán de la calidad del contenido textual del PDF.</p>
+<p>Los documentos con texto seleccionable generalmente producirán mejores resultados.</p>
+<p>Los PDF que contienen únicamente imágenes o documentos escaneados pueden requerir un proceso adicional de reconocimiento óptico de caracteres (OCR).</p>
+<hr>
+<h2>Conexión a Internet</h2>
+<p>La aplicación requiere conexión a Internet para utilizar:</p>
+<ul>
+<li>La biblioteca PDF.js.</li>
+<li>Los servicios de Inteligencia Artificial.</li>
+<li>La generación de imágenes.</li>
+</ul>
+<hr>
+<h2>Generación mediante IA</h2>
+<p>Las preguntas y las imágenes son generadas automáticamente por modelos de Inteligencia Artificial.</p>
+<p>Por este motivo, se recomienda revisar el contenido generado antes de utilizar el cuestionario en actividades académicas o evaluaciones formales.</p>
+<hr>
+<h1>🎓 Posibles usos educativos</h1>
+<p>Esta herramienta puede utilizarse para crear:</p>
+<ul>
+<li>Cuestionarios de estudio.</li>
+<li>Actividades de repaso.</li>
+<li>Evaluaciones formativas.</li>
+<li>Autoevaluaciones.</li>
+<li>Pruebas de conocimientos.</li>
+<li>Actividades de recuperación.</li>
+<li>Material interactivo para clases.</li>
+<li>Recursos para educación virtual.</li>
+<li>Cuestionarios para capacitación empresarial.</li>
+</ul>
+<hr>
+<h1>🔄 Crear otro cuestionario</h1>
+<p>Para comenzar nuevamente, pulse:</p>
+<pre><code class="language-text">Otro cuestionario
+</code></pre>
+<p>La aplicación reiniciará su estado y permitirá cargar un nuevo documento PDF.</p>
+<hr>
+<h1>📱 Compatibilidad</h1>
+<p>Se recomienda utilizar navegadores modernos como:</p>
+<ul>
+<li>Google Chrome.</li>
+<li>Microsoft Edge.</li>
+<li>Mozilla Firefox.</li>
+<li>Safari.</li>
+</ul>
+<p>La interfaz cuenta con diseño adaptable para pantallas de diferentes tamaños.</p>
+<hr>
+<h1>💡 Flujo general de trabajo</h1>
+<pre><code class="language-text">PDF
+ │
+ ▼
+Extracción de texto
+ │
+ ▼
+Configuración del cuestionario
+ │
+ ▼
+Generación de preguntas con IA
+ │
+ ▼
+Generación de prompts visuales
+ │
+ ▼
+Generación de imágenes
+ │
+ ▼
+Resolución del cuestionario
+ │
+ ▼
+Resultados finales
+ │
+ ▼
+Descarga como HTML independiente
+</code></pre>
+<hr>
+<h2>👨‍💻 Autor y desarrollo</h2>
+<p>Aplicación diseñada por Juan Guillermo Rivera Berrío con tecnología Claude 5 Sonnet.</p>
+<hr>
+<h2>📄 Licencia</h2>
+<p>Puedes adaptar este apartado según la licencia que quieras utilizar para el proyecto.</p>
+<p>Por ejemplo:</p>
+<pre><code class="language-text">MIT License
+</code></pre>
+<p>o una licencia de uso académico o institucional.</p>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>
