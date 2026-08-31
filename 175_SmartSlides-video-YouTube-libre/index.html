@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SlideVision AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="app-topbar">
+            <a class="header-logo-link" href="https://pascualbravo.edu.co/" target="_blank" rel="noopener noreferrer" title="Red Educativa Digital Descartes">
+                <img src="logoPB.png" alt="Red Educativa Digital Descartes">
+            </a>
+            <h1>SlideVision AI</h1>
+            <button id="paletaBtn" class="action-btn" style="background:#6c3fb7;" title="Cambiar paleta de colores">🎨 Paleta de colores</button>
+        </div>
+
+        <div style="display:flex; gap:20px; padding: 10px 18px;">
+            <div style="width:340px; display:flex; flex-direction:column; gap:10px;">
+
+                <div class="api-key-container" style="display:none;">
+                    <label for="apiKeyInput">API Key</label>
+                    <div class="api-row">
+                        <input type="password" id="apiKeyInput" placeholder="API key (server-side)" readonly>
+                    </div>
+                </div>
+
+                <div>
+                    <label>Modelo de lenguaje</label>
+                    <select id="model_selector">
+                        <option value="openai">OpenAI</option>
+                        <option value="mistral">Mistral</option>
+                        <option value="gemini-fast">Gemini Fast</option>
+                        <option value="openai-fast">OpenAI Fast</option>
+                        <option value="gemini-search">Gemini Search</option>
+                        <option value="nova-fast">Nova Fast</option>
+                        <option value="perplexity-fast">Perplexity Fast</option>
+                        <option value="deepseek">DeepSeek</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Modelo de imagen</label>
+                    <select id="img_model">
+                        <option value="flux">Flux</option>
+                        <option value="zimage">Z Image</option>
+                        <option value="gptimage">GPT Image</option>
+                        <option value="klein">Klein</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Enlace de video (YouTube)</label>
+                    <input type="text" id="youtube-url" placeholder="https://www.youtube.com/watch?v=...">
+                    <div id="youtube-status"></div>
+                </div>
+
+                <div>
+                    <label>Tema Central de la Presentación (Ej: Inteligencia Artificial, Cambio Climático, Historia del Arte...)</label>
+                    <input type="text" id="topicInput" placeholder="Ej: Inteligencia Artificial, Cambio Climático...">
+                </div>
+
+                <div>
+                    <label>📝 Descripción / Enfoque (Opcional)</label>
+                    <input type="text" id="descriptionInput" placeholder="Describe el enfoque específico de tu presentación">
+                </div>
+
+                <div>
+                    <label for="slideCount">Número de diapositivas</label>
+                    <input type="number" id="slideCount" value="10" min="1" max="50" style="width:100px;">
+                </div>
+
+                <button class="action-btn" id="createJsonBtn" disabled style="padding:10px; font-size:15px;">1. Crear JSON prompting</button>
+
+                <div id="loading-indicator" style="display:none; text-align:center; padding:8px; color:#007ef6; font-weight:bold;">
+                    Generando JSON prompting...
+                </div>
+
+                <div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="margin:0;">JSON Prompting (editable)</label>
+                        <button id="copyJsonBtn" class="action-btn" type="button" title="Copiar JSON">Copiar</button>
+                    </div>
+                    <textarea id="json_output" style="width:100%; height:200px;" placeholder="El JSON prompting generado aparecerá aquí..."></textarea>
+                </div>
+
+                <button class="action-btn" id="generateSlidesBtn" disabled style="padding:10px; font-size:15px;">2. Generar diapositivas</button>
+
+                <div>
+                    <label>Relación de aspecto</label>
+                    <select id="aspect_ratio">
+                        <option value="16:9">16:9 (Panorámica)</option>
+                        <option value="4:3">4:3 (Estándar)</option>
+                        <option value="A4">A4 o Carta (PDF)</option>
+                        <option value="9:16">9:16 (Vertical)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Estilo visual</label>
+                    <select id="visual_style">
+                        <option value="Profesional Moderno">Profesional Moderno</option>
+                        <option value="Infográfico Colorido">Infográfico Colorido</option>
+                        <option value="Corporativo Minimalista">Corporativo Minimalista</option>
+                        <option value="Tecnológico Futurista">Tecnológico Futurista</option>
+                        <option value="Académico Serio">Académico Serio</option>
+                        <option value="Creativo Artístico">Creativo Artístico</option>
+                        <option value="Pizarra / Sketch">Pizarra / Sketch</option>
+                        <option value="Vintage / Retro">Vintage / Retro</option>
+                        <option value="Memphis Design">Memphis Design</option>
+                        <option value="Isométrico 3D">Isométrico 3D</option>
+                        <option value="Nature / Eco">Nature / Eco</option>
+                        <option value="Comic / Historieta">Comic / Historieta</option>
+                        <option value="Apple Keynote">Apple Keynote</option>
+                        <option value="Glassmorphism">Glassmorphism</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div style="flex:1; display:flex; align-items:flex-start; justify-content:center; flex-direction:column;">
+                <label>Vista previa</label>
+                <div id="pdf-placeholder" style="width:100%; height:520px; border:3px solid #ccc; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#999; font-size:18px; background:#fafafa;">
+                    Ingresa un enlace de YouTube para comenzar
+                </div>
+                <div id="slide-viewer" style="width:100%; display:none; flex-direction:column; align-items:center; gap:8px;">
+                    <div id="slide-grid" style="width:100%; display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; padding:10px 0;"></div>
+                    <div id="slide-progress" style="display:none; text-align:center; padding:20px; color:#007ef6; font-weight:bold; font-size:15px;"></div>
+                    <div id="pause-section" style="display:none; text-align:center; padding:0 0 10px 0;">
+                        <button id="pauseResumeBtn" class="action-btn" style="background:#e67e22; padding:8px 20px; font-size:14px;">Pausar generación de imágenes</button>
+                    </div>
+                </div>
+                <div id="img-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; cursor:pointer; align-items:center; justify-content:center;">
+                    <img id="modal-img" style="max-width:92%; max-height:92%; object-fit:contain; border-radius:8px; box-shadow:0 0 30px rgba(0,0,0,0.5);">
+                    <button id="modal-close" style="position:absolute; top:20px; right:30px; background:rgba(255,255,255,0.15); color:#fff; border:none; font-size:32px; width:50px; height:50px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">&times;</button>
+                </div>
+                <div id="download-section" style="display:none; margin-top:10px; gap:8px; flex-wrap:wrap; justify-content:center;">
+                    <button class="action-btn download-all" id="btn-zip" style="background:#28a745;">Descarga todas las diapositivas (ZIP)</button>
+                    <button class="action-btn download-all" id="btn-presenter" style="background:#8e44ad;">Descarga Presentación Interactiva (HTML)</button>
+                    <button class="action-btn download-all" id="btn-gallery" style="background:#e67e22;">Descarga Galería de Imágenes (HTML)</button>
+                    <button class="action-btn download-all" id="btn-new-presentation" style="background:#dc3545;">Nueva presentación</button>
+                </div>
+            </div>
+        </div>
+
+        <footer style="padding:10px 18px; color:#666; font-size:13px; text-align:center;">Diseñado por Juan Guillermo Rivera Berrío</footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
