@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 estilos de generación de imágenes</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+
+<body>
+
+    <div class="language-selector">
+        <select id="languageSelect" onchange="changeLanguage(this.value)">
+            <option value="es">🇪🇸 Español</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="fr">🇫🇷 Français</option>
+        </select>
+    </div>
+
+    <div class="container">
+
+        <header class="brand-header">
+            <div class="brand-logo brand-logo-pb" role="img" aria-label="Proyecto Descartes">
+                <img src="logoPB0.png" alt="Logo Proyecto Descartes">
+            </div>
+            <div class="brand-logo brand-logo-school" role="img" aria-label="Escuela">
+                <img src="logo_escuela.png" alt="Logo de la escuela">
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="controls">
+                <div id="gen-controls-group">
+                    <div>
+                        <label>Modelo</label>
+                        <select id="img_model"></select>
+                    </div>
+
+                    <div>
+                        <label id="categoria-label">Categoría</label>
+                        <select id="img_category" onchange="onCategoryChange()"></select>
+                    </div>
+
+                    <div>
+                        <label id="tema-label">Tema sugerido</label>
+                        <select id="img_obj_select" onchange="onObjetoChange()">
+                            <option value="Personalizado">Personalizado</option>
+                        </select>
+                        <textarea id="img_obj_custom" style="display:none; margin-top:5px;" placeholder="Escribe tu tema personalizado..."></textarea>
+                    </div>
+
+                    <div>
+                        <label id="estilo-label">Estilo</label>
+                        <select id="img_style"></select>
+                    </div>
+
+                    <div>
+                        <label id="aspect-label">Relación de aspecto</label>
+                        <select id="aspect_ratio">
+                            <option value="16:9">16:9 (Panorámica)</option>
+                            <option value="1:1">1:1 (Cuadrado)</option>
+                            <option value="9:16">9:16 (Vertical)</option>
+                            <option value="4:3">4:3 (Estándar)</option>
+                            <option value="3:4">3:4 (Retrato)</option>
+                        </select>
+                    </div>
+
+                    <button class="action-btn" id="main-generate-btn" onclick="generateImage()">Generar</button>
+                    <button class="secondary-btn copy-json-btn" id="btn-copy-json" onclick="copyJsonPrompting()" disabled>Copiar JSON prompting</button>
+                </div>
+            </div>
+
+            <div class="preview">
+                <h2 id="img_title" style="color:#007eff; margin-top:0;">100 estilos de generación de imágenes</h2>
+
+                <div id="img_loading" class="loading-text">¡Generando imagen!</div>
+
+                <!-- Contenedor para imagen única (como está ahora) -->
+                <div id="img-container" onmousedown="startDrag(event)" onmousemove="drag(event)" onmouseup="endDrag()"
+                    onmouseleave="endDrag()">
+                    <img id="img-preview" src="" alt="Vista previa">
+                </div>
+
+                <div class="zoom-control" id="zoom-area" style="display:none;">
+                    <label for="scale-slider" style="font-size:14px; color:#0082fe;">Escala (Zoom)</label>
+                    <input type="range" id="scale-slider" min="0.2" max="3" step="0.1" value="1"
+                        oninput="updateScale(this.value)">
+                </div>
+
+                <div id="img-buttons" class="row" style="display:none; margin-top:15px;">
+                    <button class="secondary-btn" id="btn-download" onclick="downloadImage()">Descargar imagen</button>
+                    <button class="secondary-btn" id="btn-open" onclick="openImage()">Abrir imagen</button>
+                </div>
+
+                <div id="download-section" style="display:none; margin-top:10px; gap:4px; justify-content:center; flex-wrap:nowrap;">
+                    <button class="action-btn download-all" id="btn-zip" style="background:#28a745;">Descargar imágenes (ZIP)</button>
+                    <button class="action-btn download-all" id="btn-presenter" style="background:#8e44ad;">Descargar HTML interactivo</button>
+                    <button class="action-btn download-all" id="btn-gallery" style="background:#e67e22;">Descargar galería HTML</button>
+                </div>
+
+                <div id="gallery-section" style="width:100%; display:none; margin-top:8px; border-top:1px solid #ccc; padding-top:8px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <label style="margin:0; font-weight:bold; font-size:13px; color:#0072df;">Galería</label>
+                        <span id="gallery-count" style="color:#007ef6; font-size:12px;">0 imágenes</span>
+                    </div>
+                    <div id="gallery-thumbnails" style="display:flex; gap:5px; padding:3px 0; max-height:90px;" onscroll="event.stopPropagation()">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer style="padding:10px 18px; color:#666; font-size:12px; text-align:center; border-top:1px solid #e0e0e0;">
+            Diseñado por Juan Guillermo Rivera Berrío con tecnología DeepSeek V4 y asistencia de Open Code (Idea original de Travis Nicholson en Medium)
+        </footer>
+    </div>
+
+    <div id="slide-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;display:none;align-items:center;justify-content:center;cursor:pointer;" onclick="this.style.display='none'">
+        <img id="modal-img" style="max-width:95%;max-height:95%;object-fit:contain;border-radius:8px;">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
