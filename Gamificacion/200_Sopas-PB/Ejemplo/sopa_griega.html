@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sopa de letras: Mitología griega</title>
+<style>
+    body{font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:center;
+        min-height:100vh;margin:0;background-color:#f0f8ff;padding:20px;box-sizing:border-box;}
+    h1{color:#2c3e50;text-align:center;margin-bottom:4px;font-size:clamp(1.2rem,4vw,2rem);}
+    p.sub{color:#5b5a72;margin-top:0;margin-bottom:16px;text-align:center;}
+    #sopa-container{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:0 auto;
+        width:90vmin;height:90vmin;max-width:460px;max-height:460px;background-color:#2c3e50;
+        padding:8px;border-radius:10px;}
+    .letra{display:flex;align-items:center;justify-content:center;font-weight:bold;
+        border-radius:4px;cursor:pointer;user-select:none;font-family:'Courier New',monospace;
+        font-size:clamp(.7rem,3.4vw,1.3rem);transition:background-color .15s ease;}
+    .letra.selected{outline:3px solid #bd3f37;outline-offset:-3px;}
+    #palabras{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:20px;
+        padding:15px;background-color:#ecf0f1;border-radius:10px;width:100%;max-width:460px;
+        box-sizing:border-box;}
+    .palabra-chip{padding:6px 14px;border-radius:20px;font-size:.85rem;font-weight:700;}
+    .palabra-chip.encontrada{text-decoration:line-through;opacity:.6;}
+    #felicitaciones{display:none;background-color:#c08a2e;color:#2a2005;padding:15px 20px;
+        border-radius:10px;font-size:1.1rem;margin-top:20px;text-align:center;font-weight:700;}
+    footer{color:#8a8a99;font-size:.78rem;margin-top:22px;text-align:center;}
+    @media (max-width:600px){ #sopa-container{width:90vw;height:90vw;} }
+</style>
+</head>
+<body>
+    <h1>Sopa de letras: Mitología griega</h1>
+    <p class="sub">Encuentra todas las palabras.</p>
+    <div id="sopa-container"></div>
+    <div id="palabras"></div>
+    <div id="felicitaciones">¡Felicidades! Has encontrado todas las palabras.</div>
+    <footer>Generado con el Generador de Sopas de Letras con IA · Juan Guillermo Rivera Berrío</footer>
+<script>
+    const SOPA = [["L","C","M","D","E","B","N","E","Y","D","Ñ","R","Q","I"],["B","S","K","U","N","A","E","T","I","O","Ñ","O","U","D"],["Q","E","J","B","G","C","E","Z","D","Y","E","D","V","J"],["S","M","N","P","J","B","A","N","R","J","W","F","V","F"],["T","R","I","N","N","P","O","K","E","R","Z","V","V","B"],["L","E","C","B","O","D","T","I","T","T","O","D","T","L"],["N","H","K","L","I","O","R","G","Ñ","I","A","N","T","U"],["L","N","O","E","U","U","E","E","W","G","T","P","B","Y"],["L","K","S","A","F","R","O","D","I","T","A","A","F","R"],["Q","O","R","V","C","O","P","M","I","L","O","Z","N","H"],["P","R","W","H","W","U","Z","R","M","E","E","M","A","A"],["P","D","M","N","I","N","F","A","Y","U","I","D","X","Z"],["S","Ñ","T","U","I","M","K","Z","S","K","E","O","H","W"],["J","K","X","G","T","N","Z","U","P","S","K","T","W","V"]];
+    const PALABRAS = ["ZEUS","HERMES","APOLO","ATENEA","AFRODITA","POSEIDON","HADES","TITAN","NINFA","OLIMPO"];
+    const COLORES = {"ZEUS":"#ab2884","HERMES":"#c02e43","APOLO":"#a44e1f","ATENEA":"#b3b929","AFRODITA":"#57b62e","POSEIDON":"#2bd75b","HADES":"#2fceab","TITAN":"#327db0","NINFA":"#3647ba","OLIMPO":"#9524d7"};
+    const TAMANO = 14;
+    const BASE_BG = "#586426";
+    const BASE_TEXT = "#fdf8ec";
+
+    function luminancia(hex){
+        const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+        const ch=v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+        return 0.2126*ch(r)+0.7152*ch(g)+0.0722*ch(b);
+    }
+    function colorTexto(hex){ return luminancia(hex) > 0.42 ? "#20202a" : "#fdf8ec"; }
+
+    let seleccionActual = [], inicioSeleccion = null, encontradas = new Set();
+    const sopaContainer = document.getElementById("sopa-container");
+    const palabrasContainer = document.getElementById("palabras");
+    const felicitaciones = document.getElementById("felicitaciones");
+
+    function esSeleccionValida(dx,dy){ return dx===0 || dy===0 || Math.abs(dx)===Math.abs(dy); }
+
+    function seleccionarLetraEnLinea(target){
+        const dx = target.dataset.x - inicioSeleccion.dataset.x;
+        const dy = target.dataset.y - inicioSeleccion.dataset.y;
+        const pasos = Math.max(Math.abs(dx), Math.abs(dy));
+        const stepX = dx/pasos, stepY = dy/pasos;
+        seleccionActual.forEach(el=>el.classList.remove("selected"));
+        seleccionActual = [inicioSeleccion];
+        inicioSeleccion.classList.add("selected");
+        for (let i=1;i<=pasos;i++){
+            const x = parseInt(inicioSeleccion.dataset.x)+i*stepX;
+            const y = parseInt(inicioSeleccion.dataset.y)+i*stepY;
+            const el = sopaContainer.querySelector(`.letra[data-x="${x}"][data-y="${y}"]`);
+            if (el){ seleccionActual.push(el); el.classList.add("selected"); }
+        }
+    }
+
+    function iniciarSeleccion(e){
+        e.preventDefault();
+        inicioSeleccion = e.target.closest(".letra");
+        if (!inicioSeleccion) return;
+        seleccionActual = [inicioSeleccion];
+        inicioSeleccion.classList.add("selected");
+    }
+    function continuarSeleccion(e){
+        if (!inicioSeleccion || !seleccionActual.length) return;
+        const target = e.target.closest(".letra");
+        if (!target || seleccionActual.includes(target)) return;
+        const dx = target.dataset.x - inicioSeleccion.dataset.x;
+        const dy = target.dataset.y - inicioSeleccion.dataset.y;
+        if (esSeleccionValida(dx,dy)) seleccionarLetraEnLinea(target);
+    }
+    function continuarSeleccionTouch(e){
+        if (!inicioSeleccion) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el && el.classList.contains("letra")){
+            const dx = el.dataset.x - inicioSeleccion.dataset.x;
+            const dy = el.dataset.y - inicioSeleccion.dataset.y;
+            if (esSeleccionValida(dx,dy)) seleccionarLetraEnLinea(el);
+        }
+    }
+    function finalizarSeleccion(){
+        if (!seleccionActual.length) return;
+        const palabraSel = seleccionActual.map(el=>el.textContent).join("");
+        const palabraRev = palabraSel.split("").reverse().join("");
+        const match = PALABRAS.find(p => p===palabraSel || p===palabraRev);
+        if (match && !encontradas.has(match)){
+            encontradas.add(match);
+            const color = COLORES[match];
+            const textColor = colorTexto(color);
+            seleccionActual.forEach(el=>{
+                el.classList.add("encontrada");
+                el.classList.remove("selected");
+                el.style.background = color;
+                el.style.color = textColor;
+            });
+            const chip = palabrasContainer.querySelector(`[data-palabra="${match}"]`);
+            if (chip) chip.classList.add("encontrada");
+            if (encontradas.size === PALABRAS.length) felicitaciones.style.display = "block";
+        } else {
+            seleccionActual.forEach(el=>el.classList.remove("selected"));
+        }
+        seleccionActual = []; inicioSeleccion = null;
+    }
+    document.addEventListener("mouseup", finalizarSeleccion);
+    document.addEventListener("touchend", finalizarSeleccion);
+
+    SOPA.forEach((fila,y)=>{
+        fila.forEach((letra,x)=>{
+            const div = document.createElement("div");
+            div.className = "letra";
+            div.textContent = letra;
+            div.dataset.x = x; div.dataset.y = y;
+            div.style.background = BASE_BG;
+            div.style.color = BASE_TEXT;
+            div.addEventListener("mousedown", iniciarSeleccion);
+            div.addEventListener("mouseover", continuarSeleccion);
+            div.addEventListener("touchstart", iniciarSeleccion, {passive:false});
+            div.addEventListener("touchmove", continuarSeleccionTouch, {passive:false});
+            sopaContainer.appendChild(div);
+        });
+    });
+    PALABRAS.forEach(p=>{
+        const chip = document.createElement("span");
+        chip.className = "palabra-chip";
+        chip.textContent = p;
+        chip.dataset.palabra = p;
+        chip.style.background = COLORES[p];
+        chip.style.color = colorTexto(COLORES[p]);
+        palabrasContainer.appendChild(chip);
+    });
+</script>
+</body>
+</html>

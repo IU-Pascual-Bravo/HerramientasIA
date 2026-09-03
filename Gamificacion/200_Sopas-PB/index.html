@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Sopas de Letras con IA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔎</text></svg>">
+<style>
+    :root{
+        --paper:#f2e9d4;
+        --paper-deep:#e7d9b8;
+        --paper-line:#d7c69c;
+        --ink:#2a2a3d;
+        --ink-soft:#5b5a72;
+        --accent-red:#bd3f37;
+        --accent-gold:#c08a2e;
+        --accent-teal:#2f7a6f;
+        --cream:#fdf8ec;
+        --shadow:rgba(42,42,61,0.18);
+        --font-display:Georgia,'Iowan Old Style','Palatino Linotype',serif;
+        --font-mono:'Courier New',Courier,monospace;
+        --font-body:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0;
+        min-height:100vh;
+        font-family:var(--font-body);
+        color:var(--ink);
+        background-color:var(--paper);
+        background-image:
+            repeating-linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--paper-line) 28px),
+            radial-gradient(ellipse at top left, var(--paper-deep) 0%, transparent 55%);
+        background-attachment:fixed;
+        padding:0 0 3rem 0;
+    }
+    header{
+        position:relative;
+        text-align:center;
+        padding:2.4rem clamp(8rem, 20vw, 14rem) 1.2rem;
+    }
+    .brand-logo{
+        position:absolute;
+        top:1rem;
+        width:auto;
+        height:auto;
+        max-width:clamp(6.5rem, 16vw, 13rem);
+        max-height:4rem;
+        object-fit:contain;
+    }
+    .brand-logo-left{left:1.2rem;}
+    .brand-logo-right{right:1.2rem;}
+    .brand-logo:focus-visible{
+        outline:3px solid var(--accent-teal);
+        outline-offset:4px;
+    }
+    header .eyebrow{
+        letter-spacing:.28em;
+        text-transform:uppercase;
+        font-size:.72rem;
+        color:var(--accent-red);
+        font-weight:700;
+    }
+    header h1{
+        font-family:var(--font-display);
+        font-size:clamp(1.8rem,5vw,2.8rem);
+        margin:.35rem 0 .4rem;
+        color:var(--ink);
+        letter-spacing:.01em;
+    }
+    header h1 .ic{filter:none;}
+    header p.tagline{
+        max-width:560px;
+        margin:0 auto;
+        color:var(--ink-soft);
+        font-size:.98rem;
+    }
+    main{
+        max-width:760px;
+        margin:0 auto;
+        padding:0 1.2rem;
+    }
+    .card{
+        background:var(--cream);
+        border:1px solid var(--paper-line);
+        border-radius:10px;
+        box-shadow:0 6px 18px var(--shadow);
+        padding:1.6rem;
+        margin-bottom:1.6rem;
+    }
+    .card h2{
+        font-family:var(--font-display);
+        font-size:1.25rem;
+        margin:0 0 1rem;
+        color:var(--ink);
+        border-bottom:2px dashed var(--paper-line);
+        padding-bottom:.5rem;
+    }
+    .form-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:1rem 1.2rem;
+    }
+    .field{
+        display:flex;
+        flex-direction:column;
+        gap:.35rem;
+    }
+    .field.full{grid-column:1/-1;}
+    label{
+        font-size:.82rem;
+        font-weight:700;
+        color:var(--ink-soft);
+        text-transform:uppercase;
+        letter-spacing:.03em;
+    }
+    input[type="text"],select,input[type="number"]{
+        font-family:var(--font-body);
+        font-size:1rem;
+        padding:.65rem .75rem;
+        border:1.5px solid var(--paper-line);
+        border-radius:6px;
+        background:#fff;
+        color:var(--ink);
+        outline:none;
+    }
+    input[type="text"]:focus,select:focus,input[type="number"]:focus{
+        border-color:var(--accent-teal);
+        box-shadow:0 0 0 3px rgba(47,122,111,0.15);
+    }
+    .range-row{
+        display:flex;
+        align-items:center;
+        gap:.6rem;
+    }
+    input[type="range"]{flex-grow:1;accent-color:var(--accent-teal);}
+    .range-value{
+        font-family:var(--font-mono);
+        font-weight:700;
+        min-width:3.4rem;
+        text-align:center;
+        background:var(--paper);
+        border-radius:6px;
+        padding:.25rem .4rem;
+        border:1px solid var(--paper-line);
+    }
+    .actions{
+        display:flex;
+        justify-content:center;
+        gap:.8rem;
+        margin-top:1.4rem;
+        flex-wrap:wrap;
+    }
+    button{
+        font-family:var(--font-body);
+        font-size:1rem;
+        font-weight:600;
+        padding:.75rem 1.5rem;
+        border:none;
+        border-radius:7px;
+        cursor:pointer;
+        transition:transform .12s ease, background-color .2s ease;
+    }
+    button:active{transform:translateY(1px);}
+    #btnGenerar{
+        background:var(--accent-teal);
+        color:#fff;
+    }
+    #btnGenerar:hover:not(:disabled){background:#256359;}
+    #btnGenerar:disabled{background:#9fb3af;cursor:not-allowed;}
+    #btnDescargar{
+        background:var(--accent-gold);
+        color:#2a2005;
+        display:none;
+    }
+    #btnDescargar:hover{background:#a6771f;}
+    #btnNueva{
+        background:transparent;
+        color:var(--accent-red);
+        border:1.5px solid var(--accent-red);
+        display:none;
+    }
+    #btnNueva:hover{background:rgba(189,63,55,0.08);}
+    .status{
+        min-height:1.4rem;
+        text-align:center;
+        font-style:italic;
+        color:var(--ink-soft);
+        margin-top:1rem;
+    }
+    .status .dot{animation:blink 1.4s infinite both;}
+    .status .dot:nth-child(2){animation-delay:.2s;}
+    .status .dot:nth-child(3){animation-delay:.4s;}
+    @keyframes blink{0%,100%{opacity:0;}50%{opacity:1;}}
+    .msg-error{
+        color:var(--accent-red);
+        text-align:center;
+        font-weight:600;
+        margin-top:.8rem;
+        padding:.6rem;
+        border-left:4px solid var(--accent-red);
+        background:rgba(189,63,55,0.08);
+        border-radius:4px;
+    }
+    .msg-info{
+        color:var(--accent-teal);
+        text-align:center;
+        font-size:.9rem;
+        margin-top:.6rem;
+    }
+    #resultado{display:none;}
+    #resultado h2{
+        text-align:center;
+        border:none;
+        font-size:clamp(1.2rem,4vw,1.6rem);
+    }
+    #sopa-container{
+        display:grid;
+        gap:3px;
+        margin:0 auto 1.2rem;
+        width:min(92vmin,460px);
+        aspect-ratio:1/1;
+        background:var(--ink);
+        padding:8px;
+        border-radius:8px;
+        box-shadow:0 8px 20px var(--shadow);
+    }
+    .letra{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-family:var(--font-mono);
+        font-weight:700;
+        border-radius:4px;
+        cursor:pointer;
+        user-select:none;
+        transition:background-color .15s ease, transform .1s ease;
+        font-size:clamp(.7rem,3.4vw,1.3rem);
+    }
+    .letra.selected{
+        outline:3px solid var(--accent-red);
+        outline-offset:-3px;
+    }
+    .letra.encontrada{
+        box-shadow:inset 0 0 0 2px rgba(255,255,255,0.5);
+    }
+    #palabras{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:.5rem;
+        padding:1rem;
+        background:var(--paper);
+        border:1px dashed var(--paper-line);
+        border-radius:8px;
+    }
+    .palabra-chip{
+        padding:.4rem 1rem;
+        border-radius:999px;
+        font-size:.85rem;
+        font-weight:700;
+        letter-spacing:.02em;
+    }
+    .palabra-chip.encontrada{
+        text-decoration:line-through;
+        opacity:.6;
+    }
+    #felicitaciones{
+        display:none;
+        text-align:center;
+        margin-top:1.2rem;
+        padding:1rem;
+        background:var(--accent-gold);
+        color:#2a2005;
+        border-radius:8px;
+        font-weight:700;
+        animation:aparecer .5s ease-out;
+    }
+    @keyframes aparecer{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+    footer{
+        text-align:center;
+        color:var(--ink-soft);
+        font-size:.82rem;
+        margin-top:2rem;
+        padding:0 1rem;
+    }
+    @media (max-width:560px){
+        header{padding:5.5rem 1.2rem 1.2rem;}
+        .brand-logo{top:1rem;max-width:7.5rem;max-height:3.4rem;}
+        .brand-logo-left{left:1rem;}
+        .brand-logo-right{right:1rem;}
+        .form-grid{grid-template-columns:1fr;}
+    }
+</style>
+</head>
+<body>
+<header>
+    <img class="brand-logo brand-logo-left" src="logoPB0.png" alt="PB">
+    <img class="brand-logo brand-logo-right" src="logo_escuela.png" alt="Logo de la escuela">
+    <div class="eyebrow" data-i18n="eyebrow">Generador con IA</div>
+    <h1 data-i18n="appTitle">🔎 Sopas de Letras</h1>
+    <p class="tagline" data-i18n="appSubtitle">Escribe un tema y la IA construirá una sopa de letras lista para jugar o descargar.</p>
+</header>
+
+<main>
+    <section class="card" id="configCard">
+        <h2 data-i18n="cardConfigTitle">Configura tu sopa</h2>
+        <div class="form-grid">
+            <div class="field">
+                <label data-i18n="labelIdioma">Idioma</label>
+                <select id="idiomaSelect">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="field">
+                <label data-i18n="labelModelo">Modelo de texto</label>
+                <select id="modelSelect">
+                    <option value="gemini-search">Gemini Search</option>
+                    <option value="perplexity-fast">Perplexity Fast</option>
+                    <option value="gemini-large">Gemini Large</option>
+                </select>
+            </div>
+            <div class="field full">
+                <label data-i18n="labelTema">Tema</label>
+                <input type="text" id="temaInput" data-i18n-placeholder="placeholderTema" placeholder="Ej: el sistema solar">
+            </div>
+            <div class="field">
+                <label data-i18n="labelTamano">Tamaño de la cuadrícula</label>
+                <div class="range-row">
+                    <input type="range" id="tamanoRange" min="8" max="15" value="12">
+                    <span class="range-value" id="tamanoValue">12×12</span>
+                </div>
+            </div>
+            <div class="field">
+                <label data-i18n="labelNumPalabras">Número de palabras</label>
+                <div class="range-row">
+                    <input type="range" id="numPalabrasRange" min="4" max="15" value="8">
+                    <span class="range-value" id="numPalabrasValue">8</span>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button id="btnGenerar" data-i18n="btnGenerar">Generar sopa</button>
+        </div>
+        <div class="status" id="statusDisplay"></div>
+        <div id="errorDisplay"></div>
+    </section>
+
+    <section class="card" id="resultado">
+        <h2 id="resultadoTitulo"></h2>
+        <div id="sopa-container"></div>
+        <div id="palabras"></div>
+        <div id="felicitaciones" data-i18n="felicitaciones">¡Felicidades! Has encontrado todas las palabras.</div>
+        <div class="actions">
+            <button id="btnDescargar" data-i18n="btnDescargar">⬇ Descargar sopa</button>
+            <button id="btnNueva" data-i18n="btnNueva">Crear otra sopa</button>
+        </div>
+    </section>
+</main>
+
+<footer data-i18n="footer">Herramienta creada por Juan Guillermo Rivera Berrío &middot; generación de palabras con IA (node.proyectodescartes.org)</footer>
+
+<script>
+(function(){
+    "use strict";
+
+    /* ---------------------------------------------------------
+       TEXTOS DE INTERFAZ (ES / EN)
+    --------------------------------------------------------- */
+    const STRINGS = {
+        es:{
+            pageTitle:"Generador de Sopas de Letras con IA",
+            eyebrow:"Generador con IA",
+            appTitle:"🔎 Sopas de Letras",
+            appSubtitle:"Escribe un tema y la IA construirá una sopa de letras lista para jugar o descargar.",
+            cardConfigTitle:"Configura tu sopa",
+            labelIdioma:"Idioma",
+            labelModelo:"Modelo de texto",
+            labelTema:"Tema",
+            placeholderTema:"Ej: el sistema solar",
+            labelTamano:"Tamaño de la cuadrícula",
+            labelNumPalabras:"Número de palabras",
+            btnGenerar:"Generar sopa",
+            btnGenerarLoading:"Generando…",
+            btnDescargar:"⬇ Descargar sopa",
+            btnNueva:"Crear otra sopa",
+            felicitaciones:"¡Felicidades! Has encontrado todas las palabras.",
+            footer:"Herramienta creada por Juan Guillermo Rivera Berrío · generación de palabras con IA (node.proyectodescartes.org)",
+            errorTema:"Por favor escribe un tema para generar la sopa.",
+            errorApi:"Ocurrió un error consultando la IA. Intenta de nuevo.",
+            errorApiDetalle:(detalle)=>`Ocurrió un error consultando la IA: ${detalle}. Si el problema persiste, verifica tu conexión a internet o que el archivo esté alojado en un dominio permitido por la API (no funciona abierto como archivo local en algunos navegadores).`,
+            errorPocasPalabras:"No se obtuvieron suficientes palabras válidas para ese tema. Intenta con otro tema.",
+            infoPalabrasGeneradas:(n,total)=>`Se colocaron ${n} de ${total} palabras en la sopa.`,
+            resultadoTitulo:(tema)=>`Sopa de letras: ${tema}`,
+            statusMessages:[
+                "Analizando el tema…",
+                "Consultando a la IA…",
+                "Seleccionando palabras…",
+                "Construyendo la cuadrícula…",
+                "Repartiendo colores…"
+            ]
+        },
+        en:{
+            pageTitle:"AI Word Search Generator",
+            eyebrow:"AI-powered generator",
+            appTitle:"🔎 Word Search",
+            appSubtitle:"Type a topic and the AI will build a ready-to-play word search puzzle.",
+            cardConfigTitle:"Set up your puzzle",
+            labelIdioma:"Language",
+            labelModelo:"Text model",
+            labelTema:"Topic",
+            placeholderTema:"E.g. the solar system",
+            labelTamano:"Grid size",
+            labelNumPalabras:"Number of words",
+            btnGenerar:"Generate puzzle",
+            btnGenerarLoading:"Generating…",
+            btnDescargar:"⬇ Download puzzle",
+            btnNueva:"Create another puzzle",
+            felicitaciones:"Congratulations! You found every word.",
+            footer:"Tool created by Juan Guillermo Rivera Berrío · word generation powered by AI (node.proyectodescartes.org)",
+            errorTema:"Please type a topic to generate the puzzle.",
+            errorApi:"There was an error contacting the AI. Please try again.",
+            errorApiDetalle:(detalle)=>`There was an error contacting the AI: ${detalle}. If this keeps happening, check your internet connection or make sure the file is hosted on a domain the API allows (some browsers block it when opened as a local file).`,
+            errorPocasPalabras:"Not enough valid words were found for that topic. Try a different topic.",
+            infoPalabrasGeneradas:(n,total)=>`${n} of ${total} words were placed in the puzzle.`,
+            resultadoTitulo:(tema)=>`Word Search: ${tema}`,
+            statusMessages:[
+                "Analyzing the topic…",
+                "Consulting the AI…",
+                "Selecting words…",
+                "Building the grid…",
+                "Assigning colors…"
+            ]
+        }
+    };
+
+    let currentLang = "es";
+
+    /* ---------------------------------------------------------
+       REFERENCIAS DOM
+    --------------------------------------------------------- */
+    const idiomaSelect = document.getElementById("idiomaSelect");
+    const modelSelect = document.getElementById("modelSelect");
+    const temaInput = document.getElementById("temaInput");
+    const tamanoRange = document.getElementById("tamanoRange");
+    const tamanoValue = document.getElementById("tamanoValue");
+    const numPalabrasRange = document.getElementById("numPalabrasRange");
+    const numPalabrasValue = document.getElementById("numPalabrasValue");
+    const btnGenerar = document.getElementById("btnGenerar");
+    const btnDescargar = document.getElementById("btnDescargar");
+    const btnNueva = document.getElementById("btnNueva");
+    const statusDisplay = document.getElementById("statusDisplay");
+    const errorDisplay = document.getElementById("errorDisplay");
+    const resultado = document.getElementById("resultado");
+    const resultadoTitulo = document.getElementById("resultadoTitulo");
+    const sopaContainer = document.getElementById("sopa-container");
+    const palabrasContainer = document.getElementById("palabras");
+    const felicitaciones = document.getElementById("felicitaciones");
+    const configCard = document.getElementById("configCard");
+
+    /* ---------------------------------------------------------
+       IDIOMA DE INTERFAZ
+    --------------------------------------------------------- */
+    function aplicarIdioma(lang){
+        currentLang = lang;
+        const t = STRINGS[lang];
+        document.documentElement.lang = lang;
+        document.title = t.pageTitle;
+        document.querySelectorAll("[data-i18n]").forEach(el=>{
+            const key = el.getAttribute("data-i18n");
+            if (typeof t[key] === "string") el.textContent = t[key];
+        });
+        document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
+            const key = el.getAttribute("data-i18n-placeholder");
+            if (typeof t[key] === "string") el.placeholder = t[key];
+        });
+    }
+    idiomaSelect.addEventListener("change", ()=> aplicarIdioma(idiomaSelect.value));
+    aplicarIdioma("es");
+
+    tamanoRange.addEventListener("input", ()=>{
+        tamanoValue.textContent = `${tamanoRange.value}×${tamanoRange.value}`;
+    });
+    numPalabrasRange.addEventListener("input", ()=>{
+        numPalabrasValue.textContent = numPalabrasRange.value;
+    });
+
+    /* ---------------------------------------------------------
+       LLAMADA A LA API DE TEXTO
+    --------------------------------------------------------- */
+    async function callApi(prompt, model){
+        const response = await fetch("https://node.proyectodescartes.org/api/ia/text", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ prompt, model })
+        });
+        if (!response.ok){
+            const errTxt = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errTxt}`);
+        }
+        return await response.text();
+    }
+
+    function construirPrompt(tema, lang, numPalabras, maxLen){
+        if (lang === "es"){
+            return `Eres un generador de listas de palabras para juegos de "sopa de letras".
+Genera exactamente ${numPalabras} palabras EN ESPAÑOL relacionadas con el tema: "${tema}".
+
+Reglas estrictas:
+- Cada palabra debe tener entre 3 y ${maxLen} letras.
+- Usa solo letras del alfabeto (A-Z, Ñ), sin tildes, sin espacios, sin guiones, sin números.
+- Todas las palabras en MAYÚSCULAS.
+- No repitas palabras.
+- Las palabras deben ser sustantivos o términos reconocibles y directamente relacionados con el tema.
+
+Responde ÚNICAMENTE con un array JSON de strings, sin explicaciones, sin texto adicional, sin marcadores de código markdown.
+Formato exacto de respuesta: ["PALABRA1","PALABRA2","PALABRA3"]`;
+        }
+        return `You are a word-list generator for "word search" puzzles.
+Generate exactly ${numPalabras} words IN ENGLISH related to the topic: "${tema}".
+
+Strict rules:
+- Each word must have between 3 and ${maxLen} letters.
+- Use only alphabet letters (A-Z), no spaces, no hyphens, no numbers, no accents.
+- All words in UPPERCASE.
+- Do not repeat words.
+- Words must be recognizable nouns/terms directly related to the topic.
+
+Respond ONLY with a JSON array of strings, no explanations, no extra text, no markdown code fences.
+Exact response format: ["WORD1","WORD2","WORD3"]`;
+    }
+
+    function limpiarPalabra(w){
+        w = w.toUpperCase().trim();
+        w = w.replace(/Ñ/g, "§");
+        w = w.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        w = w.replace(/§/g, "Ñ");
+        w = w.replace(/[^A-ZÑ]/g, "");
+        return w;
+    }
+
+    async function generarPalabrasIA(tema, lang, numPalabras, maxLen, model){
+        const prompt = construirPrompt(tema, lang, numPalabras, maxLen);
+        const raw = await callApi(prompt, model);
+        let texto = raw.trim().replace(/```json|```/g, "").trim();
+        const start = texto.indexOf("[");
+        const end = texto.lastIndexOf("]");
+        if (start !== -1 && end !== -1) texto = texto.substring(start, end + 1);
+        let arr;
+        try{
+            arr = JSON.parse(texto);
+        }catch(e){
+            arr = texto.split(/[,\n]/).map(s=>s.replace(/["'\[\]]/g,"").trim());
+        }
+        const limpio = arr
+            .map(limpiarPalabra)
+            .filter(w => w.length >= 3 && w.length <= maxLen);
+        const unicas = [...new Set(limpio)];
+        return unicas.slice(0, numPalabras);
+    }
+
+    /* ---------------------------------------------------------
+       GENERACIÓN DE LA CUADRÍCULA
+    --------------------------------------------------------- */
+    const DIR_DIAGONAL = [[1,1],[-1,-1],[1,-1],[-1,1]];
+    const DIR_RECTA = [[0,1],[0,-1],[1,0],[-1,0]];
+    const DIRECCIONES = [...DIR_RECTA, ...DIR_DIAGONAL];
+
+    function cabePalabra(sopa, palabra, x, y, dir, size){
+        const endX = x + (palabra.length - 1) * dir[0];
+        const endY = y + (palabra.length - 1) * dir[1];
+        if (endX < 0 || endX >= size || endY < 0 || endY >= size) return false;
+        for (let i = 0; i < palabra.length; i++){
+            const cx = x + i * dir[0], cy = y + i * dir[1];
+            const cell = sopa[cy][cx];
+            if (cell !== "" && cell !== palabra[i]) return false;
+        }
+        return true;
+    }
+
+    function intentarColocar(sopa, palabra, size, direcciones, maxIntentos){
+        let intentos = 0;
+        while (intentos < maxIntentos){
+            const dir = direcciones[Math.floor(Math.random() * direcciones.length)];
+            const x = Math.floor(Math.random() * size);
+            const y = Math.floor(Math.random() * size);
+            if (cabePalabra(sopa, palabra, x, y, dir, size)){
+                for (let i = 0; i < palabra.length; i++){
+                    sopa[y + i * dir[1]][x + i * dir[0]] = palabra[i];
+                }
+                return true;
+            }
+            intentos++;
+        }
+        return false;
+    }
+
+    function colocarPalabra(sopa, palabra, size, forzarDiagonal){
+        // Si a esta palabra le toca ir en diagonal, se intenta primero solo con
+        // direcciones diagonales; si no cabe así, se recurre a cualquier dirección.
+        if (forzarDiagonal && intentarColocar(sopa, palabra, size, DIR_DIAGONAL, 150)){
+            return true;
+        }
+        return intentarColocar(sopa, palabra, size, DIRECCIONES, 400);
+    }
+
+    function llenarEspaciosVacios(sopa, size, letras){
+        for (let i = 0; i < size; i++){
+            for (let j = 0; j < size; j++){
+                if (sopa[i][j] === "") sopa[i][j] = letras[Math.floor(Math.random() * letras.length)];
+            }
+        }
+    }
+
+    function barajar(arr){
+        const copia = [...arr];
+        for (let i = copia.length - 1; i > 0; i--){
+            const j = Math.floor(Math.random() * (i + 1));
+            [copia[i], copia[j]] = [copia[j], copia[i]];
+        }
+        return copia;
+    }
+
+    function generarSopa(palabrasSolicitadas, size, lang){
+        const letras = lang === "es" ? "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const sopa = Array.from({length:size}, ()=>Array(size).fill(""));
+        const ordenColocacion = [...palabrasSolicitadas].sort((a,b)=>b.length - a.length);
+
+        // Al menos ~40% de las palabras (mínimo 1) se intentan colocar en diagonal.
+        const numDiagonales = Math.max(1, Math.round(ordenColocacion.length * 0.4));
+        const indicesDiagonal = new Set(barajar(ordenColocacion.map((_, i) => i)).slice(0, numDiagonales));
+
+        const colocadas = [];
+        ordenColocacion.forEach((w, i) => {
+            if (colocarPalabra(sopa, w, size, indicesDiagonal.has(i))) colocadas.push(w);
+        });
+        llenarEspaciosVacios(sopa, size, letras);
+        const palabrasFinal = palabrasSolicitadas.filter(w => colocadas.includes(w));
+        return { sopa, palabras: palabrasFinal };
+    }
+
+    /* ---------------------------------------------------------
+       COLORES ALEATORIOS CON CONTRASTE
+    --------------------------------------------------------- */
+    function hslToHex(h, s, l){
+        s /= 100; l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        const toHex = x => Math.round(255 * x).toString(16).padStart(2, "0");
+        return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+    }
+
+    function luminancia(hex){
+        const r = parseInt(hex.slice(1,3),16)/255;
+        const g = parseInt(hex.slice(3,5),16)/255;
+        const b = parseInt(hex.slice(5,7),16)/255;
+        const ch = v => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+        return 0.2126*ch(r) + 0.7152*ch(g) + 0.0722*ch(b);
+    }
+
+    function colorTexto(fondoHex){
+        return luminancia(fondoHex) > 0.42 ? "#20202a" : "#fdf8ec";
+    }
+
+    function generarPaletaColores(n){
+        const huesStart = Math.random() * 360;
+        const colores = [];
+        for (let i = 0; i < n; i++){
+            const hue = (huesStart + i * (360 / n) + (Math.random()*16 - 8) + 360) % 360;
+            const sat = 55 + Math.random() * 20;
+            const light = 38 + Math.random() * 14;
+            colores.push(hslToHex(hue, sat, light));
+        }
+        return colores;
+    }
+
+    /* ---------------------------------------------------------
+       RENDER DE LA SOPA EN PANTALLA (juego dentro de la app)
+    --------------------------------------------------------- */
+    let sopaData = null;
+    let seleccionActual = [];
+    let inicioSeleccion = null;
+    let encontradas = new Set();
+
+    function esSeleccionValida(dx, dy){
+        return dx === 0 || dy === 0 || Math.abs(dx) === Math.abs(dy);
+    }
+
+    function seleccionarLetraEnLinea(target){
+        const dx = target.dataset.x - inicioSeleccion.dataset.x;
+        const dy = target.dataset.y - inicioSeleccion.dataset.y;
+        const pasos = Math.max(Math.abs(dx), Math.abs(dy));
+        const stepX = dx / pasos, stepY = dy / pasos;
+        seleccionActual.forEach(el => el.classList.remove("selected"));
+        seleccionActual = [inicioSeleccion];
+        inicioSeleccion.classList.add("selected");
+        for (let i = 1; i <= pasos; i++){
+            const x = parseInt(inicioSeleccion.dataset.x) + i * stepX;
+            const y = parseInt(inicioSeleccion.dataset.y) + i * stepY;
+            const el = sopaContainer.querySelector(`.letra[data-x="${x}"][data-y="${y}"]`);
+            if (el){ seleccionActual.push(el); el.classList.add("selected"); }
+        }
+    }
+
+    function iniciarSeleccion(e){
+        e.preventDefault();
+        inicioSeleccion = e.target.closest(".letra");
+        if (!inicioSeleccion) return;
+        seleccionActual = [inicioSeleccion];
+        inicioSeleccion.classList.add("selected");
+    }
+
+    function continuarSeleccion(e){
+        if (!inicioSeleccion || !seleccionActual.length) return;
+        const target = e.target.closest(".letra");
+        if (!target || seleccionActual.includes(target)) return;
+        const dx = target.dataset.x - inicioSeleccion.dataset.x;
+        const dy = target.dataset.y - inicioSeleccion.dataset.y;
+        if (esSeleccionValida(dx, dy)) seleccionarLetraEnLinea(target);
+    }
+
+    function continuarSeleccionTouch(e){
+        if (!inicioSeleccion) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el && el.classList.contains("letra")){
+            const dx = el.dataset.x - inicioSeleccion.dataset.x;
+            const dy = el.dataset.y - inicioSeleccion.dataset.y;
+            if (esSeleccionValida(dx, dy)) seleccionarLetraEnLinea(el);
+        }
+    }
+
+    function finalizarSeleccion(){
+        if (!seleccionActual.length || !sopaData) return;
+        const palabraSel = seleccionActual.map(el => el.textContent).join("");
+        const palabraRev = palabraSel.split("").reverse().join("");
+        const match = sopaData.palabras.find(p => p === palabraSel || p === palabraRev);
+        if (match && !encontradas.has(match)){
+            encontradas.add(match);
+            const color = sopaData.colorMap[match];
+            const textColor = colorTexto(color);
+            seleccionActual.forEach(el => {
+                el.classList.add("encontrada");
+                el.classList.remove("selected");
+                el.style.background = color;
+                el.style.color = textColor;
+            });
+            const chip = palabrasContainer.querySelector(`[data-palabra="${match}"]`);
+            if (chip) chip.classList.add("encontrada");
+            if (encontradas.size === sopaData.palabras.length){
+                felicitaciones.style.display = "block";
+            }
+        } else {
+            seleccionActual.forEach(el => el.classList.remove("selected"));
+        }
+        seleccionActual = [];
+        inicioSeleccion = null;
+    }
+
+    document.addEventListener("mouseup", finalizarSeleccion);
+    document.addEventListener("touchend", finalizarSeleccion);
+
+    function renderSopa(){
+        const { sopa, palabras, size, colorMap, baseColor, baseText } = sopaData;
+        sopaContainer.innerHTML = "";
+        sopaContainer.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        sopa.forEach((fila, y) => {
+            fila.forEach((letra, x) => {
+                const div = document.createElement("div");
+                div.className = "letra";
+                div.textContent = letra;
+                div.dataset.x = x;
+                div.dataset.y = y;
+                div.style.background = baseColor;
+                div.style.color = baseText;
+                div.addEventListener("mousedown", iniciarSeleccion);
+                div.addEventListener("mouseover", continuarSeleccion);
+                div.addEventListener("touchstart", iniciarSeleccion, {passive:false});
+                div.addEventListener("touchmove", continuarSeleccionTouch, {passive:false});
+                sopaContainer.appendChild(div);
+            });
+        });
+        palabrasContainer.innerHTML = "";
+        palabras.forEach(p => {
+            const chip = document.createElement("span");
+            chip.className = "palabra-chip";
+            chip.textContent = p;
+            chip.dataset.palabra = p;
+            chip.style.background = colorMap[p];
+            chip.style.color = colorTexto(colorMap[p]);
+            palabrasContainer.appendChild(chip);
+        });
+        felicitaciones.style.display = "none";
+        encontradas = new Set();
+        resultadoTitulo.textContent = STRINGS[currentLang].resultadoTitulo(sopaData.tema);
+        resultado.style.display = "block";
+        btnDescargar.style.display = "inline-block";
+        btnNueva.style.display = "inline-block";
+    }
+
+    /* ---------------------------------------------------------
+       ESTADO DE CARGA / MENSAJES
+    --------------------------------------------------------- */
+    async function tipearEstado(mensaje){
+        statusDisplay.innerHTML = `<span>${mensaje}<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>`;
+        await new Promise(r => setTimeout(r, 550 + Math.random()*350));
+    }
+
+    function mostrarError(msg){
+        errorDisplay.innerHTML = `<div class="msg-error">${msg}</div>`;
+    }
+    function limpiarMensajes(){
+        errorDisplay.innerHTML = "";
+        statusDisplay.innerHTML = "";
+    }
+
+    /* ---------------------------------------------------------
+       GENERAR SOPA (flujo principal)
+    --------------------------------------------------------- */
+    btnGenerar.addEventListener("click", async () => {
+        const t = STRINGS[currentLang];
+        const tema = temaInput.value.trim();
+        const lang = idiomaSelect.value;
+        const size = parseInt(tamanoRange.value, 10);
+        const numPalabras = parseInt(numPalabrasRange.value, 10);
+        const model = modelSelect.value;
+
+        limpiarMensajes();
+        if (!tema){
+            mostrarError(t.errorTema);
+            return;
+        }
+
+        btnGenerar.disabled = true;
+        temaInput.disabled = true;
+        btnGenerar.textContent = t.btnGenerarLoading;
+
+        try{
+            for (const m of t.statusMessages) await tipearEstado(m);
+
+            const palabrasIA = await generarPalabrasIA(tema, lang, numPalabras, size, model);
+            if (palabrasIA.length < 3){
+                throw { pocasPalabras:true };
+            }
+
+            const { sopa, palabras } = generarSopa(palabrasIA, size, lang);
+            const colores = generarPaletaColores(palabras.length);
+            const colorMap = {};
+            palabras.forEach((p,i)=> colorMap[p] = colores[i]);
+
+            const baseHue = Math.random()*360;
+            const baseColor = hslToHex(baseHue, 45, 27);
+            const baseText = colorTexto(baseColor);
+
+            sopaData = { sopa, palabras, size, colorMap, baseColor, baseText, tema, lang };
+
+            statusDisplay.innerHTML = "";
+            if (palabras.length < palabrasIA.length){
+                errorDisplay.innerHTML = `<div class="msg-info">${t.infoPalabrasGeneradas(palabras.length, palabrasIA.length)}</div>`;
+            }
+
+            renderSopa();
+            configCard.style.display = "none";
+        }catch(err){
+            console.error(err);
+            statusDisplay.innerHTML = "";
+            if (err && err.pocasPalabras) mostrarError(t.errorPocasPalabras);
+            else mostrarError(t.errorApiDetalle(err && err.message ? err.message : String(err)));
+        }finally{
+            btnGenerar.disabled = false;
+            temaInput.disabled = false;
+            btnGenerar.textContent = t.btnGenerar;
+        }
+    });
+
+    btnNueva.addEventListener("click", () => {
+        resultado.style.display = "none";
+        configCard.style.display = "block";
+        errorDisplay.innerHTML = "";
+        statusDisplay.innerHTML = "";
+    });
+
+    /* ---------------------------------------------------------
+       DESCARGA: SOPA AUTOCONTENIDA Y JUGABLE
+    --------------------------------------------------------- */
+    const EXPORT_STRINGS = {
+        es:{ titulo:(tema)=>`Sopa de letras: ${tema}`, encontrarTodas:"Encuentra todas las palabras.",
+             felicitaciones:"¡Felicidades! Has encontrado todas las palabras.",
+             footer:"Generado con el Generador de Sopas de Letras con IA · Juan Guillermo Rivera Berrío" },
+        en:{ titulo:(tema)=>`Word Search: ${tema}`, encontrarTodas:"Find all the words.",
+             felicitaciones:"Congratulations! You found every word.",
+             footer:"Generated with the AI Word Search Generator · Juan Guillermo Rivera Berrío" }
+    };
+
+    function construirHTMLDescargable(){
+        const { sopa, palabras, size, colorMap, baseColor, baseText, tema, lang } = sopaData;
+        const ex = EXPORT_STRINGS[lang];
+        const titulo = ex.titulo(tema);
+
+        return `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${titulo}</title>
+<style>
+    body{font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:center;
+        min-height:100vh;margin:0;background-color:#f0f8ff;padding:20px;box-sizing:border-box;}
+    h1{color:#2c3e50;text-align:center;margin-bottom:4px;font-size:clamp(1.2rem,4vw,2rem);}
+    p.sub{color:#5b5a72;margin-top:0;margin-bottom:16px;text-align:center;}
+    #sopa-container{display:grid;grid-template-columns:repeat(${size},1fr);gap:3px;margin:0 auto;
+        width:90vmin;height:90vmin;max-width:460px;max-height:460px;background-color:#2c3e50;
+        padding:8px;border-radius:10px;}
+    .letra{display:flex;align-items:center;justify-content:center;font-weight:bold;
+        border-radius:4px;cursor:pointer;user-select:none;font-family:'Courier New',monospace;
+        font-size:clamp(.7rem,3.4vw,1.3rem);transition:background-color .15s ease;}
+    .letra.selected{outline:3px solid #bd3f37;outline-offset:-3px;}
+    #palabras{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:20px;
+        padding:15px;background-color:#ecf0f1;border-radius:10px;width:100%;max-width:460px;
+        box-sizing:border-box;}
+    .palabra-chip{padding:6px 14px;border-radius:20px;font-size:.85rem;font-weight:700;}
+    .palabra-chip.encontrada{text-decoration:line-through;opacity:.6;}
+    #felicitaciones{display:none;background-color:#c08a2e;color:#2a2005;padding:15px 20px;
+        border-radius:10px;font-size:1.1rem;margin-top:20px;text-align:center;font-weight:700;}
+    footer{color:#8a8a99;font-size:.78rem;margin-top:22px;text-align:center;}
+    @media (max-width:600px){ #sopa-container{width:90vw;height:90vw;} }
+</style>
+</head>
+<body>
+    <h1>${titulo}</h1>
+    <p class="sub">${ex.encontrarTodas}</p>
+    <div id="sopa-container"></div>
+    <div id="palabras"></div>
+    <div id="felicitaciones">${ex.felicitaciones}</div>
+    <footer>${ex.footer}</footer>
+<script>
+    const SOPA = ${JSON.stringify(sopa)};
+    const PALABRAS = ${JSON.stringify(palabras)};
+    const COLORES = ${JSON.stringify(colorMap)};
+    const TAMANO = ${size};
+    const BASE_BG = ${JSON.stringify(baseColor)};
+    const BASE_TEXT = ${JSON.stringify(baseText)};
+
+    function luminancia(hex){
+        const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+        const ch=v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+        return 0.2126*ch(r)+0.7152*ch(g)+0.0722*ch(b);
+    }
+    function colorTexto(hex){ return luminancia(hex) > 0.42 ? "#20202a" : "#fdf8ec"; }
+
+    let seleccionActual = [], inicioSeleccion = null, encontradas = new Set();
+    const sopaContainer = document.getElementById("sopa-container");
+    const palabrasContainer = document.getElementById("palabras");
+    const felicitaciones = document.getElementById("felicitaciones");
+
+    function esSeleccionValida(dx,dy){ return dx===0 || dy===0 || Math.abs(dx)===Math.abs(dy); }
+
+    function seleccionarLetraEnLinea(target){
+        const dx = target.dataset.x - inicioSeleccion.dataset.x;
+        const dy = target.dataset.y - inicioSeleccion.dataset.y;
+        const pasos = Math.max(Math.abs(dx), Math.abs(dy));
+        const stepX = dx/pasos, stepY = dy/pasos;
+        seleccionActual.forEach(el=>el.classList.remove("selected"));
+        seleccionActual = [inicioSeleccion];
+        inicioSeleccion.classList.add("selected");
+        for (let i=1;i<=pasos;i++){
+            const x = parseInt(inicioSeleccion.dataset.x)+i*stepX;
+            const y = parseInt(inicioSeleccion.dataset.y)+i*stepY;
+            const el = sopaContainer.querySelector(\`.letra[data-x="\${x}"][data-y="\${y}"]\`);
+            if (el){ seleccionActual.push(el); el.classList.add("selected"); }
+        }
+    }
+
+    function iniciarSeleccion(e){
+        e.preventDefault();
+        inicioSeleccion = e.target.closest(".letra");
+        if (!inicioSeleccion) return;
+        seleccionActual = [inicioSeleccion];
+        inicioSeleccion.classList.add("selected");
+    }
+    function continuarSeleccion(e){
+        if (!inicioSeleccion || !seleccionActual.length) return;
+        const target = e.target.closest(".letra");
+        if (!target || seleccionActual.includes(target)) return;
+        const dx = target.dataset.x - inicioSeleccion.dataset.x;
+        const dy = target.dataset.y - inicioSeleccion.dataset.y;
+        if (esSeleccionValida(dx,dy)) seleccionarLetraEnLinea(target);
+    }
+    function continuarSeleccionTouch(e){
+        if (!inicioSeleccion) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el && el.classList.contains("letra")){
+            const dx = el.dataset.x - inicioSeleccion.dataset.x;
+            const dy = el.dataset.y - inicioSeleccion.dataset.y;
+            if (esSeleccionValida(dx,dy)) seleccionarLetraEnLinea(el);
+        }
+    }
+    function finalizarSeleccion(){
+        if (!seleccionActual.length) return;
+        const palabraSel = seleccionActual.map(el=>el.textContent).join("");
+        const palabraRev = palabraSel.split("").reverse().join("");
+        const match = PALABRAS.find(p => p===palabraSel || p===palabraRev);
+        if (match && !encontradas.has(match)){
+            encontradas.add(match);
+            const color = COLORES[match];
+            const textColor = colorTexto(color);
+            seleccionActual.forEach(el=>{
+                el.classList.add("encontrada");
+                el.classList.remove("selected");
+                el.style.background = color;
+                el.style.color = textColor;
+            });
+            const chip = palabrasContainer.querySelector(\`[data-palabra="\${match}"]\`);
+            if (chip) chip.classList.add("encontrada");
+            if (encontradas.size === PALABRAS.length) felicitaciones.style.display = "block";
+        } else {
+            seleccionActual.forEach(el=>el.classList.remove("selected"));
+        }
+        seleccionActual = []; inicioSeleccion = null;
+    }
+    document.addEventListener("mouseup", finalizarSeleccion);
+    document.addEventListener("touchend", finalizarSeleccion);
+
+    SOPA.forEach((fila,y)=>{
+        fila.forEach((letra,x)=>{
+            const div = document.createElement("div");
+            div.className = "letra";
+            div.textContent = letra;
+            div.dataset.x = x; div.dataset.y = y;
+            div.style.background = BASE_BG;
+            div.style.color = BASE_TEXT;
+            div.addEventListener("mousedown", iniciarSeleccion);
+            div.addEventListener("mouseover", continuarSeleccion);
+            div.addEventListener("touchstart", iniciarSeleccion, {passive:false});
+            div.addEventListener("touchmove", continuarSeleccionTouch, {passive:false});
+            sopaContainer.appendChild(div);
+        });
+    });
+    PALABRAS.forEach(p=>{
+        const chip = document.createElement("span");
+        chip.className = "palabra-chip";
+        chip.textContent = p;
+        chip.dataset.palabra = p;
+        chip.style.background = COLORES[p];
+        chip.style.color = colorTexto(COLORES[p]);
+        palabrasContainer.appendChild(chip);
+    });
+<\/script>
+</body>
+</html>`;
+    }
+
+    btnDescargar.addEventListener("click", () => {
+        if (!sopaData) return;
+        const html = construirHTMLDescargable();
+        const blob = new Blob([html], { type: "text/html" });
+        const sanitized = sopaData.tema.replace(/[^a-z0-9]+/gi, "_").toLowerCase().replace(/^_+|_+$/g,"");
+        const fileName = `sopa_letras_${sanitized || "tema"}.html`;
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    });
+
+})();
+</script>
+</body>
+</html>

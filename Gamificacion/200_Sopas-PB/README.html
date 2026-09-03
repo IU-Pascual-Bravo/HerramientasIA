@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>Generador de sopas de letras</h1>
+<p>Aplicación web para crear sopas de letras a partir de un tema. La aplicación consulta un modelo de inteligencia artificial para generar las palabras, construye la cuadrícula y permite jugarla o descargarla como un archivo HTML independiente.</p>
+<h2>Uso</h2>
+<ol>
+<li>Abre <code>index.html</code> en un navegador moderno.</li>
+<li>Selecciona el idioma y el modelo de texto.</li>
+<li>Escribe un tema, ajusta el tamaño de la cuadrícula y el número de palabras.</li>
+<li>Pulsa <strong>Generar sopa</strong>.</li>
+<li>Selecciona las palabras en la cuadrícula y, cuando quieras, pulsa <strong>Descargar sopa</strong>.</li>
+</ol>
+<p>Para evitar restricciones del navegador con peticiones <code>fetch</code>, es recomendable servir la carpeta mediante un servidor web local en lugar de abrir el archivo directamente. Por ejemplo, con Python:</p>
+<pre><code class="language-bash">python -m http.server 8000
+</code></pre>
+<p>Después, visita <code>http://localhost:8000/</code>.</p>
+<h2>Archivos principales</h2>
+<ul>
+<li><code>index.html</code>: aplicación principal.</li>
+<li><code>logoPB0.png</code>: logo situado en la esquina superior izquierda.</li>
+<li><code>logo_escuela.png</code>: logo situado en la esquina superior derecha.</li>
+<li><code>generador_sopa_letras_Gemini.html</code>: versión anterior del generador.</li>
+</ul>
+<h2>Requisitos</h2>
+<ul>
+<li>Navegador con soporte para HTML5, CSS3 y JavaScript moderno.</li>
+<li>Conexión a internet para consultar <code>https://node.proyectodescartes.org/api/ia/text</code>.</li>
+<li>Un modelo de texto compatible con la API configurada.</li>
+</ul>
+<p>La aplicación no necesita un proceso de compilación ni dependencias locales.</p>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>
