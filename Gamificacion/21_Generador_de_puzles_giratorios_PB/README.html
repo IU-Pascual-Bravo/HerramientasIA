@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>Generador de Puzles Giratorios</h1>
+<p>Aplicación web educativa que genera una imagen a partir de un tema y la transforma en un puzzle giratorio interactivo. Cada pieza puede rotarse individualmente hasta completar la imagen.</p>
+<h2>Características</h2>
+<ul>
+<li>Generación de imágenes mediante el servicio de IA de Proyecto Descartes.</li>
+<li>Puzzles de <code>3x3</code>, <code>4x4</code>, <code>5x5</code>, <code>6x6</code> o <code>7x7</code> piezas.</li>
+<li>Rotación de las piezas haciendo clic sobre ellas.</li>
+<li>Detección automática de puzzle completado.</li>
+<li>Zoom del tablero con la rueda del ratón, entre <code>50 %</code> y <code>200 %</code>.</li>
+<li>Reinicio del puzzle conservando la imagen actual.</li>
+<li>Descarga de una versión HTML autónoma del puzzle.</li>
+<li>Diseño adaptable para pantallas pequeñas.</li>
+<li>Logotipos institucionales en las esquinas superiores.</li>
+</ul>
+<h2>Uso</h2>
+<ol>
+<li>Escribe un tema en el campo de texto, por ejemplo: <code>un bosque mágico</code>.</li>
+<li>Pulsa <strong>Generar</strong> y espera a que se cree la imagen.</li>
+<li>Selecciona el tamaño del puzzle.</li>
+<li>Haz clic en las piezas para girarlas en intervalos de 90 grados.</li>
+<li>Cuando todas las piezas estén orientadas correctamente, aparecerá el mensaje de felicitación.</li>
+<li>Usa <strong>Reiniciar Puzzle</strong> para volver a mezclar las orientaciones.</li>
+<li>Usa <strong>Descargar Puzzle</strong> para guardar una copia HTML jugable.</li>
+</ol>
+<p>También puedes desplazar la rueda del ratón sobre el tablero para acercar o alejar la vista.</p>
+<h2>Ejecución</h2>
+<p>La aplicación no requiere instalación de dependencias ni proceso de compilación. Puede abrirse mediante un servidor web local.</p>
+<h3>Opción recomendada: Visual Studio Code</h3>
+<p>Abre la carpeta en Visual Studio Code y ejecuta <code>index.html</code> con una extensión de servidor local, como <strong>Live Server</strong>.</p>
+<h3>Con Python</h3>
+<p>Si Python está instalado, ejecuta desde esta carpeta:</p>
+<pre><code class="language-bash">python -m http.server 8000
+</code></pre>
+<p>Después abre en el navegador:</p>
+<pre><code class="language-text">http://localhost:8000
+</code></pre>
+<p>Es preferible utilizar un servidor local en lugar de abrir el archivo directamente, ya que la aplicación realiza peticiones HTTP al servicio de generación de imágenes.</p>
+<h2>Servicio de imágenes</h2>
+<p>Las imágenes se solicitan mediante una petición <code>POST</code> a:</p>
+<pre><code class="language-text">https://node.proyectodescartes.org/api/ia/image
+</code></pre>
+<p>La aplicación envía el texto indicado por el usuario junto con estos parámetros:</p>
+<ul>
+<li>Modelo: <code>zimage</code></li>
+<li>Resolución: <code>1024x1024</code></li>
+<li>Semilla aleatoria para cada generación</li>
+<li>Mejora y refinado desactivados</li>
+<li>Logotipo del proveedor desactivado</li>
+</ul>
+<p>El servicio debe estar disponible y permitir peticiones desde el navegador para que la generación funcione correctamente.</p>
+<h2>Estructura del proyecto</h2>
+<pre><code class="language-text">.
+├── index.html
+├── logoPB0.png
+├── logo_escuela.png
+└── README.md
+</code></pre>
+<ul>
+<li><code>index.html</code>: interfaz, estilos y lógica completa de la aplicación.</li>
+<li><code>logoPB0.png</code>: logotipo institucional situado en la esquina superior izquierda.</li>
+<li><code>logo_escuela.png</code>: logotipo de la Escuela de Pensamiento Educativo y Pedagógico situado en la esquina superior derecha.</li>
+<li><code>README.md</code>: documentación del proyecto.</li>
+</ul>
+<h2>Tecnologías</h2>
+<ul>
+<li>HTML5</li>
+<li>CSS3</li>
+<li>JavaScript ejecutado en el navegador</li>
+<li>Fetch API</li>
+<li>Canvas y Blob URLs del navegador para preparar la descarga</li>
+</ul>
+<h2>Consideraciones</h2>
+<ul>
+<li>La primera carga genera automáticamente una imagen utilizando un prompt predeterminado.</li>
+<li>Cambiar el tamaño del puzzle vuelve a distribuir las piezas usando la imagen actual.</li>
+<li>La descarga incorpora la imagen como Base64, por lo que el archivo descargado no depende del servicio para volver a mostrar esa imagen.</li>
+<li>La generación de nuevas imágenes requiere conexión a Internet.</li>
+<li>Las imágenes generadas se mantienen en memoria mediante una Blob URL durante la sesión.</li>
+</ul>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>
