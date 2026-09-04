@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>Puzzle Hexagonal Simétrico</h1>
+<p>Aplicación web interactiva que genera puzzles con piezas hexagonales a partir de imágenes generadas por IA, URLs externas o archivos locales. Permite guardar múltiples puzzles y exportarlos como una galería HTML interactiva.</p>
+<p>Diseñado por <strong>Juan Guillermo Rivera Berrío</strong> con tecnología Gemini 3.1 Pro.</p>
+<hr>
+<h2>Características</h2>
+<ul>
+<li><strong>Generación de imágenes con IA</strong> — escribe un prompt y la app genera una imagen automáticamente.</li>
+<li><strong>Carga de imágenes</strong> — por URL externa o subiendo un archivo desde tu dispositivo.</li>
+<li><strong>4 tamaños de puzzle</strong> — 7, 19, 37 o 61 piezas hexagonales.</li>
+<li><strong>Rotación de piezas</strong> — haz clic en cada pieza para rotarla 60°.</li>
+<li><strong>Detección de victoria</strong> — confeti y revelación de la imagen al completar el puzzle.</li>
+<li><strong>Ver imagen original</strong> — al completar el puzzle, haz clic sobre la imagen para abrirla en una pestaña nueva.</li>
+<li><strong>Guardar puzzles</strong> — guarda el puzzle actual (como HTML autocontenido) en un vector en memoria.</li>
+<li><strong>Descargar puzzle</strong> — descarga el puzzle actual como archivo <code>.html</code> independiente y jugable.</li>
+<li><strong>Galería interactiva</strong> — exporta todos los puzzles guardados a un archivo HTML con grilla de 2 columnas, puzzles jugables y botón de zoom para cada uno.</li>
+</ul>
+<hr>
+<h2>Uso</h2>
+<h3>Generar un puzzle</h3>
+<ol>
+<li>Escribe un prompt en el campo de texto y pulsa <strong>Generar IA</strong>, o bien pega una URL de imagen y pulsa <strong>Cargar URL</strong>, o pulsa <strong>Subir Archivo</strong> para usar una imagen local.</li>
+<li>Selecciona el número de piezas con los botones de la derecha (7, 19, 37 o 61).</li>
+<li>Haz clic en las piezas para rotarlas hasta armar el puzzle.</li>
+</ol>
+<h3>Guardar y exportar</h3>
+<ul>
+<li><strong>Guardar</strong> — guarda el puzzle actual en memoria. El contador debajo de los botones indica cuántos puzzles llevas guardados.</li>
+<li><strong>Descargar Puzzle</strong> — descarga el puzzle actual como archivo HTML independiente.</li>
+<li><strong>Generar y descargar galería</strong> — exporta todos los puzzles guardados a un archivo <code>galeria_puzles_hexagonales.html</code> con:<ul>
+<li>Grilla de 2 columnas con puzzles interactivos.</li>
+<li>Número de piezas en cada panel.</li>
+<li>Botón <strong>Zoom</strong> (esquina superior derecha de cada panel) para ampliar el puzzle en una ventana emergente.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Estructura del proyecto</h2>
+<pre><code>├── index.html       # Interfaz principal
+├── style.css        # Estilos
+├── script.js        # Lógica de la aplicación
+└── Collage/         # App auxiliar: generador de tiras cómicas / galerías
+</code></pre>
+<hr>
+<h2>Tecnologías</h2>
+<ul>
+<li>HTML5, CSS3, JavaScript (vanilla)</li>
+<li>API de generación de imágenes: <code>https://node.proyectodescartes.org/api/ia/image</code></li>
+<li>Alojamiento temporal de imágenes: <a href="https://litterbox.catbox.moe">litterbox.catbox.moe</a></li>
+</ul>
+<hr>
+<h2>Requisitos</h2>
+<p>No requiere instalación ni dependencias. Abre <code>index.html</code> directamente en cualquier navegador moderno.</p>
+<hr>
+<hr>
+<h1>Symmetric Hexagonal Puzzle</h1>
+<p>An interactive web application that generates hexagonal puzzles from AI-generated images, external URLs, or local files. Supports saving multiple puzzles and exporting them as an interactive HTML gallery.</p>
+<p>Designed by <strong>Juan Guillermo Rivera Berrío</strong> using Gemini 3.1 Pro technology.</p>
+<hr>
+<h2>Features</h2>
+<ul>
+<li><strong>AI image generation</strong> — type a prompt and the app generates an image automatically.</li>
+<li><strong>Image loading</strong> — via external URL or by uploading a local file.</li>
+<li><strong>4 puzzle sizes</strong> — 7, 19, 37, or 61 hexagonal pieces.</li>
+<li><strong>Piece rotation</strong> — click any piece to rotate it 60°.</li>
+<li><strong>Win detection</strong> — confetti and image reveal when the puzzle is completed.</li>
+<li><strong>View original image</strong> — once completed, click the image to open it in a new tab.</li>
+<li><strong>Save puzzles</strong> — saves the current puzzle (as a self-contained HTML file) into an in-memory array.</li>
+<li><strong>Download puzzle</strong> — downloads the current puzzle as a standalone playable <code>.html</code> file.</li>
+<li><strong>Interactive gallery</strong> — exports all saved puzzles to an HTML file with a 2-column grid, playable puzzles, and a zoom button for each one.</li>
+</ul>
+<hr>
+<h2>Usage</h2>
+<h3>Generate a puzzle</h3>
+<ol>
+<li>Type a prompt and click <strong>Generar IA</strong>, or paste an image URL and click <strong>Cargar URL</strong>, or click <strong>Subir Archivo</strong> to upload a local image.</li>
+<li>Select the number of pieces using the buttons on the right (7, 19, 37, or 61).</li>
+<li>Click the pieces to rotate them until the puzzle is solved.</li>
+</ol>
+<h3>Save and export</h3>
+<ul>
+<li><strong>Guardar</strong> — saves the current puzzle to memory. A counter below the buttons shows how many puzzles have been saved.</li>
+<li><strong>Descargar Puzzle</strong> — downloads the current puzzle as a standalone HTML file.</li>
+<li><strong>Generar y descargar galería</strong> — exports all saved puzzles to <code>galeria_puzles_hexagonales.html</code> with:<ul>
+<li>A 2-column grid of interactive puzzles.</li>
+<li>Piece count label on each panel.</li>
+<li><strong>Zoom</strong> button (top-right corner of each panel) to expand the puzzle in a centered modal.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Project structure</h2>
+<pre><code>├── index.html       # Main interface
+├── style.css        # Styles
+├── script.js        # Application logic
+└── Collage/         # Auxiliary app: comic strip / gallery generator
+</code></pre>
+<hr>
+<h2>Technologies</h2>
+<ul>
+<li>HTML5, CSS3, vanilla JavaScript</li>
+<li>Image generation API: <code>https://node.proyectodescartes.org/api/ia/image</code></li>
+<li>Temporary image hosting: <a href="https://litterbox.catbox.moe">litterbox.catbox.moe</a></li>
+</ul>
+<hr>
+<h2>Requirements</h2>
+<p>No installation or dependencies required. Open <code>index.html</code> directly in any modern browser.</p>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>

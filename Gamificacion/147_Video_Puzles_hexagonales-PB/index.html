@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <!-- <base href="https://websim.ai/puzzle/"> Comentado para evitar errores al enlazar los archivos locales -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puzzle Hexagonal de Video</title>
+  <!-- Enlace al archivo CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="branding" aria-label="Identidad institucional">
+    <img class="brand-logo brand-logo-pb" src="logoPB0.png" alt="Institución Universitaria Pascual Bravo">
+    <h1>Puzzle Hexagonal de Video</h1>
+    <img class="brand-logo brand-logo-escuela" src="logo_escuela.png" alt="Escuela de Pensamiento Educativo y Pedagógico">
+  </header>
+
+  <div class="input-container">
+    <input type="text" id="promptInput" placeholder="Prompt IA o pega una URL de video (http...)">
+    
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 400px;">
+      <button id="loadUrlButton" style="flex: 1; min-width: 120px;">Cargar URL</button>
+      <button id="uploadButton" style="flex: 1; min-width: 120px;">Subir Archivo</button>
+    </div>
+    <input type="file" id="fileInput" accept="video/*" style="display: none;">
+  </div>
+  
+  <div class="main-content">
+    <div class="puzzle-container" id="puzzleContainer">
+      <div id="loadingMessage">Cargando video...</div>
+    </div>
+    
+    <div class="selector-container">
+      <button class="size-selector active" data-rings="1">7 Piezas</button>
+      <button class="size-selector" data-rings="2">19 Piezas</button>
+      <button class="size-selector" data-rings="3">37 Piezas</button>
+      <button class="size-selector" data-rings="4">61 Piezas</button>
+    </div>
+  </div>
+  
+  <div id="messageContainer">
+    <p id="message"></p>
+    <button id="playAgainButton">Jugar de nuevo</button>
+  </div>
+  
+  <div class="button-container">
+    <button id="resetButton">Reiniciar Puzzle</button>
+    <button id="saveButton">Guardar</button>
+    <button id="downloadButton">Descargar Puzzle</button>
+    <button id="galleryButton">Generar y descargar galería</button>
+  </div>
+  <div id="savedCount" style="display:none; margin-top: 8px; color: #555; font-size: 14px;"></div>
+
+  <footer>
+    Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 3.1 Pro
+  </footer>
+
+  <!-- Enlace al archivo JavaScript -->
+  <script src="script.js"></script>
+</body>
+
+</html>

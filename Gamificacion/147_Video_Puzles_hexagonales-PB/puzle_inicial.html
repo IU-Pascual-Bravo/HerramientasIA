@@ -1,0 +1,93 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Puzzle Hexagonal de Video</title><style>* { box-sizing: border-box; } body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px 10px; background-color: #f0f0f0; overflow-x: hidden; } .main-content { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 30px; margin-bottom: 20px; width: 100%; max-width: 800px; } .puzzle-container { position: relative; background-color: #333; border-radius: 8px; overflow: hidden; transition: transform 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 100%; } .puzzle-piece { position: absolute; cursor: pointer; clip-path: polygon(50% 0%, 93.301% 25%, 93.301% 75%, 50% 100%, 6.699% 75%, 6.699% 25%); transform: scale(var(--scale, 0.98)) rotate(var(--rot, 0deg)); transition: transform 0.3s ease; overflow: hidden; } .puzzle-piece:hover { --scale: 1.05; z-index: 2; } .puzzle-piece video { position: absolute; object-fit: cover; pointer-events: none; } @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } h1 { margin-top: 10px; margin-bottom: 20px; color: #333; text-align: center; font-size: clamp(24px, 5vw, 36px); } button { padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; } button:hover { background-color: #45a049; } button:active { transform: scale(0.95); } #messageContainer { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: rgba(255,255,255,0.95); padding: 15px 30px; border-radius: 50px; text-align: center; font-size: 18px; font-weight: bold; color: #333; display: none; flex-direction: row; align-items: center; gap: 20px; z-index: 100; box-shadow: 0 5px 20px rgba(0,0,0,0.3); max-width: 90%; } #messageContainer p { margin: 0; } #playAgainButton { background-color: #2196F3; } #playAgainButton:hover { background-color: #1976D2; } .button-container { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 15px; } footer { margin-top: 20px; color: #666; font-size: 14px; text-align: center; }</style></head><body><h1>Puzzle Hexagonal de Video</h1><div class="main-content"><div class="puzzle-container" id="puzzleContainer"></div></div><div id="messageContainer"><p id="message"></p><button id="playAgainButton">Jugar de nuevo</button></div><div class="button-container"><button id="resetButton">Reiniciar Puzzle</button></div><footer>Diseñado por Juan Guillermo Rivera Berrio con tecnologia Gemini 3.1 Pro</footer><script>
+    const puzzleContainer = document.getElementById('puzzleContainer');
+    const messageContainer = document.getElementById('messageContainer');
+    const message = document.getElementById('message');
+    const playAgainButton = document.getElementById('playAgainButton');
+    const resetButton = document.getElementById('resetButton');
+    let videoBase64 = "modelo.mp4";
+    let videoUrl = videoBase64;
+    const rings = 1;
+    let hexGrid = [], rotations = [], scale = 1, R = 0;
+    let videoElements = [];
+    let videoNaturalWidth = 1024, videoNaturalHeight = 1024;
+    async function init() {
+      // Convertimos el base64 a un Blob URL local para mejor performance y evitar problemas de menus contextuales
+      if (videoBase64.startsWith('data:video')) {
+        try {
+          const response = await fetch(videoBase64);
+          const blob = await response.blob();
+          videoUrl = URL.createObjectURL(blob);
+        } catch (e) {
+          videoUrl = videoBase64;
+        }
+      }
+      const video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.onloadedmetadata = () => {
+        videoNaturalWidth = video.videoWidth || 1024;
+        videoNaturalHeight = video.videoHeight || 1024;
+        createPuzzlePieces();
+      };
+      video.onerror = () => { createPuzzlePieces(); };
+      video.src = videoUrl;
+    }
+    function createPuzzlePieces() {
+      puzzleContainer.innerHTML = ''; hexGrid = []; videoElements = [];
+      for (let q = -rings; q <= rings; q++) {
+        let r1 = Math.max(-rings, -q-rings), r2 = Math.min(rings, -q+rings);
+        for (let r = r1; r <= r2; r++) hexGrid.push({q, r});
+      }
+      const totalPieces = hexGrid.length;
+      rotations = Array.from({length: totalPieces}, () => Math.floor(Math.random()*6)*60);
+      const maxSize = Math.min(window.innerWidth - 40, 400);
+      const K = rings;
+      R = Math.min(maxSize/(2*Math.sqrt(3)*K+2), maxSize/(3*K+2));
+      const CX = maxSize/2, CY = maxSize/2;
+      const sf = maxSize/Math.min(videoNaturalWidth, videoNaturalHeight);
+      const bgW = videoNaturalWidth*sf, bgH = videoNaturalHeight*sf;
+      const bgOX = (bgW-maxSize)/2, bgOY = (bgH-maxSize)/2;
+      puzzleContainer.style.width = maxSize+'px'; puzzleContainer.style.height = maxSize+'px';
+      for (let i = 0; i < totalPieces; i++) {
+        const pieceWrapper = document.createElement('div');
+        pieceWrapper.className = 'puzzle-piece';
+        pieceWrapper.style.width = (2*R)+'px'; pieceWrapper.style.height = (2*R)+'px';
+        const video = document.createElement('video');
+        video.src = videoUrl;
+        if (videoUrl.startsWith('http')) video.crossOrigin = 'anonymous';
+        video.loop = true; video.muted = true; video.playsInline = true; video.autoplay = true;
+        video.style.width = bgW+'px'; video.style.height = bgH+'px';
+        const {q, r} = hexGrid[i];
+        const cx = CX+Math.sqrt(3)*R*(q+r/2), cy = CY+1.5*R*r;
+        pieceWrapper.style.left = (cx-R)+'px'; pieceWrapper.style.top = (cy-R)+'px';
+        video.style.left = -(cx-R+bgOX)+'px'; video.style.top = -(cy-R+bgOY)+'px';
+        pieceWrapper.style.setProperty('--rot', rotations[i]+'deg');
+        pieceWrapper.appendChild(video);
+        pieceWrapper.addEventListener('click', () => { rotations[i]+=60; pieceWrapper.style.setProperty('--rot', rotations[i]+'deg'); checkWin(); });
+        puzzleContainer.appendChild(pieceWrapper);
+        videoElements.push(video);
+        video.play().catch(()=>{});
+      }
+      setTimeout(() => { videoElements.forEach(v => { v.currentTime = 0; v.play().catch(()=>{}); }); }, 100);
+    }
+    function checkWin() {
+      if (rotations.every(r => r%360===0)) {
+        setTimeout(() => {
+          message.textContent = '¡Felicidades! Puzzle completado.';
+          messageContainer.style.display = 'flex';
+          puzzleContainer.querySelectorAll('.puzzle-piece').forEach(p => p.style.opacity='0');
+          const video = document.createElement('video');
+          video.src = videoUrl; video.loop = true; video.muted = true; video.playsInline = true; video.autoplay = true;
+          video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;animation:fadeIn 0.5s ease forwards;z-index:10';
+          puzzleContainer.appendChild(video);
+          video.play().catch(()=>{});
+          const colors=['#f44336','#e91e63','#9c27b0','#3f51b5','#2196f3','#4caf50','#ffeb3b','#ff9800'];
+          for(let i=0;i<50;i++){const c=document.createElement('div');c.style.cssText='position:fixed;width:10px;height:10px;background:'+colors[Math.floor(Math.random()*colors.length)]+';left:'+(Math.random()*100)+'vw;top:-20px;border-radius:50%;pointer-events:none;z-index:1000;animation:confettiFall '+(2+Math.random()*2)+'s linear forwards';document.body.appendChild(c);setTimeout(()=>c.remove(),4000);}
+        }, 300);
+      }
+    }
+    resetButton.addEventListener('click', createPuzzlePieces);
+    playAgainButton.addEventListener('click', () => { messageContainer.style.display='none'; createPuzzlePieces(); });
+    puzzleContainer.addEventListener('wheel', (e) => { e.preventDefault(); scale=Math.max(0.5,Math.min(2,scale+(e.deltaY>0?-0.1:0.1))); puzzleContainer.style.transform='scale('+scale+')'; });
+    window.addEventListener('resize', createPuzzlePieces);
+    init();
+  </script></body></html>
