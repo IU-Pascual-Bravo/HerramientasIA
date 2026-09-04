@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>Crea tu juego: Memoriza PB</h1>
+<p>Aplicación web para crear juegos de memoria de parejas con palabras e imágenes relacionadas con un tema. Permite seleccionar la cantidad de parejas, revisar las imágenes antes de jugar, ajustar el tamaño de la grilla y descargar una versión del juego.</p>
+<h2>Archivos principales</h2>
+<ul>
+<li><code>index.html</code>: aplicación principal.</li>
+<li><code>ejemplo1.html</code>, <code>ejemplo2.html</code> y <code>ejemplo3.html</code>: ejemplos o variantes del juego.</li>
+<li><code>isotipo.png</code>: imagen que aparece en el reverso de las tarjetas.</li>
+<li><code>logoPB0.png</code>: logo fijo en la esquina superior izquierda.</li>
+<li><code>logo_escuela.png</code>: logo fijo en la esquina superior derecha.</li>
+<li><code>bien.mp3</code> y <code>error.mp3</code>: sonidos del juego.</li>
+</ul>
+<h2>Cómo se usa</h2>
+<ol>
+<li>Abre <code>index.html</code> en un navegador.</li>
+<li>Escribe el tema del juego. Si lo dejas vacío, se utiliza el tema <code>animales</code>.</li>
+<li>Selecciona el número de parejas: <code>8</code>, <code>10</code>, <code>12</code> o <code>16</code>. La opción predeterminada es <code>8</code>.</li>
+<li>Selecciona el estilo artístico de las imágenes.</li>
+<li>Pulsa <strong>Iniciar Juego</strong> y espera a que se generen las palabras y las imágenes.</li>
+<li>Revisa las imágenes generadas. Puedes editar el texto asociado, regenerar una imagen o subir una imagen propia.</li>
+<li>Pulsa <strong>Aprobar imágenes y Jugar</strong> para iniciar la partida.</li>
+</ol>
+<h2>Durante la partida</h2>
+<ul>
+<li>Haz clic en dos tarjetas para descubrirlas.</li>
+<li>Si forman una pareja, quedan descubiertas; si no, se vuelven a ocultar.</li>
+<li>El contador muestra los movimientos y las parejas encontradas.</li>
+<li>Utiliza el botón de tema claro/oscuro para cambiar la apariencia.</li>
+<li>Utiliza el deslizador <strong>Tamaño de la grilla</strong> para reducir o ampliar las tarjetas entre el <code>70%</code> y el <code>140%</code>.</li>
+<li>El número de columnas se adapta automáticamente al número de parejas para evitar huecos. En pantallas pequeñas se usan cuatro columnas para mejorar la lectura.</li>
+<li>Pulsa <strong>Jugar de Nuevo</strong> para volver a mezclar las tarjetas.</li>
+</ul>
+<h2>Descargar el juego</h2>
+<p>Cuando la partida esté preparada:</p>
+<ol>
+<li>Ajusta el zoom de la grilla si lo deseas.</li>
+<li>Pulsa <strong>Descargar Juego</strong>.</li>
+<li>Abre el archivo HTML descargado.</li>
+</ol>
+<p>La descarga convierte a Base64 las imágenes del juego y los logos, incluido <code>isotipo.png</code>. También incrusta el isotipo dentro del código que crea las tarjetas, por lo que los recursos locales no son necesarios junto al HTML descargado.</p>
+<p>El archivo descargado conserva el tema, la cantidad de parejas, la distribución de la grilla y el nivel de zoom seleccionado.</p>
+<h2>Requisitos y notas</h2>
+<ul>
+<li>Para generar palabras e imágenes, la aplicación necesita conexión a Internet y acceso a los servicios de Proyecto Descartes.</li>
+<li>Los archivos <code>isotipo.png</code>, <code>logoPB0.png</code> y <code>logo_escuela.png</code> deben permanecer en el mismo directorio que <code>index.html</code> al utilizar la aplicación original.</li>
+<li>El juego ya descargado puede abrirse como un archivo independiente porque sus imágenes y logos se incrustan en Base64.</li>
+</ul>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>
