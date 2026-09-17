@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transcriptor de Audio - Groq</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .brand-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 1rem;
+      min-height: 76px;
+      margin-bottom: 0.75rem;
+    }
+
+    .brand-logo {
+      display: block;
+      width: auto;
+      height: 72px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .brand-logo-left {
+      justify-self: start;
+    }
+
+    .brand-logo-right {
+      justify-self: end;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      cursor: pointer;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #334155;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #475569;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background-color: #dc2626;
+    }
+
+    /* Tabs de audio */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+      background: #334155;
+    }
+
+    /* Drag and drop zone */
+    .drop-zone {
+      border: 2px dashed var(--card-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+      background: #0b1120;
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--primary);
+      background: #1e1b4b;
+    }
+
+    .drop-zone p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Grabación con micrófono */
+    .record-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: #0b1120;
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    .record-timer {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--danger);
+    }
+
+    /* Reproductor y detalles */
+    .audio-preview {
+      margin-top: 1rem;
+      background: #0b1120;
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    audio {
+      width: 100%;
+      height: 40px;
+    }
+
+    .audio-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Salida de transcripción */
+    .transcription-area {
+      width: 100%;
+      min-height: 180px;
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 1rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .actions-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .alert-error {
+      background: #451a1a;
+      border: 1px solid #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 18px;
+      height: 18px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .row-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-row {
+        gap: 0.5rem;
+        min-height: 54px;
+      }
+
+      .brand-logo {
+        height: 50px;
+      }
+
+      header h1 {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand-row">
+        <img class="brand-logo brand-logo-left" src="logoPB1.png" alt="Institución Universitaria Pascual Bravo" />
+        <h1>Transcriptor de Audio</h1>
+        <img class="brand-logo brand-logo-right" src="logo_escuela.png" alt="Escuela de Pensamiento Educativo y Pedagógico" />
+      </div>
+      <p>Convierte voz a texto usando <strong>Groq Speech-to-Text</strong></p>
+    </header>
+
+    <!-- 1. Configuración de API Key y Modelo -->
+    <div class="card">
+      <div class="card-title">🔑 1. Configuración y Credenciales</div>
+      
+      <div class="form-group">
+        <label for="apiKey">Groq API Key:</label>
+        <div class="input-row">
+          <input type="password" id="apiKey" placeholder="gsk_..." autocomplete="off" />
+          <button type="button" class="btn btn-secondary" id="toggleKeyBtn">👁️</button>
+        </div>
+        <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">
+          ¿No tienes una clave? Créala en <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" style="color: #818cf8;">console.groq.com/keys</a>. No se almacena en este navegador.
+        </small>
+      </div>
+
+      <div class="row-2" style="margin-top: 1rem;">
+        <div class="form-group">
+          <label for="model">Modelo:</label>
+          <select id="model">
+            <option value="whisper-large-v3-turbo" selected>whisper-large-v3-turbo (Recomendado)</option>
+            <option value="whisper-large-v3">whisper-large-v3 (Mayor precisión)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="language">Idioma (Opcional):</label>
+          <select id="language">
+            <option value="" selected>Auto-detectar</option>
+            <option value="es">Español (es)</option>
+            <option value="en">Inglés (en)</option>
+            <option value="fr">Francés (fr)</option>
+            <option value="de">Alemán (de)</option>
+            <option value="it">Italiano (it)</option>
+            <option value="pt">Portugués (pt)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Selección o Grabación de Audio -->
+    <div class="card">
+      <div class="card-title">🎙️ 2. Audio de Entrada</div>
+      
+      <div class="tabs">
+        <button class="tab-btn active" id="tabUploadBtn">Subir Archivo</button>
+        <button class="tab-btn" id="tabRecordBtn">Grabar Micrófono</button>
+      </div>
+
+      <!-- Pestaña: Subir archivo -->
+      <div id="panelUpload">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept="audio/*,video/mp4" style="display: none;" />
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <p><strong>Haz clic o arrastra un archivo de audio aquí</strong></p>
+          <p>Soporta MP3, WAV, M4A, WEBM, OGG, MP4</p>
+        </div>
+      </div>
+
+      <!-- Pestaña: Grabar micrófono -->
+      <div id="panelRecord" style="display: none;">
+        <div class="record-box">
+          <div class="record-timer" id="recordTimer">00:00</div>
+          <button type="button" class="btn btn-danger" id="recordBtn">
+            <span>● Iniciar Grabación</span>
+          </button>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Presiona el botón para comenzar a hablar. Al terminar se cargará el audio automáticamente.
+          </p>
+        </div>
+      </div>
+
+      <!-- Previsualización del audio seleccionado -->
+      <div class="audio-preview" id="audioPreview" style="display: none;">
+        <div class="audio-meta">
+          <span id="audioFileName">archivo.mp3</span>
+          <span id="audioFileSize">0 MB</span>
+        </div>
+        <audio id="audioPlayer" controls></audio>
+      </div>
+    </div>
+
+    <!-- Botón de Transcripción y Mensajes -->
+    <div id="alertBox" class="alert alert-error"></div>
+
+    <button id="transcribeBtn" class="btn" style="width: 100%; padding: 1rem; font-size: 1.05rem;" disabled>
+      <span id="btnSpinner" class="spinner" style="display: none;"></span>
+      <span id="btnText">Transcribir Audio con Groq</span>
+    </button>
+
+    <!-- 3. Resultado de la Transcripción -->
+    <div class="card">
+      <div class="card-title" style="justify-content: space-between;">
+        <span>📝 3. Transcripción</span>
+        <span id="wordCount" style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">0 palabras</span>
+      </div>
+
+      <textarea id="transcriptionOutput" class="transcription-area" placeholder="Aquí aparecerá el texto transcrito..." readonly></textarea>
+
+      <div class="actions-row">
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" id="copyBtn" disabled>📋 Copiar</button>
+          <button type="button" class="btn btn-secondary" id="downloadBtn" disabled>💾 Descargar .txt</button>
+          <button type="button" class="btn btn-secondary" id="wordBtn" disabled>📝 Descargar Word</button>
+        </div>
+        <button type="button" class="btn btn-secondary" id="clearBtn">Limpiar todo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Referencias del DOM
+    const apiKeyInput = document.getElementById('apiKey');
+    const toggleKeyBtn = document.getElementById('toggleKeyBtn');
+    const modelSelect = document.getElementById('model');
+    const languageSelect = document.getElementById('language');
+
+    const tabUploadBtn = document.getElementById('tabUploadBtn');
+    const tabRecordBtn = document.getElementById('tabRecordBtn');
+    const panelUpload = document.getElementById('panelUpload');
+    const panelRecord = document.getElementById('panelRecord');
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const recordBtn = document.getElementById('recordBtn');
+    const recordTimer = document.getElementById('recordTimer');
+
+    const audioPreview = document.getElementById('audioPreview');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const audioFileName = document.getElementById('audioFileName');
+    const audioFileSize = document.getElementById('audioFileSize');
+
+    const transcribeBtn = document.getElementById('transcribeBtn');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const btnText = document.getElementById('btnText');
+    const alertBox = document.getElementById('alertBox');
+
+    const transcriptionOutput = document.getElementById('transcriptionOutput');
+    const wordCount = document.getElementById('wordCount');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const wordBtn = document.getElementById('wordBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Estado interno
+    let selectedAudioFile = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordInterval = null;
+    let recordSeconds = 0;
+
+    apiKeyInput.addEventListener('input', () => {
+      updateTranscribeBtnState();
+    });
+
+    toggleKeyBtn.addEventListener('click', () => {
+      const isPass = apiKeyInput.type === 'password';
+      apiKeyInput.type = isPass ? 'text' : 'password';
+      toggleKeyBtn.textContent = isPass ? '🔒' : '👁️';
+    });
+
+    // 2. Control de Pestañas
+    tabUploadBtn.addEventListener('click', () => {
+      tabUploadBtn.classList.add('active');
+      tabRecordBtn.classList.remove('active');
+      panelUpload.style.display = 'block';
+      panelRecord.style.display = 'none';
+    });
+
+    tabRecordBtn.addEventListener('click', () => {
+      tabRecordBtn.classList.add('active');
+      tabUploadBtn.classList.remove('active');
+      panelRecord.style.display = 'block';
+      panelUpload.style.display = 'none';
+    });
+
+    // 3. Manejo de archivos (File Input y Drag & Drop)
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleAudioSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleAudioSelection(e.target.files[0]);
+      }
+    });
+
+    function handleAudioSelection(file) {
+      hideAlert();
+      selectedAudioFile = file;
+
+      audioFileName.textContent = file.name;
+      audioFileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+      
+      const audioUrl = URL.createObjectURL(file);
+      audioPlayer.src = audioUrl;
+      audioPreview.style.display = 'flex';
+
+      updateTranscribeBtnState();
+    }
+
+    // 4. Grabación con micrófono
+    recordBtn.addEventListener('click', async () => {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          recordedChunks = [];
+          mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const file = new File([blob], `grabacion_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.webm`, { type: 'audio/webm' });
+            handleAudioSelection(file);
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start();
+          recordSeconds = 0;
+          recordTimer.textContent = '00:00';
+          recordInterval = setInterval(() => {
+            recordSeconds++;
+            const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+            const s = String(recordSeconds % 60).padStart(2, '0');
+            recordTimer.textContent = `${m}:${s}`;
+          }, 1000);
+
+          recordBtn.innerHTML = '<span>■ Detener Grabación</span>';
+          recordBtn.classList.remove('btn-danger');
+          recordBtn.classList.add('btn-secondary');
+        } catch (err) {
+          showAlert('No se pudo acceder al micrófono: ' + err.message);
+        }
+      } else {
+        mediaRecorder.stop();
+        clearInterval(recordInterval);
+        recordBtn.innerHTML = '<span>● Iniciar Grabación</span>';
+        recordBtn.classList.remove('btn-secondary');
+        recordBtn.classList.add('btn-danger');
+      }
+    });
+
+    function updateTranscribeBtnState() {
+      const hasKey = apiKeyInput.value.trim().length > 0;
+      const hasFile = selectedAudioFile !== null;
+      transcribeBtn.disabled = !(hasKey && hasFile);
+    }
+
+    // 5. Llamada a la API POST de Groq
+    transcribeBtn.addEventListener('click', async () => {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        showAlert('Por favor ingresa tu API Key de Groq.');
+        return;
+      }
+
+      if (!selectedAudioFile) {
+        showAlert('Por favor selecciona o graba un archivo de audio primero.');
+        return;
+      }
+
+      hideAlert();
+      setLoading(true);
+
+      try {
+        // Groq usa el formato multipart/form-data compatible con OpenAI.
+        const formData = new FormData();
+        formData.append('file', selectedAudioFile);
+        formData.append('model', modelSelect.value);
+
+        const lang = languageSelect.value;
+        if (lang) {
+          formData.append('language', lang);
+        }
+
+        // Petición directa al endpoint oficial de transcripciones de Groq.
+        const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`
+            // NOTA: NO incluir 'Content-Type': fetch lo define automáticamente junto con el boundary
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          let errorMsg = `Error HTTP ${response.status}: ${response.statusText}`;
+          try {
+            const errData = await response.json();
+            if (errData.error?.message) {
+              errorMsg = errData.error.message;
+            } else if (errData.message) {
+              errorMsg = errData.message;
+            }
+          } catch (_) {
+            const raw = await response.text();
+            if (raw) errorMsg += ` - ${raw}`;
+          }
+          throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+        const transcriptionText = data.text || JSON.stringify(data, null, 2);
+
+        transcriptionOutput.value = transcriptionText;
+        updateWordCount(transcriptionText);
+
+        copyBtn.disabled = false;
+        downloadBtn.disabled = false;
+        wordBtn.disabled = false;
+      } catch (err) {
+        console.error(err);
+        showAlert('Error al transcribir el audio: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // 6. Utilidades: Copiar, Descargar, Limpiar
+    function updateWordCount(text) {
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      wordCount.textContent = `${words} palabra${words !== 1 ? 's' : ''}`;
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(transcriptionOutput.value);
+        copyBtn.textContent = '✅ ¡Copiado!';
+        setTimeout(() => copyBtn.textContent = '📋 Copiar', 2000);
+      } catch (e) {
+        alert('No se pudo copiar el texto');
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const text = transcriptionOutput.value;
+      if (!text) return;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `transcripcion_${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    wordBtn.addEventListener('click', () => {
+      const text = transcriptionOutput.value.trim();
+      if (!text) return;
+
+      const paragraphs = text
+        .split(/\r?\n+/)
+        .flatMap(paragraph => paragraph.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [])
+        .map(paragraph => paragraph.trim())
+        .filter(Boolean)
+        .map(paragraph => `<p>${escapeHtml(paragraph)}<br></p>`)
+        .join('');
+      const wordDocument = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt}p{margin:0 0 12pt;line-height:1.5;white-space:pre-wrap}</style></head><body>${paragraphs}</body></html>`;
+      const blob = new Blob([wordDocument], { type: 'application/msword' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `transcripcion_${new Date().toISOString().slice(0, 10)}.doc`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[character]));
+    }
+
+    clearBtn.addEventListener('click', () => {
+      selectedAudioFile = null;
+      fileInput.value = '';
+      audioPlayer.src = '';
+      audioPreview.style.display = 'none';
+      transcriptionOutput.value = '';
+      wordCount.textContent = '0 palabras';
+      copyBtn.disabled = true;
+      downloadBtn.disabled = true;
+      wordBtn.disabled = true;
+      hideAlert();
+      updateTranscribeBtnState();
+    });
+
+    function showAlert(msg) {
+      alertBox.textContent = msg;
+      alertBox.style.display = 'block';
+    }
+
+    function hideAlert() {
+      alertBox.textContent = '';
+      alertBox.style.display = 'none';
+    }
+
+    function setLoading(isLoading) {
+      transcribeBtn.disabled = isLoading;
+      if (isLoading) {
+        btnSpinner.style.display = 'inline-block';
+        btnText.textContent = 'Procesando y transcribiendo audio...';
+      } else {
+        btnSpinner.style.display = 'none';
+        btnText.textContent = 'Transcribir Audio con Groq';
+        updateTranscribeBtnState();
+      }
+    }
+  </script>
+</body>
+</html>
