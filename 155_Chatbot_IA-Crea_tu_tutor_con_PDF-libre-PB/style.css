@@ -85,7 +85,6 @@ body {
 
 .header-logo-link {
     position: absolute;
-    left: 0;
     top: 50%;
     transform: translateY(-50%);
     display: inline-flex;
@@ -93,6 +92,9 @@ body {
     justify-content: center;
     line-height: 0;
 }
+
+.header-logo-pb { left: 0; }
+.header-logo-school { right: 0; }
 
 .header-logo-link img {
     display: block;
