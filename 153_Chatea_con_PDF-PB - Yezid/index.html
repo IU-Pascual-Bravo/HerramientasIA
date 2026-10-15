@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot PDF Interactivo</title>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+    </script>
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            options: { processHtmlClass: "tex2jax_process", ignoreHtmlClass: "tex2jax_ignore" }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
+    <!-- Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-branding">
+                <img src="logoPB1.png" alt="Logo Pascual Bravo" class="header-logo">
+                <h1>Chatbot PDF Interactivo</h1>
+                <img src="logo_escuela.png" alt="Logo de la escuela" class="header-logo">
+            </div>
+            <p class="header-sub">Analiza y consulta tus documentos con Inteligencia Artificial</p>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <button id="new-chat-button" class="btn-secondary">↺ Nuevo Chat</button>
+                <button id="toggle-pdf-viewer-button" disabled class="btn-secondary">👁 Ver PDF</button>
+            </div>
+
+            <div class="toolbar-group model-group">
+                <label for="model-selector" class="model-label">Modelo IA</label>
+                <select id="model-selector" title="Seleccionar Modelo IA">
+                    <option value="openai">GPT 5 mini</option>
+                    <option value="mistral">Mistral 3.2</option>
+                    <option value="gemini-search" selected>Gemini 2.5 flash</option>
+                    <option value="perplexity-fast">Perplexity Sonar</option>
+                </select>
+            </div>
+
+            <div class="toolbar-group">
+                <button id="download-html-btn" disabled>📥 HTML</button>
+                <button id="download-pdf-btn" disabled>📥 PDF</button>
+                <button id="download-chatbot-btn" disabled>🤖 Clonar Chatbot</button>
+                <button id="toggle-theme-button" class="btn-theme" title="Cambiar tema">🌓</button>
+            </div>
+        </div>
+
+        <div class="main-content-area">
+            <div class="chat-and-loader-column">
+                <section class="pdf-loader">
+                    <h2><span class="step-badge">1</span> Cargar fuente de conocimiento</h2>
+                    <div class="file-input-wrapper">
+                        <label for="pdf-upload" class="custom-file-upload">📎 Seleccionar PDF</label>
+                        <input type="file" id="pdf-upload" accept=".pdf">
+                        <span id="pdf-name">Ningún archivo seleccionado</span>
+                    </div>
+                    <div id="pdf-status"></div>
+                    <div id="pdf2-section" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--card-border-color);">
+                        <div class="file-input-wrapper">
+                            <label for="pdf2-upload" class="custom-file-upload secondary">+ Segundo PDF (opcional)</label>
+                            <input type="file" id="pdf2-upload" accept=".pdf">
+                            <span id="pdf2-name">Ningún archivo seleccionado</span>
+                        </div>
+                        <div id="pdf2-status"></div>
+                    </div>
+                    <div class="url-loader">
+                        <label for="knowledge-url">O leer una página web como base de conocimiento</label>
+                        <div class="url-input-row">
+                            <input type="url" id="knowledge-url" placeholder="https://ejemplo.com/articulo" inputmode="url">
+                            <button type="button" id="load-url-button">Leer URL</button>
+                        </div>
+                        <div class="help-text">También se aceptan URLs directas a PDF. Si el sitio bloquea CORS, se usará un lector web alternativo para convertirlo en texto.</div>
+                        <div id="url-status" role="status"></div>
+                    </div>
+                </section>
+
+                <section class="chat-area">
+                    <h2><span class="step-badge">2</span> Chatea con el Documento</h2>
+                    <div id="chat-display" class="chat-display"></div>
+                    <div class="question-input-area">
+                        <textarea id="question-input" rows="2" placeholder="Escribe tu pregunta aquí..." disabled></textarea>
+                        <button id="send-button" disabled>
+                            <span id="send-button-text">Enviar</span>
+                            <div class="loader" id="loading-spinner"></div>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="pdf-viewer-container" class="pdf-viewer-container">
+                <iframe id="pdf-iframe" title="Visor de documento o página web" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Diseñado por <strong>Juan Guillermo Rivera Berrío</strong> · IA agéntica Antigravity</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

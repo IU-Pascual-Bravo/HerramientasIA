@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Método socrático</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';</script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+            options: { processHtmlClass: "tex2jax_process", ignoreHtmlClass: "tex2jax_ignore" }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#2563eb;--secondary:#64748b;--light:#f8fafc;--dark:#1e293b;--success:#16a34a;--danger:#dc2626;--warning:#d97706;--radius:10px;--font:'DM Sans','Segoe UI',sans-serif;--bg:var(--light);--text:var(--dark);--card:#fff;--border:#e2e8f0;--input:#fff;--iborder:#cbd5e1;--bot-bg:#f1f5f9;--bot-text:var(--dark);--user-bg:var(--primary);--user-text:#fff;--sys-bg:#fefce8;--sys-text:#854d0e;}
+        body.dark-mode{--bg:#0f172a;--text:#f1f5f9;--card:#1e293b;--border:#334155;--input:#334155;--iborder:#475569;--bot-bg:#334155;--bot-text:#f1f5f9;--sys-bg:#2d2210;--sys-text:#fcd34d;}
+        *,*::before,*::after{box-sizing:border-box;}
+        body{font-family:var(--font);margin:0;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;transition:background .3s,color .3s;font-size:15px;}
+         .container{width:92%;max-width:820px;margin:24px auto;padding:24px 28px;background:var(--card);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);flex-grow:1;display:flex;flex-direction:column;gap:16px;border:1px solid var(--border);}
+         header{border-bottom:1px solid var(--border);padding-bottom:16px;}
+         .header-branding{display:grid;grid-template-columns:minmax(80px,1fr) auto minmax(80px,1fr);align-items:center;gap:16px;}
+         .header-logo{display:block;width:auto;height:64px;max-width:100%;object-fit:contain;}
+         .header-logo:last-child{justify-self:end;}
+         header h1{font-family:'DM Serif Display',Georgia,serif;color:var(--primary);margin:0 0 3px;font-size:1.8rem;font-weight:400;}
+         header h1{text-align:center;}
+         header p{margin:0;font-size:.85rem;color:var(--secondary);text-align:center;}
+        .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);flex-wrap:wrap;}
+        .model-group{display:flex;align-items:center;gap:8px;background:var(--card);padding:5px 10px;border-radius:6px;border:1px solid var(--border);}
+        .model-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--secondary);white-space:nowrap;}
+        .model-val{font-size:.88rem;font-weight:600;color:var(--primary);}
+        button{background:var(--primary);color:#fff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-family:var(--font);font-size:.84rem;font-weight:500;transition:all .2s;}
+        button:hover:not(:disabled){background:#1d4ed8;transform:translateY(-1px);}
+        button:disabled{background:var(--border)!important;color:var(--secondary)!important;opacity:.6;cursor:not-allowed;transform:none!important;}
+        #theme-btn{background:var(--secondary);}
+        #theme-btn:hover:not(:disabled){background:#475569;}
+         .suggested-questions{padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);}
+         .suggested-questions label{display:block;margin-bottom:8px;font-size:.82rem;font-weight:600;color:var(--secondary);}
+         #suggested-question{width:100%;padding:8px 10px;border:1px solid var(--iborder);border-radius:6px;background:var(--input);color:var(--text);font:inherit;font-size:.88rem;}
+         #suggested-question:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+        .chat-display{height:360px;overflow-y:auto;border:1px solid var(--iborder);border-radius:var(--radius);padding:12px;background:var(--bg);line-height:1.65;scroll-behavior:smooth;}
+        .chat-display::-webkit-scrollbar{width:4px;}.chat-display::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+        .chat-display .user-message,.chat-display .bot-message,.chat-display .system-message{margin-bottom:10px;padding:10px 14px;border-radius:var(--radius);max-width:86%;word-wrap:break-word;}
+        .chat-display .user-message{background:var(--user-bg);color:var(--user-text);margin-left:auto;text-align:right;border-bottom-right-radius:3px;}
+        .chat-display .bot-message{background:var(--bot-bg);color:var(--bot-text);border:1px solid var(--border);border-bottom-left-radius:3px;}
+        .chat-display .bot-message strong{color:var(--primary);}
+        .chat-display .bot-message p{margin:0 0 8px;}.chat-display .bot-message p:last-child{margin:0;}
+        .chat-display .bot-message pre{background:var(--dark);color:var(--light);padding:10px;border-radius:6px;overflow-x:auto;}
+        .chat-display .bot-message code{background:rgba(37,99,235,.08);padding:2px 5px;border-radius:4px;font-size:.86em;}
+        body.dark-mode .chat-display .bot-message code{background:rgba(255,255,255,.1);}
+        .chat-display .system-message{background:var(--sys-bg);color:var(--sys-text);text-align:center;font-style:italic;font-size:.84rem;max-width:100%;border-radius:6px;}
+        .chat-display .system-message.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+        .input-area{display:flex;gap:10px;align-items:flex-end;}
+        #question-input{flex-grow:1;padding:10px 14px;border:1px solid var(--iborder);border-radius:var(--radius);font-family:var(--font);font-size:.93rem;resize:none;background:var(--input);color:var(--text);transition:all .2s;line-height:1.5;}
+        #question-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+        #send-button{background:var(--success);padding:10px 22px;display:flex;align-items:center;gap:8px;height:44px;font-weight:600;font-size:.93rem;}
+        #send-button:hover:not(:disabled){background:#15803d;}
+        .loader{border:2.5px solid rgba(255,255,255,.4);border-top:2.5px solid #fff;border-radius:50%;width:14px;height:14px;animation:spin .8s linear infinite;display:none;}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        footer{text-align:center;padding:12px;background:#1e293b;color:rgba(255,255,255,.6);font-size:.76rem;margin-top:20px;}
+        footer strong{color:rgba(255,255,255,.9);}
+         @media(max-width:600px){.header-branding{grid-template-columns:52px minmax(0,1fr) 52px;gap:8px;}.header-logo{height:48px;}header h1{font-size:1.45rem;}.input-area{flex-direction:column;}#send-button{width:100%;justify-content:center;}}
+    </style>
+</head>
+<body>
+<div class="container">
+     <header>
+         <div class="header-branding">
+             <img src="logoPB1.png" alt="Logo Pascual Bravo" class="header-logo">
+             <h1>Método socrático</h1>
+             <img src="logo_escuela.png" alt="Logo de la escuela" class="header-logo">
+         </div>
+         <p>Chatbot Interactivo</p>
+    </header>
+    <div class="toolbar">
+        <div class="model-group">
+            <span class="model-label">Modelo IA</span>
+            <span class="model-val">Gemini 2.5 flash</span>
+        </div>
+        <button id="theme-btn" title="Cambiar tema">🌓</button>
+        <div style="display:flex;gap:8px;">
+            <button id="download-html-btn" title="Descargar historial en HTML">📥 HTML</button>
+            <button id="download-pdf-btn" title="Descargar historial en PDF">📥 PDF</button>
+        </div>
+    </div>
+    <div class="suggested-questions">
+         <label for="suggested-question">Preguntas sugeridas sobre esta lectura</label>
+         <select id="suggested-question">
+             <option value="">Selecciona una pregunta para comenzar...</option>
+         </select>
+    </div>
+    <div id="chat-display" class="chat-display"></div>
+    <div class="input-area">
+        <textarea id="question-input" rows="2" placeholder="Escribe tu pregunta aquí..."></textarea>
+        <button id="send-button">
+            <span id="send-button-text">Enviar</span>
+            <div class="loader" id="loading-spinner"></div>
+        </button>
+    </div>
+</div>
+<footer><p>Diseñado por <strong>Juan Guillermo Rivera Berrío</strong> · IA agéntica Antigravity</p></footer>
+<script>
+    const BACKEND_URL = 'https://node.proyectodescartes.org/api/ia/text';
+     const PDF_TEXT = "Title: Método socrático\n\nURL Source: https://es.wikipedia.org/wiki/M%C3%A9todo_socr%C3%A1tico\n\nPublished Time: 2007-05-11T12:35:30Z\n\nMarkdown Content:\nDe Wikipedia, la enciclopedia libre\n\n[![Image 1](https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Commons-emblem-question_book_orange.svg/40px-Commons-emblem-question_book_orange.svg.png?utm_source=es.wikipedia.org&utm_campaign=parser&utm_content=thumbnail)](https://es.wikipedia.org/wiki/Archivo:Commons-emblem-question_book_orange.svg)**Este artículo o sección necesita [referencias](https://es.wikipedia.org/wiki/Wikipedia:VER \"Wikipedia:VER\") que aparezcan en una [publicación acreditada](https://es.wikipedia.org/wiki/Wikipedia:FF \"Wikipedia:FF\").** \n_Busca fuentes:_[«Método socrático»](http://www.google.com/search?as_eq=wikipedia&q=%22M%C3%A9todo+socr%C3%A1tico%22&num=50)–[noticias](https://www.google.com/search?tbm=nws&&as_src=-newswire+-wire+-presswire+-PR+-press+-release+-wikipedia&q=%22M%C3%A9todo+socr%C3%A1tico%22)· [libros](http://books.google.com/books?as_brr=0&as_pub=-icon&q=%22M%C3%A9todo+socr%C3%A1tico%22)· [académico](http://scholar.google.com/scholar?q=%22M%C3%A9todo+socr%C3%A1tico%22)· [imágenes](http://images.google.com/images?safe=off&as_rights=(cc_publicdomain%7ccc_attribute%7ccc_sharealike%7ccc_noncommercial%7ccc_nonderived)&q=%22M%C3%A9todo+socr%C3%A1tico%22)\n\nEste aviso fue puesto el 17 de mayo de 2024.\n[![Image 2](https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Socrates_teaching.jpg/250px-Socrates_teaching.jpg?utm_source=es.wikipedia.org&utm_campaign=parser&utm_content=thumbnail)](https://es.wikipedia.org/wiki/Archivo:Socrates_teaching.jpg)\n\nSócrates dialogando.\n\nEl **método socrático** o **[debate](https://es.wikipedia.org/wiki/Debate \"Debate\") socrático** es un método de [dialéctica](https://es.wikipedia.org/wiki/Dial%C3%A9ctica \"Dialéctica\") o demostración [lógica](https://es.wikipedia.org/wiki/L%C3%B3gica \"Lógica\") para la indagación o búsqueda de nuevas [ideas](https://es.wikipedia.org/wiki/Idea \"Idea\"), [conceptos](https://es.wikipedia.org/wiki/Concepto \"Concepto\") o prismas subyacentes en la información. Este método fue aplicado ampliamente para los escritos orales de los conceptos [morales](https://es.wikipedia.org/wiki/Moral \"Moral\") clave. Fue descrito por [Platón](https://es.wikipedia.org/wiki/Plat%C3%B3n \"Platón\") en los [diálogos Socráticos](https://es.wikipedia.org/wiki/Di%C3%A1logo_plat%C3%B3nico \"Diálogo platónico\"); por esto, [Sócrates](https://es.wikipedia.org/wiki/S%C3%B3crates \"Sócrates\") es habitualmente reconocido como el padre de la [ética](https://es.wikipedia.org/wiki/%C3%89tica \"Ética\") occidental o [filosofía moral](https://es.wikipedia.org/wiki/Filosof%C3%ADa_moral \"Filosofía moral\").\n\nEs una forma de búsqueda de [verdad](https://es.wikipedia.org/wiki/Verdad \"Verdad\") filosofal. Normalmente concierne a dos interlocutores en cada turno, con uno liderando la discusión y el otro asintiendo o concordando a ciertas [conjeturas](https://es.wikipedia.org/wiki/Conjetura \"Conjetura\") que se le muestran para su aceptación o rechazo. Este método se le acredita a [Sócrates](https://es.wikipedia.org/wiki/S%C3%B3crates \"Sócrates\"), quien empezó a enzarzarse en dichos debates con sus compañeros [atenienses](https://es.wikipedia.org/wiki/Atenas \"Atenas\") después de una visita al [oráculo de Delfos](https://es.wikipedia.org/wiki/Or%C3%A1culo_de_Delfos \"Oráculo de Delfos\").\n\nUn diálogo socrático puede pasar en cualquier momento entre dos [personas](https://es.wikipedia.org/wiki/Persona \"Persona\") cuando estas buscan la respuesta a una pregunta si esta la admite mediante su propio esfuerzo de [reflexión](https://es.wikipedia.org/wiki/Introspecci%C3%B3n \"Introspección\") y [razonamiento](https://es.wikipedia.org/wiki/Razonamiento \"Razonamiento\"). Se empieza haciendo todo tipo de preguntas hasta que los detalles del ejemplo son evidenciados para luego ser usados como plataforma para alcanzar valoraciones más generales.\n\nLa práctica implica efectuar una serie de preguntas alrededor de un tema o idea central, y responder las otras preguntas que aparezcan. Normalmente, este método se usa para defender un punto de vista en contra de otra posición. La mejor forma de evidenciar el acierto de un «punto de vista» es hacer que el oponente se contradiga a sí mismo y de alguna forma apruebe el «punto de vista» en cuestión (véase la [reducción al absurdo](https://es.wikipedia.org/wiki/Reducci%C3%B3n_al_absurdo \"Reducción al absurdo\")).\n\nEl término preguntas socráticas, juicio socrático o cuestionamiento socrático es usado para describir este tipo de interrogatorio, en el cual una pregunta se responde como si esta hubiera sido una [pregunta retórica](https://es.wikipedia.org/wiki/Pregunta_ret%C3%B3rica \"Pregunta retórica\"). Ej.: _¿Puedo comer champiñones?_. A lo que se contesta con otra pregunta como si la primera no lo fuera o fuera retórica: _¿Acaso no son los champiñones comestibles?_ Así se fuerza a realizar al preguntador una nueva pregunta que aporte más luz a su discurso.\n\n**Elenchos** (del griego: ἔλεγχος, un escrutinio cruzado con el propósito de la refutación, más conocida como «elenchus», es la técnica central del método socrático).\n\nEn los primeros diálogos de [Platón](https://es.wikipedia.org/wiki/Plat%C3%B3n \"Platón\"), la técnica de elenchos es la técnica que [Sócrates](https://es.wikipedia.org/wiki/S%C3%B3crates \"Sócrates\") usa para investigar, por ejemplo, la naturaleza o definición [ética](https://es.wikipedia.org/wiki/%C3%89tica \"Ética\") de los conceptos como [justicia](https://es.wikipedia.org/wiki/Justicia \"Justicia\") y [virtud](https://es.wikipedia.org/wiki/Virtud \"Virtud\"). De acuerdo con su formulación generalizada, ésta tiene los siguientes pasos:\n\n1. Un primer interlocutor A establece una [tesis](https://es.wikipedia.org/wiki/Tesis \"Tesis\") o afirmación, por ejemplo: «El coraje es la resistencia para el alma», lo cual el interlocutor B considera incierto y por eso lo lanza para su refutación y examen.\n2. El interlocutor A recibe de su interlocutor B su opinión con sus [premisas](https://es.wikipedia.org/wiki/Premisa \"Premisa\") adicionales. Por ejemplo: «El coraje es algo bueno y aceptable, sin embargo, la resistencia ignorante o inconsciente o sin un fin no es buena».\n3. Entonces el interlocutor A argumenta, y el interlocutor B lo reconoce, que esas premisas adicionales implican lo contrario de la tesis original, es decir, «El coraje no es la resistencia para el alma ya que si el coraje es bueno y la resistencia no lo es en todos sus casos, entonces el coraje no puede ser resistencia».\n4. El interlocutor B muestra que él ha demostrado cómo la tesis del interlocutor A es [falsa](https://es.wikipedia.org/wiki/Falsaci%C3%B3n \"Falsación\") y por tanto su negación es cierta.\n\nAl mismo tiempo el interlocutor B podría abogar porque la primera premisa es falsa y que en realidad la resistencia es mala y por tanto el coraje no es la resistencia. Ya que se ha partido de esa premisa supuesta. Sin embargo, cuando se sigue estando de acuerdo por ambos o si no se está pero no se dan argumentos para el cambio de opinión entonces son las otras [hipótesis](https://es.wikipedia.org/wiki/Hip%C3%B3tesis_(l%C3%B3gica) \"Hipótesis (lógica)\") las que deben ser incorrectas. Lo que se ha hecho es descartar hipótesis en búsqueda de la verdad. Para evitar caer en la falacia del [razonamiento circular](https://es.wikipedia.org/wiki/Razonamiento_circular \"Razonamiento circular\") se debe estar de acuerdo en la primera premisa y dispuesto a desecharla en caso de que se encuentren hipótesis ciertas que no sustenten a la premisa.\n\nLa naturaleza exacta de las elecciones está sujeta a un gran debate, en particular concerniente a sí es un método positivo, que dirige hacia el conocimiento, o un método negativo usado solamente para refutar falsas afirmaciones autoproclamadas como conocimiento; es decir, se puede descubrir nuevas ideas a partir de la simple deducción lógica de las premisas o por el contrario solo se puede averiguar si la premisa es cierta o falsa.\n\nEl método socrático, es un método negativo de eliminación de hipótesis, en el cual las mejores hipótesis son encontradas mediante la identificación y la eliminación de aquellas que conducen a contradicciones. Consiste en una búsqueda de las hipótesis subyacentes o [axiomas](https://es.wikipedia.org/wiki/Axioma \"Axioma\") que subconscientemente dan forma a nuestras opiniones y en hacerlas el centro de nuestro escrutinio para determinar su consistencia con otras creencias. Su forma básica es una serie de preguntas formuladas como test de lógica y hechos con la intención de ayudar a una persona o grupo a descubrir sus propias creencias sobre un tema, explorando las definiciones, buscando caracterizar y catalogar las propiedades compartidas por varias y diferentes premisas. Aristóteles atribuyó a Sócrates el descubrimiento del método de definición e inducción, el cual, él proclamó como la esencia del método científico. Aunque Aristóteles también alegó que este método no era apto para la [ética](https://es.wikipedia.org/wiki/%C3%89tica \"Ética\").\n\nSócrates generalmente aplicó este método de análisis a conceptos que parecen no tener una definición concreta o definida. Por ejemplo, conceptos pertinentes a la moral como virtudes de piedad, sabiduría, templanza, coraje y justicia. Este análisis desafiaba las creencias morales implícitas de los interlocutores, trayendo a colación inconsistencias y casos inadecuados que no cuadraban con sus creencias y que normalmente resultaban en perplejidad o desconcierto conocido como [aporía](https://es.wikipedia.org/wiki/Apor%C3%ADa \"Aporía\"). A la vista de estas incompetencias, el mismo Sócrates declaró su ignorancia, donde otros todavía proclamaban tener acierto o conocimiento. Sócrates creía que su conocimiento o percepción de su ignorancia le hacía ser más sabio que aquellos que, aunque ignorantes, clamaban tener conocimiento. Aunque esta creencia parece ser paradójica o contradictoria a primera vista, de hecho le permitió a Sócrates descubrir sus propios errores donde otros asumían que estaban acertados. Este hecho, es conocido por la anécdota del oráculo de Delphi que se pronunció diciendo que Sócrates era el hombre más sabio entre todos los hombres.\n\nSócrates usó esta afirmación junto con la de que era consciente de sus límites en sus llamamientos. Consecuentemente, dijo que un buen y bondadoso mandatario consistía en que este cuidara de su alma, moral verdadera y de su entendimiento ya que _la riqueza no trae la bondad pero la bondad trae consigo la riqueza y cualquier otra bendición tanto individualmente como para el estado_ y _la vida sin análisis, diálogo o discusión no vale la pena vivirla_. Y con esto en mente el método socrático fue empleado.\n\nLos motivos actuales o modernos para el uso de este método no son necesariamente equivalentes. Sócrates raramente usó el método para desarrollar teorías consistentes, en lugar de eso lo usó para explicar los [mitos](https://es.wikipedia.org/wiki/Mitolog%C3%ADa \"Mitología\"). [Parménides de Elea](https://es.wikipedia.org/wiki/Parm%C3%A9nides_de_Elea \"Parménides de Elea\") se muestra usando el método socrático para desgranar y apuntar los flecos de la teoría platónica de la forma. En lugar de llegar a respuestas, el método fue usado para romper y hacer caer las teorías que se mantenían detrás de axiomas y postulados que se tomaban por garantizados pero que tras examinarlos dejaban de tener sentido o eran incongruentes con las deducciones.\n\nUn ejemplo de ejercicio de método socrático, puede darse en un [dilema](https://es.wikipedia.org/wiki/Dilema \"Dilema\")[moral](https://es.wikipedia.org/wiki/Moral \"Moral\"): usted es el conductor de un tren en el que están fallando los frenos y debe elegir entre la opción de matar a cinco trabajadores en su paso por una ruta alternativa, o la de matar a todos los 300 pasajeros del tren. Para aplicar el método socrático se debería pedir al auditorio hacer argumentos sobre lo que debería hacerse. Luego, proceder a hacer sugerencias de manera provocadora, motivando a cada interventor a defender y articular las razones y valores que subyacen a su decisión (¿es mejor salvar a muchos a expensas de unos pocos?), y luego aplicar esos razonamientos a otros dilemas morales en los cuales la aplicación de la misma decisión podría no resultar tan defendible (que esos 5 trabajadores fuera muy importantes). En cada ronda de preguntas, se debe procurar concentrarse en derribar los supuestos de los interventores en un afán de “recomponer la verdad” – que es precisamente la tarea del profesor socrático en clase. Si alguna vez le preguntan si está exponiendo sus propias ideas, conteste que se suele esperar hasta el final de la discusión, e incluso entonces puede ser que se prefiera utilizar algo de “engaño pedagógico” (asumir una posición que no se comparte necesariamente) con el fin de motivar a sus alumnos a examinar sus propias premisas.\n\nAlgunas preguntas de estilo socrático son:\n\n* ¿Qué quieres decir realmente con...?\n* ¿Cómo llegas a esa conclusión?\n* ¿Qué es lo que realmente se está diciendo?\n* Supón que te equivocas. ¿Qué consecuencias tendría eso?\n* ¿Cómo podría saber que lo que dices es verdad?\n* ¿Por qué es esto importante?\n* ¿Cómo se explica este fenómeno cotidiano según este método?\n\nInfluenciado por el temperamento del docente. El método comienza eligiendo un estudiante aleatoriamente y preguntándole sobre un argumento central expuesto por uno del público o jurado que típicamente está en el lado de la mayoría para el caso asignado. El primer paso es pedir al estudiante si puede [parafrasear](https://es.wikipedia.org/wiki/Par%C3%A1frasis \"Paráfrasis\") el argumento, para asegurar que el estudiante ha leído y que tiene un entendimiento básico sobre el argumento o tema del caso. Asumiendo que el estudiante ha leído el caso, el profesor pregunta si el estudiante está de acuerdo con el argumento. El profesor luego lleva el típico juego de [abogado del diablo](https://es.wikipedia.org/wiki/Abogado_del_diablo \"Abogado del diablo\") intentando forzar al estudiante a defender su posición refutando argumentos en contra de él.\n\nEstas preguntas pueden tener unas pocas modalidades. Algunas veces éstas buscan atacar [presunciones](https://es.wikipedia.org/wiki/Prejuicio \"Prejuicio\") sobres las cuales el estudiante basó su respuesta anterior hasta romperlas. Algunas otras preguntas están diseñadas para movilizar al estudiante hacia un tema específico donde se usa una ley o entendimiento particular (véase la [falacia del hombre de paja](https://es.wikipedia.org/wiki/Falacia_del_hombre_de_paja \"Falacia del hombre de paja\")) El profesor puede proponer una hipotética situación donde la afirmación del estudiante parezca tener una excepción. Finalmente, el docente usa el método socrático para permitir a los estudiantes llegar a los principios legales por su propio camino efectuando preguntas que estimulan un particular modo de [razonamiento](https://es.wikipedia.org/wiki/Razonamiento \"Razonamiento\").\n\nEl principal acierto del método socrático en derecho reside no en responder irresolubles preguntas sino en explorar los aspectos, contornos (y, «contronos») de temás legales difíciles y enseñar a los estudiantes el razonamiento crítico necesario que necesitarán los abogados.\n\nUn profesor experimentado puede enseñar a los estudiantes a pensar por sí mismos usando este método. Este es el único método [casuístico](https://es.wikipedia.org/wiki/Casu%C3%ADstica \"Casuística\") de enseñanza que fue diseñado para pensadores autónomos.\n\n* El profesor y el estudiante deben de estar de acuerdo con el tema de la instrucción.\n* El estudiante debe de estar de acuerdo en responder las preguntas del profesor.\n* El profesor y el estudiante deben estar de acuerdo en aceptar cualquier razonamiento correcto. Esto es, el proceso de razonamiento puede estar considerado como más importante que los hechos preconcebidos o creencias.\n* Las preguntas del profesor deben exponer errores en el razonamiento o creencias del estudiante. Esto es, el profesor debe razonar más rápidamente y correctamente que el estudiante y descubrir errores en el razonamiento del estudiante y luego formular una pregunta que el estudiante no pueda responder excepto si redirige o llega a una verdadera o conclusión acertada o sigue un razonamiento correcto. Para realizar esto, debe de ser muy rápido en los típicos errores de razonamiento (véase la [lista de prejuicios cognitivos](https://es.wikipedia.org/wiki/Lista_de_prejuicios_cognitivos \"Lista de prejuicios cognitivos\")).\n* Si el profesor comete un error de lógica o hecho es aceptable por parte del estudiante corregir al profesor.\n\nYa que la discusión no es un [diálogo](https://es.wikipedia.org/wiki/Di%C3%A1logo \"Diálogo\"), no es el mejor método para aplicar el método socrático, que en tanto dialéctico, pese a las contradicciones, implica lo dialógico. A pesar de que la discusión, aparentemente podría ser un mejor soporte para la construcción de nuevas ideas, el método socrático se vuelve indispensable para analizar la validez de esas ideas.\n\nEn el campo de la Psicología Clínica, el psiquiatra norteamericano [Aaron T. Beck](https://es.wikipedia.org/wiki/Aaron_T._Beck \"Aaron T. Beck\") adoptó el método socrático, denominándolo discusión socrática, y tiene por objetivo analizar la validez y utilidad de los pensamientos automáticos negativos, depresivos o ansiógenos, que tienen los pacientes. Se enseña al paciente a analizar sus pensamientos depresivos o ansiógenos, definiéndolos más objetivamente, determinando hasta qué punto existen pruebas objetivas a favor o en contra de ellos o si está cometiendo alguna [distorsión cognitiva](https://es.wikipedia.org/wiki/Distorsi%C3%B3n_cognitiva \"Distorsión cognitiva\"), entre otras cuestiones que se analizan para determinar su validez y utilidad.\n\nEl método socrático también se conoce como «ironía socrática». La [ironía](https://es.wikipedia.org/wiki/Iron%C3%ADa \"Ironía\") es la primera de las fórmulas utilizadas por [Sócrates](https://es.wikipedia.org/wiki/S%C3%B3crates \"Sócrates\") (filósofo griego) en su método [dialéctico](https://es.wikipedia.org/wiki/Dial%C3%A9ctica \"Dialéctica\"). Sócrates comienza siempre sus [diálogos](https://es.wikipedia.org/wiki/Di%C3%A1logo \"Diálogo\")[psicopedagógicos](https://es.wikipedia.org/wiki/Psicopedagog%C3%ADa \"Psicopedagogía\") y [propedéuticos](https://es.wikipedia.org/wiki/Proped%C3%A9utica \"Propedéutica\") desde la posición ficticia que encumbra al interlocutor (en este caso el alumno) como el sabio en la materia a tratar. Dado que Sócrates era considerado como _el hombre más sabio de [Atenas](https://es.wikipedia.org/wiki/Atenas \"Atenas\")_ es fácil entender el por qué de la ironía. El siguiente paso del diálogo sería la [mayéutica](https://es.wikipedia.org/wiki/May%C3%A9utica \"Mayéutica\"), esto es ayudar a sacar de dentro de la [psique](https://es.wikipedia.org/wiki/Psique \"Psique\") aquello que el interlocutor sabe pero ignora saber. Para ello el método socrático sugiere realizar preguntas sencillas sobre el tema en el que el sujeto (alumno) ha sido nombrado como sabio. Después, las respuestas que el interlocutor daba a Sócrates eran rebatidas, en especial [confutadas](https://es.wikipedia.org/wiki/Confutaci%C3%B3n \"Confutación\") con la finalidad de que el alumno descubriera que su «saber» era un conjunto de [pre-juicios](https://es.wikipedia.org/wiki/Prejuicio \"Prejuicio\") y las fuera completando y precisando por sí mismo tomando [consciencia](https://es.wikipedia.org/wiki/Consciencia \"Consciencia\"), en todo lo posible, de lo [real](https://es.wikipedia.org/wiki/Lo_Real \"Lo Real\").\n\n* [Gnóthi seautón](https://es.wikipedia.org/wiki/Gn%C3%B3thi_seaut%C3%B3n \"Gnóthi seautón\")\n* [Pensamiento crítico](https://es.wikipedia.org/wiki/Pensamiento_cr%C3%ADtico \"Pensamiento crítico\")\n* [Educación](https://es.wikipedia.org/wiki/Educaci%C3%B3n \"Educación\")\n* [Propedéutica](https://es.wikipedia.org/wiki/Proped%C3%A9utica \"Propedéutica\")\n* [Lista de prejuicios cognitivos](https://es.wikipedia.org/wiki/Lista_de_prejuicios_cognitivos \"Lista de prejuicios cognitivos\")\n* [Mayéutica](https://es.wikipedia.org/wiki/May%C3%A9utica \"Mayéutica\")\n* [Aporía](https://es.wikipedia.org/wiki/Apor%C3%ADa \"Aporía\")\n* [Sentido común](https://es.wikipedia.org/wiki/Sentido_com%C3%BAn \"Sentido común\")\n* [Prejuicios](https://es.wikipedia.org/wiki/Prejuicio \"Prejuicio\")\n* [Método científico](https://es.wikipedia.org/wiki/M%C3%A9todo_cient%C3%ADfico \"Método científico\")\n* [MC-14, método científico en 14 etapas](https://es.wikipedia.org/wiki/MC-14 \"MC-14\")\n* [Terapia cognitiva](https://es.wikipedia.org/wiki/Terapia_cognitiva \"Terapia cognitiva\")\n* [Cuestionamiento socrático](https://es.wikipedia.org/wiki/Cuestionamiento_socr%C3%A1tico \"Cuestionamiento socrático\")\n* [Aaron T. Beck](https://es.wikipedia.org/wiki/Aaron_T._Beck \"Aaron T. Beck\")\n\n* [Vlastos](https://es.wikipedia.org/wiki/Gregory_Vlastos \"Gregory Vlastos\"), Gregory (1983) ‘The Socratic Elenchus’, in _Oxford Studies in Ancient Philosophy_ 1: 27-58.\n* Benson, Hugh (2000) _Socratic Wisdom_ (Oxford: [Oxford University Press](https://es.wikipedia.org/wiki/Oxford_University_Press \"Oxford University Press\"))\n* Cuenca, Juan (2016) «Socratic in the true life», en Massachusetts: [Massachusetts University](https://es.wikipedia.org/wiki/Massachusetts_University?action=edit&redlink=1 \"Massachusetts University (aún no redactado)\")(en inglés)\n\n* Robinson, Richard, _Plato«s Earlier Dialectic_, 2nd edition (Clarendon Press, Oxford, 1953). \n * [Ch. 2: Elenchus](https://www.ditext.com/robinson/dia2.html);\n * [Ch. 3: Elenchus: Direct and Indirect](https://www.ditext.com/robinson/dia3.html)\n\n* [Philosopher.org](https://web.archive.org/web/20050325092107/http://www.philosopher.org/tips.html) - «Tips on Starting your own Socrates Cafe», Christopher Phillips, Cecilia Phillips\n\n* [![Image 3: Wd](https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Wikidata-logo.svg/20px-Wikidata-logo.svg.png?utm_source=es.wikipedia.org&utm_campaign=parser&utm_content=thumbnail)](https://es.wikipedia.org/wiki/Wikidata \"Wikidata\") Datos:[Q839475](https://www.wikidata.org/wiki/Q839475 \"wikidata:Q839475\")";
+     const PDF_NAME = "Método socrático";
+     const MODEL = "gemini-search";
+     const SUGGESTED_QUESTIONS = ["¿Cuál es la definición de método socrático según el texto?","¿Qué significa el término 'elenchos' en el contexto del método socrático?","¿Cómo se describe la técnica del elenchos en los diálogos de Platón?","¿Cuáles son los cuatro pasos de la formulación generalizada del elenchos mencionados?","¿Qué atribuyó Aristóteles a Sócrates respecto al método científico?","¿Cómo se compara el método socrático con la búsqueda de hipótesis en la ciencia?","Describe un ejemplo de cómo se aplicaría el método socrático en un dilema moral.","¿Cuál es el propósito de hacer preguntas provocadoras en el método socrático aplicado a un dilema?","¿Qué se aconseja hacer si se le pregunta al profesor si está exponiendo sus propias ideas durante una discusión socrática?","¿Cómo se relaciona la 'ironía socrática' con la mayéutica en el método de Sócrates?","¿Qué objetivo tiene la 'discusión socrática' en la Psicología Clínica según Aaron T. Beck?","¿Por qué se considera que la discusión no es el mejor método para aplicar el método socrático, a pesar de su aparente utilidad para la construcción de ideas?"];
+
+     let isProcessing = false;
+
+    const chatDisplay = document.getElementById('chat-display');
+    const questionInput = document.getElementById('question-input');
+    const sendButton = document.getElementById('send-button');
+    const sendButtonText = document.getElementById('send-button-text');
+    const loadingSpinner = document.getElementById('loading-spinner');
+     const themeBtn = document.getElementById('theme-btn');
+      const suggestedQuestion = document.getElementById('suggested-question');
+      SUGGESTED_QUESTIONS.forEach(question => {
+          const option = document.createElement('option');
+          option.textContent = question;
+          suggestedQuestion.appendChild(option);
+      });
+
+    // Theme
+    function applyTheme(t) { document.body.classList.toggle('dark-mode', t==='dark'); themeBtn.textContent = t==='dark' ? '☀️' : '🌓'; }
+    themeBtn.addEventListener('click', () => { const n = document.body.classList.contains('dark-mode') ? 'light' : 'dark'; applyTheme(n); localStorage.setItem('theme',n); });
+    applyTheme(localStorage.getItem('theme') || 'light');
+
+    // Descargar historial
+    function buildHistorialHTML() {
+        const msgs = chatDisplay.querySelectorAll('.user-message, .bot-message, .system-message');
+        if (!msgs.length) return null;
+        const rows = Array.from(msgs).map(m => {
+            let tipo = 'Sistema', bg = '#fefce8', color = '#854d0e', justify = 'center', border = '';
+            if (m.classList.contains('user-message')) { tipo = 'Tú'; bg = '#2563eb'; color = '#fff'; justify = 'flex-end'; }
+            else if (m.classList.contains('bot-message')) { tipo = 'Bot'; bg = '#f1f5f9'; color = '#1e293b'; justify = 'flex-start'; border = 'border:1px solid #e2e8f0;'; }
+            return '<div style="display:flex;justify-content:' + justify + ';margin-bottom:10px;"><div style="background:' + bg + ';color:' + color + ';padding:10px 14px;border-radius:10px;max-width:80%;word-wrap:break-word;' + border + '"><small style="opacity:.65;font-size:.75rem;display:block;margin-bottom:4px;">' + tipo + '</small>' + m.innerHTML + '</div></div>';
+        }).join('');
+        return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Historial - Chatbot</title><style>body{font-family:Segoe UI,sans-serif;background:#f8fafc;color:#1e293b;margin:0;padding:24px;}.header{text-align:center;margin-bottom:24px;border-bottom:1px solid #e2e8f0;padding-bottom:16px;}h1{color:#2563eb;font-size:1.5rem;margin:0 0 4px;}p{margin:0;color:#64748b;font-size:.85rem;}.chat{max-width:760px;margin:0 auto;}pre{background:#1e293b;color:#f1f5f9;padding:10px;border-radius:6px;overflow-x:auto;}code{background:rgba(37,99,235,.08);padding:2px 5px;border-radius:4px;font-size:.86em;}</style></head><body><div class="header"><h1>📄 Historial del chat</h1><p>Exportado el ' + new Date().toLocaleString('es-CO') + '</p></div><div class="chat">' + rows + '</div></body></html>';
+    }
+    document.getElementById('download-html-btn').addEventListener('click', () => {
+        const html = buildHistorialHTML();
+        if (!html) { alert('El historial está vacío.'); return; }
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
+        a.download = 'historial-chatbot-' + Date.now() + '.html';
+        a.click(); URL.revokeObjectURL(a.href);
+    });
+    document.getElementById('download-pdf-btn').addEventListener('click', () => {
+        const html = buildHistorialHTML();
+        if (!html) { alert('El historial está vacío.'); return; }
+        const win = window.open('', '_blank');
+        win.document.write(html + '<scr' + 'ipt>window.onload=function(){window.print();window.onafterprint=function(){window.close();};};</scr' + 'ipt>');
+        win.document.close();
+    });
+
+     suggestedQuestion.addEventListener('change', () => {
+         if (suggestedQuestion.value) {
+             questionInput.value = suggestedQuestion.value;
+             questionInput.focus();
+         }
+     });
+
+    // Chat
+    function addMsg(message, sender, isThinking = false) {
+        const el = document.createElement('div');
+        el.classList.add(sender === 'user' ? 'user-message' : sender.includes('system') ? 'system-message' : 'bot-message');
+        if (sender.includes('error')) el.classList.add('error');
+        if (sender === 'bot' && !isThinking) {
+            const pm = message.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+            el.innerHTML = '<strong>Chatbot:</strong> <div class="tex2jax_process" style="margin-top:5px;">' + (marked.parse ? marked.parse(pm) : pm) + '</div>';
+            if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise([el]).catch(e => console.error(e));
+        } else if (sender === 'bot') {
+            el.innerHTML = '<strong>Chatbot:</strong> <span>' + message + '</span>'; el.id = 'thinking-msg';
+        } else { el.textContent = message; }
+        chatDisplay.appendChild(el); chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    }
+    function updateLastMsg(message) {
+        const el = document.getElementById('thinking-msg');
+        const pm = message.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+        const html = marked.parse ? marked.parse(pm) : pm;
+        if (el) { el.innerHTML = '<strong>Chatbot:</strong> <div class="tex2jax_process" style="margin-top:5px;">' + html + '</div>'; el.removeAttribute('id'); if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise([el]).catch(e => console.error(e)); }
+        else addMsg(message, 'bot');
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    }
+
+    async function sendQuestion() {
+        const question = questionInput.value.trim();
+        if (!question || isProcessing) return;
+        addMsg(question, 'user'); questionInput.value = '';
+        isProcessing = true; sendButton.disabled = true; questionInput.disabled = true;
+        loadingSpinner.style.display = 'inline-block'; sendButtonText.textContent = 'Enviando';
+        addMsg('Pensando...', 'bot', true);
+        const maxLen = 800000;
+        const t1 = PDF_TEXT.length > maxLen ? PDF_TEXT.substring(0, maxLen) + '... (truncado)' : PDF_TEXT;
+        let prompt = 'Documento 1 ("' + PDF_NAME + '"): "' + t1 + '"\n\n';
+         prompt += '(Instrucción: Para expresiones matemáticas, utiliza SÓLO $$...$$ para bloque y $...$ para texto en línea.)\n\nPregunta: ' + question + '\n\nRespuesta:';
+        try {
+            const res = await fetch(BACKEND_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: prompt, model: MODEL })
+            });
+            if (!res.ok) { let e=''; try{e=await res.text();}catch(_){} throw new Error('Error del servidor: ' + res.status + ' ' + res.statusText + '. ' + e.substring(0,200)); }
+            const text = (await res.text()).trim();
+            updateLastMsg(text || 'La IA no proporcionó una respuesta.');
+        } catch(err) { updateLastMsg('Lo siento, ocurrió un error: ' + err.message); }
+        finally {
+            isProcessing = false; sendButton.disabled = false; questionInput.disabled = false;
+            loadingSpinner.style.display = 'none'; sendButtonText.textContent = 'Enviar'; questionInput.focus();
+        }
+    }
+    sendButton.addEventListener('click', sendQuestion);
+    questionInput.addEventListener('keypress', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(); } });
+     addMsg('Documento "' + PDF_NAME + '" listo. ¡Puedes empezar a preguntar!', 'system');
+     window.scrollTo(0, 0);
+</script>
+</body>
+</html>
