@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Juego de Trivia - Álgebra</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+<style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+        }
+        #gameContainer {
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        #paddle {
+            width: 100px;
+            height: 20px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            position: absolute;
+            bottom: 20px;
+            left: 350px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 198, 255, 0.5);
+        }
+        #ball {
+            width: 15px;
+            height: 15px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        .brick {
+            width: 190px;
+            height: 30px;
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+            overflow: hidden;
+        }
+        .brick:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        .brick:hover:before {
+            left: 100%;
+        }
+        .brick:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        #questionModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.98);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: min(90vw, 650px);
+            max-width: 90vw;
+        }
+        #questionModal button {
+            padding: 15px 25px;
+            margin: 10px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #2962ff, #448aff);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 180px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(41, 98, 255, 0.3);
+        }
+        #questionModal button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(41, 98, 255, 0.4);
+        }
+        #questionModal button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+        #questionModal button:hover:before {
+            left: 100%;
+        }
+        #options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+        }
+        #questionText {
+            font-size: 20px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes correctAnswer {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
+        }
+        .correct-answer-flash {
+          animation: correctAnswer 0.6s ease;
+        }
+        .particle {
+          position: absolute;
+          pointer-events: none;
+          border-radius: 50%;
+          width: 8px;
+          height: 8px;
+          background: #00ff88;
+          animation: particleAnimation 0.6s ease-out forwards;
+        }
+        @keyframes particleAnimation {
+          0% {
+            transform: translate(0, 0);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(var(--tx), var(--ty));
+            opacity: 0;
+          }
+        }
+        #lockModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: min(90vw, 520px);
+        }
+        button {
+            padding: 12px 20px;
+            margin: 8px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #0072ff, #00c6ff);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 114, 255, 0.3);
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        #downloadButton {
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            font-size: 14px;
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+            color: #1a1a2e;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+            z-index: 10;
+        }
+        #downloadButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+        .digit {
+            color: #00ff88;
+            font-size: 24px;
+            margin: 5px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin: 10px 0;
+            width: 80%;
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            font-size: 16px;
+        }
+        h3 {
+            margin-bottom: 20px;
+            color: #00c6ff;
+        }
+        #instructionsModal, #successModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: min(96vw, 1100px);
+            max-width: 96vw;
+            text-align: center;
+        }
+
+        #instructionsModal input#topicInput {
+            width: 100%;
+            margin: 12px 0;
+        }
+
+        /* --- Layout 2 columnas (instrucciones + BYOP) --- */
+        #instructionsModal .modal-content {
+            text-align: left;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        #instructionsLeft {
+            padding: 4px 2px;
+        }
+
+        #instructionsRight {
+            padding: 4px 2px;
+        }
+
+        #instructionsModal h2 {
+            grid-column: 1 / -1;
+            text-align: left;
+            margin-bottom: 0;
+        }
+
+        #instructionsLeft p,
+        #instructionsLeft ol {
+            margin-left: 0;
+        }
+
+        @media (max-width: 520px) {
+            #instructionsModal, #successModal, #questionModal, #lockModal {
+                padding: 18px;
+            }
+            #instructionsModal .modal-content {
+                grid-template-columns: 1fr;
+            }
+            .api-key-container {
+                gap: 0.5rem;
+                padding: 10px;
+            }
+            input {
+                width: 95%;
+            }
+        }
+        .modal-content {
+            color: #fff;
+            line-height: 1.6;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+        #resultsText {
+            font-size: 18px;
+            color: #f0f0f0;
+        }
+        #blockCompleteModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            color: white;
+            min-width: 300px;
+        }
+        #blockCompleteModal h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+        #blockCompleteModal .digit {
+            font-size: 48px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            margin: 20px 0;
+        }
+        #blockCompleteModal .message {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        #blockCompleteModal button {
+            background: linear-gradient(45deg, #00ff88, #00cc6f);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #blockCompleteModal button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+        #loadingIndicator {
+            font-size: 18px;
+            margin-top: 20px;
+            color: #00c6ff;
+            display: none;
+        }
+
+        /* --- Selector Proveedor + API Key --- */
+        .api-key-container {
+            display: flex;
+            gap: 0.75rem;
+            margin: 15px 0 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .api-key-container label {
+            font-weight: 700;
+            color: #00c6ff;
+            flex-basis: 100%;
+            margin: 0;
+        }
+        #providerSelect {
+            flex: 1 1 220px;
+            min-width: 200px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        #apiKeyInput {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            min-width: 200px;
+        }
+        #modelSelect {
+            flex: 1 1 220px;
+            min-width: 200px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        .api-key-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .api-key-actions button {
+            padding: 10px 14px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            font-weight: 700;
+        }
+        .api-key-actions button:hover:not(:disabled) {
+            background: rgba(0, 198, 255, 0.25);
+            border-color: rgba(0, 198, 255, 0.6);
+        }
+        .api-key-actions button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        #statusApiKey {
+            margin-top: 8px;
+            font-weight: 700;
+            min-height: 22px;
+        }
+
+        /* Título con logo en la misma línea */
+        .title-with-logo {
+            display: grid;
+            grid-template-columns: minmax(64px, 1fr) auto minmax(64px, 1fr);
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .title-with-logo img {
+            height: clamp(42px, 8vw, 72px);
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .title-with-logo img:last-of-type {
+            justify-self: end;
+        }
+
+        /* Adaptación de la pantalla inicial y del tablero a cualquier viewport. */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-width: 320px;
+        }
+
+        body {
+            padding: clamp(8px, 2vw, 20px);
+            overflow-x: hidden;
+        }
+
+        #gameContainer {
+            width: min(800px, 100%);
+            height: auto;
+            aspect-ratio: 4 / 3;
+            min-height: 0;
+        }
+
+        #instructionsModal, #successModal, #questionModal, #lockModal, #blockCompleteModal {
+            max-height: calc(100dvh - 24px);
+            overflow-y: auto;
+        }
+
+        #instructionsModal {
+            width: min(1100px, calc(100vw - 24px));
+            padding: clamp(16px, 3vw, 30px);
+        }
+
+        #instructionsModal .modal-content {
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: clamp(14px, 2vw, 24px);
+        }
+
+        #instructionsModal h2 {
+            text-align: center;
+            font-size: clamp(1.35rem, 3vw, 2rem);
+        }
+
+        .title-with-logo {
+            text-align: center;
+        }
+
+        .title-with-logo > span {
+            min-width: 0;
+        }
+
+        #instructionsLeft, #instructionsRight {
+            min-width: 0;
+        }
+
+        #instructionsLeft p,
+        #instructionsLeft ol {
+            font-size: clamp(1rem, 2.2vw, 1.35rem);
+        }
+
+        #instructionsLeft ol {
+            padding-left: 1.6em;
+        }
+
+        #instructionsModal input#topicInput,
+        #apiKeyInput,
+        #providerSelect,
+        #modelSelect {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .api-key-actions {
+            width: 100%;
+        }
+
+        .api-key-actions button {
+            flex: 1 1 140px;
+            margin: 0;
+        }
+
+        #generateButton {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        @media (max-width: 700px) {
+            #instructionsModal .modal-content {
+                grid-template-columns: 1fr;
+            }
+
+            #instructionsModal h2 {
+                grid-column: auto;
+            }
+
+            #instructionsLeft ol {
+                display: block !important;
+                margin: 15px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #instructionsModal, #successModal, #questionModal, #lockModal, #blockCompleteModal {
+                width: calc(100vw - 16px);
+                padding: 14px;
+            }
+
+            #instructionsModal h2 {
+                line-height: 1.2;
+            }
+
+            .title-with-logo {
+                grid-template-columns: 42px minmax(0, 1fr) 42px;
+                gap: 8px;
+            }
+
+            .title-with-logo img {
+                height: 52px;
+            }
+
+            .api-key-container {
+                padding: 10px;
+            }
+        }
+     </style>
+</head><body>
+<div id="gameContainer"><div id="score">Puntaje: <span id="scoreValue">0</span> | Bloques: <span id="remainingBlocks">12</span></div><div id="paddle"></div><div id="ball"></div></div>
+<div id="questionModal"><h3 id="questionText"></h3><div id="options"></div></div>
+<div id="lockModal"><h3>&#xa1;Ingresa el c&#xf3;digo de 4 d&#xed;gitos!</h3><input type="text" id="lockCode" maxlength="4"><button onclick="checkLockCode()">Verificar</button></div>
+<div id="instructionsModal"><div class="modal-content"><h2>&#xa1;Bienvenido al Juego de Trivia!</h2><p><strong>Tema:</strong> Álgebra</p><p>Usa el mouse para mover la paleta, rompe todos los bloques y responde las preguntas para descubrir el código secreto.</p><button onclick="handleGameStart()">&#xa1;Comenzar!</button></div></div>
+<div id="successModal"><div class="modal-content"><div class="success-icon">&#x1f3c6;</div><h2>&#xa1;Felicitaciones!</h2><p>Has completado el juego y descubierto el código secreto:</p><h1 id="finalCodeDisplay" style="color: #00ff88; font-size: 48px; margin: 20px 0;"></h1><p id="resultsText"></p><p>&#xa1;Eres un experto en Álgebra!</p><button onclick="resetGame()">Jugar de nuevo</button></div></div>
+<div id="blockCompleteModal"><h2>&#xa1;Dígito Descubierto!</h2><p class="message">Has completado el bloque de preguntas número <span id="blockNumber"></span>.</p><p>El dígito revelado es:</p><div class="digit" id="discoveredDigit"></div><button onclick="closeBlockModal()">&#xa1;Continuar!</button></div>
+<script>
+
+const questions=[
+  {
+    "q": "Resuelve la ecuación $2x + 5 = 15$:",
+    "options": [
+      "$x = 2.5$",
+      "$x = 5$",
+      "$x = 7.5$",
+      "$x = 10$"
+    ],
+    "correct": "$x = 5$"
+  },
+  {
+    "q": "Factoriza la expresión $x^2 - 9$:",
+    "options": [
+      "$(x-3)^2$",
+      "$(x+3)^2$",
+      "$(x-3)(x+3)$",
+      "$(x-9)(x+1)$"
+    ],
+    "correct": "$(x-3)(x+3)$"
+  },
+  {
+    "q": "¿Cuál es la solución de la ecuación cuadrática $x^2 - 4x + 4 = 0$?",
+    "options": [
+      "No tiene solución real",
+      "$x = -2$",
+      "$x = 2$ (doble)",
+      "$x = 1$ o $x = 4$"
+    ],
+    "correct": "$x = 2$ (doble)"
+  },
+  {
+    "q": "Resuelve el sistema: $x + y = 7$ y $x - y = 3$:",
+    "options": [
+      "$x=5, y=2$",
+      "$x=6, y=1$",
+      "$x=4, y=3$",
+      "$x=3, y=4$"
+    ],
+    "correct": "$x=5, y=2$"
+  },
+  {
+    "q": "Simplifica la expresión $\\frac{x^3 y^2}{x y^4}$:",
+    "options": [
+      "$x^2 y^{-2}$",
+      "$x^3 y^{-2}$",
+      "$x^2 y^2$",
+      "$x^2 y^{-6}$"
+    ],
+    "correct": "$x^2 y^{-2}$"
+  },
+  {
+    "q": "El valor de $x$ en la ecuación $3(x - 2) = 2(x + 1)$ es:",
+    "options": [
+      "$x = 8$",
+      "$x = 4$",
+      "$x = 6$",
+      "$x = -8$"
+    ],
+    "correct": "$x = 8$"
+  },
+  {
+    "q": "Desarrolla $(a + b)^2$:",
+    "options": [
+      "$a^2 + ab + b^2$",
+      "$a^2 + 2ab + b^2$",
+      "$a^2 + b^2$",
+      "$a^2 - 2ab + b^2$"
+    ],
+    "correct": "$a^2 + 2ab + b^2$"
+  },
+  {
+    "q": "Resuelve $|x - 3| = 7$:",
+    "options": [
+      "$x = 7$ o $x = -7$",
+      "$x = 4$ o $x = -10$",
+      "$x = 3$ o $x = -3$",
+      "$x = 10$ o $x = -4$"
+    ],
+    "correct": "$x = 10$ o $x = -4$"
+  },
+  {
+    "q": "Simplifica $\\sqrt{50}$:",
+    "options": [
+      "$10\\sqrt{5}$",
+      "$5\\sqrt{2}$",
+      "$5\\sqrt{10}$",
+      "$2\\sqrt{5}$"
+    ],
+    "correct": "$5\\sqrt{2}$"
+  },
+  {
+    "q": "La solución de la ecuación $\\frac{2}{x} = \\frac{3}{x+1}$ es:",
+    "options": [
+      "$x = 3$",
+      "$x = 1$",
+      "$x = 2$",
+      "$x = -2$"
+    ],
+    "correct": "$x = 2$"
+  },
+  {
+    "q": "Si $f(x) = x^2 + 3x - 5$, ¿cuál es $f(2)$?",
+    "options": [
+      "$5$",
+      "$3$",
+      "$7$",
+      "$9$"
+    ],
+    "correct": "$5$"
+  },
+  {
+    "q": "El discriminante de $x^2 - 5x + 6 = 0$ es:",
+    "options": [
+      "$1$",
+      "$-1$",
+      "$49$",
+      "$13$"
+    ],
+    "correct": "$1$"
+  }
+],finalCode="6928";let ball={x:400,y:300,dx:4,dy:-4},paddle={x:350,width:100},bricks=[],currentQuestion=null,discoveredDigits=[],gameLoop,gameContainer=document.getElementById("gameContainer"),totalScore=0,questionAttempts=new Array(12).fill(0),completedBlockGroupsCount=0,audioCtx=null;
+function init(){document.getElementById("instructionsModal").style.display="block";document.getElementById("finalCodeDisplay").textContent=finalCode;createBricks();document.addEventListener("mousemove",movePaddle)}
+function playSound(e){if(!audioCtx)return;const t=audioCtx.createOscillator(),n=audioCtx.createGain();t.connect(n),n.connect(audioCtx.destination);let o=440,a=.1,c=.3;switch(e){case"paddle":o=300,c=.2,a=.05;break;case"wall":o=200,c=.1,a=.05;break;case"brick":o=440,c=.3,a=.1;break;case"correct":o=600,c=.4,a=.2;break;case"win":o=800,c=.5,a=.5}t.type="triangle",t.frequency.setValueAtTime(o,audioCtx.currentTime),n.gain.setValueAtTime(c,audioCtx.currentTime),n.gain.exponentialRampToValueAtTime(1e-4,audioCtx.currentTime+a),t.start(audioCtx.currentTime),t.stop(audioCtx.currentTime+a)}
+function handleGameStart(){audioCtx||(audioCtx=new(window.AudioContext||window.webkitAudioContext));document.getElementById("instructionsModal").style.display="none";gameLoop=setInterval(update,1e3/60)}
+function createBricks(){const e=["linear-gradient(45deg, #ff6b6b, #ff8787)","linear-gradient(45deg, #4ecdc4, #45b7af)","linear-gradient(45deg, #ffe066, #ffd43b)","linear-gradient(45deg, #a8e6cf, #7dd8b5)","linear-gradient(45deg, #ff8c94, #ff6f7d)","linear-gradient(45deg, #88d8b0, #6fc396)","linear-gradient(45deg, #ffa07a, #ff8c66)","linear-gradient(45deg, #87ceeb, #75bde2)","linear-gradient(45deg, #dda0dd, #d088d0)","linear-gradient(45deg, #98fb98, #82e882)","linear-gradient(45deg, #f08080, #e66b6b)","linear-gradient(45deg, #b0e0e6, #9cd3db)"];for(let t=0;t<12;t++){let n=document.createElement("div");n.className="brick",n.style.background=e[t],n.style.left=t%4*200+10+"px",n.style.top=Math.floor(t/4)*40+10+"px",n.textContent=`Pregunta ${t+1}`,n.dataset.questionIndex=t,gameContainer.appendChild(n),bricks.push(n)}}
+function update(){ball.x+=ball.dx,ball.y+=ball.dy,ball.x<0||ball.x>785?(ball.dx*=-1,playSound("wall")):ball.y<0?(ball.dy*=-1,playSound("wall")):ball.y>550&&ball.x>paddle.x&&ball.x<paddle.x+paddle.width&&(ball.dy*=-1,playSound("paddle")),ball.y>600&&(ball.x=400,ball.y=300,ball.dx=4,ball.dy=-4),document.getElementById("ball").style.left=ball.x+"px",document.getElementById("ball").style.top=ball.y+"px",bricks.forEach((e,t)=>{if(e){let n=e.getBoundingClientRect(),o=document.getElementById("ball").getBoundingClientRect();o.left<n.right&&o.right>n.left&&o.top<n.bottom&&o.bottom>n.top&&(playSound("brick"),showQuestion(t),ball.dy*=-1)}})}
+function movePaddle(e){let t=gameContainer.getBoundingClientRect(),n=e.clientX-t.left-paddle.width/2;n=Math.max(0,Math.min(n,800-paddle.width)),paddle.x=n,document.getElementById("paddle").style.left=n+"px"}
+function showQuestion(e){if(0===questions.length)return;clearInterval(gameLoop),currentQuestion=questions[e];let t=document.getElementById("questionModal"),n=document.getElementById("questionText"),o=document.getElementById("options");n.textContent=currentQuestion.q,o.innerHTML="",currentQuestion.options.forEach(a=>{let c=document.createElement("button");c.innerHTML=a,c.onclick=()=>{questionAttempts[e]++,checkAnswer(a,e),t.style.display="none"},o.appendChild(c)});t.style.display="block";if(window.renderMathInElement)renderMathInElement(t,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1}],throwOnError:!1})}
+function checkAnswer(e,t){if(e===currentQuestion.correct){playSound("correct");let n=0;switch(questionAttempts[t]){case 1:n=10;break;case 2:n=6;break;case 3:n=3}totalScore+=n,document.getElementById("scoreValue").textContent=totalScore,clearInterval(gameLoop),createParticles(bricks[t]),bricks[t].classList.add("correct-answer-flash"),setTimeout(()=>{bricks[t].style.display="none",bricks[t]=null,document.getElementById("remainingBlocks").textContent=bricks.filter(e=>null!==e).length;let e=Math.floor(t/3);!discoveredDigits.includes(e)&&!bricks.slice(3*e,3*(e+1)).some(e=>null!==e)&&(discoveredDigits.push(e),completedBlockGroupsCount++,showBlockCompleteModal(completedBlockGroupsCount,finalCode[completedBlockGroupsCount-1])),0===bricks.filter(e=>null!==e).length&&showLockModal(),gameLoop=setInterval(update,1e3/60)},600)}else gameLoop=setInterval(update,1e3/60)}
+function showLockModal(){clearInterval(gameLoop),document.getElementById("lockModal").style.display="block"}function checkLockCode(){let e=document.getElementById("lockCode").value;if(e===finalCode){playSound("win");const t=120,n=(totalScore/t*100).toFixed(1);document.getElementById("resultsText").textContent=`Obtuviste ${totalScore} de ${t} puntos (${n}% de efectividad).`,document.getElementById("lockModal").style.display="none",document.getElementById("successModal").style.display="block"}else alert("Código incorrecto. Intenta de nuevo.")}function resetGame(){location.reload()}
+function createParticles(e){const t=e.getBoundingClientRect(),n=t.left+t.width/2,o=t.top+t.height/2;for(let a=0;a<12;a++){const c=document.createElement("div");c.className="particle",document.body.appendChild(c);const l=a/12*Math.PI*2,d=100,r=Math.cos(l)*d,i=Math.sin(l)*d;c.style.left=`${n}px`,c.style.top=`${o}px`,c.style.setProperty("--tx",`${r}px`),c.style.setProperty("--ty",`${i}px`),setTimeout(()=>c.remove(),600)}}
+function showBlockCompleteModal(e,t){const n=document.getElementById("blockCompleteModal");document.getElementById("blockNumber").textContent=e,document.getElementById("discoveredDigit").textContent=t,n.style.display="block"}function closeBlockModal(){document.getElementById("blockCompleteModal").style.display="none"}init();
+
+</script>
+</body></html>
