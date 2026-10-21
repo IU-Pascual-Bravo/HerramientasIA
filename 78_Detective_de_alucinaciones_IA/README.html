@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Documentación de Detective de Alucinaciones IA: instalación, configuración, uso y privacidad.">
+    <title>README | Detective de Alucinaciones IA</title>
+    <style>
+        :root { color-scheme: light; --ink: #20253a; --muted: #596174; --accent: #5948bd; --paper: #fff; --line: #e3e5ee; --wash: #f4f5fa; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: linear-gradient(135deg, #667eea, #764ba2); color: var(--ink); font: 16px/1.7 system-ui, -apple-system, "Segoe UI", sans-serif; }
+        main { width: min(900px, calc(100% - 32px)); margin: 32px auto; padding: clamp(24px, 5vw, 56px); background: var(--paper); border-radius: 20px; box-shadow: 0 20px 55px #17113b33; }
+        h1, h2 { line-height: 1.25; }
+        h1 { margin-top: 0; font-size: clamp(2rem, 5vw, 3rem); }
+        h2 { margin-top: 2em; padding-bottom: .4em; border-bottom: 1px solid var(--line); color: var(--accent); }
+        p, li { color: var(--muted); }
+        strong { color: var(--ink); }
+        a { color: var(--accent); }
+        code { padding: .12em .38em; border-radius: 5px; background: var(--wash); color: #342a77; font: .92em ui-monospace, SFMono-Regular, Consolas, monospace; }
+        pre { overflow-x: auto; padding: 16px 20px; border-radius: 10px; background: #20253a; color: #f7f7ff; }
+        pre code { padding: 0; background: transparent; color: inherit; }
+        .intro { font-size: 1.12rem; }
+        .note { padding: 14px 18px; border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--wash); }
+        footer { margin-top: 3em; padding-top: 1em; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+        @media (max-width: 600px) { body { font-size: 15px; } main { width: 100%; margin: 0; border-radius: 0; } }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <h1>Detective de Alucinaciones IA</h1>
+        <p class="intro">Aplicación web educativa para crear cuestionarios con ayuda de modelos de inteligencia artificial. Cada pregunta presenta cuatro afirmaciones: tres verdaderas y una falsa o «alucinación»; el jugador debe identificar la falsa y luego puede consultar la explicación.</p>
+    </header>
+
+    <section>
+        <h2>Funciones</h2>
+        <ul>
+            <li>Genera categorías de trivia escolar o permite escribir un tema propio.</li>
+            <li>Ofrece varios proveedores y modelos de IA.</li>
+            <li>Permite configurar dificultad fácil, media o difícil y entre 4 y 15 preguntas (5 por defecto).</li>
+            <li>Baraja las afirmaciones, muestra explicaciones y lleva puntuación, racha y precisión.</li>
+            <li>Descarga un cuestionario como HTML independiente y jugable sin conexión.</li>
+            <li>Guarda el proveedor preferido y las claves API en el almacenamiento local del navegador.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Archivos y requisitos</h2>
+        <ul>
+            <li><code>index.html</code>: aplicación completa, con estilos, lógica e interfaz.</li>
+            <li><code>logoPB1.png</code> y <code>logo_escuela.png</code>: imágenes del encabezado.</li>
+            <li><code>Modelo_logos/</code>: aplicación de referencia para los logos; no es necesaria para ejecutar la app principal.</li>
+        </ul>
+        <p>No se requieren paquetes, compilación ni un servidor backend propio. Se necesita un navegador moderno con JavaScript habilitado. La generación de temas y preguntas requiere Internet y un proveedor de IA; Red Descartes no requiere API key.</p>
+        <p>La interfaz carga Google Fonts desde Internet y utiliza fuentes alternativas si el servicio no está disponible.</p>
+    </section>
+
+    <section>
+        <h2>Ejecución</h2>
+        <p>Se recomienda servir la carpeta con un servidor HTTP local, ya que algunos navegadores restringen las solicitudes de red desde direcciones <code>file://</code>.</p>
+        <p>En Windows, abre una terminal en la carpeta del proyecto:</p>
+        <pre><code>py -m http.server 8000</code></pre>
+        <p>En macOS o Linux:</p>
+        <pre><code>python3 -m http.server 8000</code></pre>
+        <p>Abre <a href="http://localhost:8000">http://localhost:8000</a>. También es posible abrir <code>index.html</code> directamente, aunque las solicitudes a proveedores externos pueden estar limitadas por el navegador.</p>
+    </section>
+
+    <section>
+        <h2>Configurar un proveedor</h2>
+        <ol>
+            <li>En <strong>Proveedor y API Key</strong>, selecciona el servicio de IA.</li>
+            <li>Si requiere clave, créala en el sitio oficial del proveedor e introdúcela en el campo. El botón <strong>Obtener API Key</strong> abre el sitio correspondiente cuando está disponible.</li>
+            <li>Pulsa <strong>Validar</strong> para comprobar la clave. También puedes intentar usarla sin validación previa.</li>
+            <li>Elige un modelo en <strong>Modelo IA</strong> y comprueba que corresponda al proveedor seleccionado.</li>
+        </ol>
+        <p>Proveedores incluidos: Red Descartes (sin clave), Google AI Studio, Mistral AI, Cohere, Groq, Pollinations AI, OpenRouter (selección inicial) y DeepSeek. La lista de modelos está definida en <code>index.html</code>; los servicios pueden cambiar sus catálogos y disponibilidad.</p>
+    </section>
+
+    <section>
+        <h2>Crear y jugar</h2>
+        <ol>
+            <li>Selecciona una categoría sugerida o escribe un tema propio. Pulsa <strong>Nuevos Temas</strong> para generar otras categorías.</li>
+            <li>Configura la dificultad y la cantidad de preguntas. El número se ajusta al rango permitido de 4 a 15.</li>
+            <li>En cada pregunta, identifica cuál de las cuatro afirmaciones es falsa.</li>
+            <li>Lee el resultado y la explicación, y avanza a la siguiente pregunta.</li>
+            <li>Al terminar, consulta los aciertos y la precisión. Elige <strong>Crear Nuevo</strong> para iniciar otra partida o <strong>Descargar este Cuestionario (Clon)</strong> para exportar la partida.</li>
+        </ol>
+        <p class="note">El clon descargado contiene las preguntas ya generadas, no contiene una clave API y puede jugarse sin conexión. No genera preguntas nuevas.</p>
+    </section>
+
+    <section>
+        <h2>Privacidad y uso responsable</h2>
+        <ul>
+            <li>Las claves se guardan en <code>localStorage</code> y no están cifradas. Evita guardar claves en perfiles compartidos o dispositivos públicos. El botón <strong>Limpiar</strong> elimina la clave del proveedor actual.</li>
+            <li>Los temas y prompts se envían directamente al proveedor seleccionado. Revisa sus condiciones de privacidad, límites y posibles costos.</li>
+            <li>La IA puede generar errores. Verifica las afirmaciones y explicaciones antes de utilizarlas con fines académicos.</li>
+            <li>No incluyas claves API ni información sensible en los temas que escribas.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Solución de problemas</h2>
+        <ul>
+            <li><strong>No aparecen categorías:</strong> comprueba la conexión, el proveedor, la clave y el modelo; vuelve a pulsar <strong>Nuevos Temas</strong>.</li>
+            <li><strong>No se valida la clave:</strong> confirma que pertenezca al proveedor seleccionado, que esté activa y que el servicio permita solicitudes desde el navegador. Las restricciones de red o CORS dependen del proveedor.</li>
+            <li><strong>No se genera una pregunta:</strong> revisa el mensaje de estado e inténtalo de nuevo. La app puede reintentar hasta tres veces si la respuesta no tiene el formato esperado.</li>
+            <li><strong>El modelo no está disponible:</strong> selecciona otro modelo ofrecido por ese proveedor.</li>
+            <li><strong>No se recuerda la configuración:</strong> verifica que el navegador permita almacenamiento local y que no se haya borrado el almacenamiento del sitio.</li>
+        </ul>
+    </section>
+
+    <footer>Diseñado por Juan Guillermo Rivera con tecnología GPT-6 Luna y asistencia de OpenCode.</footer>
+</main>
+</body>
+</html>
