@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>¡Trivia Breakout! — README</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #202938;
+            background: #f3f6fb;
+        }
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 20px 56px;
+            line-height: 1.65;
+        }
+        main {
+            padding: clamp(20px, 5vw, 48px);
+            background: #fff;
+            border: 1px solid #dce3ed;
+            border-radius: 16px;
+            box-shadow: 0 12px 36px rgb(27 45 75 / 8%);
+        }
+        h1, h2 {
+            color: #173f72;
+            line-height: 1.25;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: clamp(2rem, 5vw, 2.8rem);
+        }
+        h2 {
+            margin-top: 2rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        a { color: #1769aa; }
+        code {
+            padding: 0.12rem 0.35rem;
+            border-radius: 4px;
+            background: #eef2f7;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 12px;
+            border: 1px solid #dce3ed;
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background: #eef3f9; }
+        @media (max-width: 560px) {
+            body { padding: 12px; }
+            main { padding: 20px 16px; }
+            table { font-size: 0.92rem; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>¡Trivia Breakout!</h1>
+    <p>Juego educativo que combina preguntas de opción múltiple con una mecánica tipo <em>Breakout</em>. El jugador elige un tema, rompe bloques con la pelota y responde preguntas para descubrir un código secreto de cuatro cifras.</p>
+
+    <h2>Características</h2>
+    <ul>
+        <li>Genera 12 preguntas en español para el tema elegido.</li>
+        <li>Permite usar Red Descartes sin configurar una clave o conectar proveedores de IA mediante una API Key.</li>
+        <li>Incluye preguntas y opciones con fórmulas matemáticas en LaTeX.</li>
+        <li>Permite mover la paleta con el puntero y adapta el tablero al tamaño de la pantalla.</li>
+        <li>Asigna puntos según los intentos y revela una cifra por cada grupo de tres bloques completado.</li>
+        <li>Descarga el juego generado como un archivo HTML con las preguntas y el código de esa partida.</li>
+        <li>Incluye los logos de Pascual Bravo y de la escuela.</li>
+    </ul>
+
+    <h2>Requisitos</h2>
+    <ul>
+        <li>Un navegador moderno con JavaScript habilitado.</li>
+        <li>Conexión a Internet para generar preguntas mediante el proveedor seleccionado y cargar KaTeX desde un CDN.</li>
+        <li>Una API Key válida si se elige un proveedor que la requiere.</li>
+    </ul>
+    <p>No se requiere instalar dependencias ni ejecutar un servidor para abrir la aplicación principal.</p>
+
+    <h2>Cómo iniciar</h2>
+    <ol>
+        <li>Descarga o copia la carpeta del proyecto, conservando <code>index.html</code> y los archivos de imagen en la misma ubicación.</li>
+        <li>Abre <code>index.html</code> en un navegador.</li>
+        <li>Escribe un tema, por ejemplo, «Historia del arte», «Insectos» o «Matemáticas».</li>
+        <li>Deja seleccionado <strong>Red Descartes</strong> o configura otro proveedor de IA.</li>
+        <li>Pulsa <strong>¡Generar y Empezar!</strong>. Cuando se generen las preguntas, comenzará el juego.</li>
+    </ol>
+
+    <h2>Proveedores de IA</h2>
+    <table>
+        <thead>
+            <tr><th>Tipo</th><th>Proveedores</th><th>Configuración</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Gratuito</td>
+                <td>Red Descartes</td>
+                <td>No requiere API Key.</td>
+            </tr>
+            <tr>
+                <td>Con API Key</td>
+                <td>Google AI Studio, Mistral AI, Cohere y Groq</td>
+                <td>Selecciona el proveedor, el modelo y proporciona una clave válida.</td>
+            </tr>
+            <tr>
+                <td>Pago por uso</td>
+                <td>Pollinations AI, OpenRouter y DeepSeek</td>
+                <td>Selecciona el proveedor, el modelo y proporciona una clave válida. Pueden aplicarse cargos según las condiciones del proveedor.</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>La interfaz permite validar y borrar la clave del proveedor seleccionado. Las claves y la preferencia de proveedor se guardan en el almacenamiento local del navegador; no se guardan en archivos del proyecto. Usa únicamente claves propias y revisa las condiciones y los costos del proveedor antes de usar servicios de pago.</p>
+
+    <h2>Cómo jugar</h2>
+    <ol>
+        <li>Mueve el puntero sobre el tablero para desplazar la paleta.</li>
+        <li>Cuando la pelota alcance un bloque, responde la pregunta de opción múltiple.</li>
+        <li>Una respuesta correcta elimina el bloque. Se obtienen <strong>10 puntos</strong> al acertar en el primer intento, <strong>6</strong> en el segundo y <strong>3</strong> en el tercero.</li>
+        <li>Cada grupo de tres bloques completado revela una cifra del código secreto.</li>
+        <li>Al eliminar los 12 bloques, introduce el código de cuatro cifras para ver el resultado. La puntuación máxima es <strong>120 puntos</strong>.</li>
+        <li>Pulsa <strong>Jugar de nuevo</strong> para reiniciar y generar otra partida.</li>
+    </ol>
+
+    <h2>Descargar una partida</h2>
+    <p>Una vez generadas las preguntas, aparece el botón <strong>Descargar Juego</strong>. El archivo HTML descargado contiene las preguntas y el código de esa partida, y se puede abrir para jugar sin volver a generar preguntas ni configurar una API Key. La representación de fórmulas con KaTeX se carga desde un CDN, por lo que requiere conexión a Internet.</p>
+
+    <h2>Archivos principales</h2>
+    <table>
+        <thead><tr><th>Archivo</th><th>Descripción</th></tr></thead>
+        <tbody>
+            <tr><td><code>index.html</code></td><td>Aplicación, estilos y lógica del juego.</td></tr>
+            <tr><td><code>logoPB1.png</code></td><td>Logo de Pascual Bravo.</td></tr>
+            <tr><td><code>logo_escuela.png</code></td><td>Logo de la escuela.</td></tr>
+            <tr><td><code>gifanimadoRedProyecto.gif</code></td><td>Recurso gráfico adicional incluido en la carpeta.</td></tr>
+            <tr><td><code>Modelo_logos/</code></td><td>Aplicación de referencia para la presentación de los logos.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Tecnologías</h2>
+    <p>HTML, CSS y JavaScript, con <a href="https://katex.org/">KaTeX</a> para representar fórmulas matemáticas. La generación de preguntas se realiza mediante el servicio del proveedor de IA seleccionado.</p>
+</main>
+</body>
+</html>

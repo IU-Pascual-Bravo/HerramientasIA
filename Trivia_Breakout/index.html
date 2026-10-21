@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Trivia Breakout</title>
+    <!-- KaTeX Libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+        }
+        #gameContainer {
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        #paddle {
+            width: 100px;
+            height: 20px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            position: absolute;
+            bottom: 20px;
+            left: 350px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 198, 255, 0.5);
+        }
+        #ball {
+            width: 15px;
+            height: 15px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        .brick {
+            width: 190px;
+            height: 30px;
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+            overflow: hidden;
+        }
+        .brick:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        .brick:hover:before {
+            left: 100%;
+        }
+        .brick:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        #questionModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.98);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: min(90vw, 650px);
+            max-width: 90vw;
+        }
+        #questionModal button {
+            padding: 15px 25px;
+            margin: 10px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #2962ff, #448aff);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 180px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(41, 98, 255, 0.3);
+        }
+        #questionModal button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(41, 98, 255, 0.4);
+        }
+        #questionModal button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+        #questionModal button:hover:before {
+            left: 100%;
+        }
+        #options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+        }
+        #questionText {
+            font-size: 20px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes correctAnswer {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
+        }
+        .correct-answer-flash {
+          animation: correctAnswer 0.6s ease;
+        }
+        .particle {
+          position: absolute;
+          pointer-events: none;
+          border-radius: 50%;
+          width: 8px;
+          height: 8px;
+          background: #00ff88;
+          animation: particleAnimation 0.6s ease-out forwards;
+        }
+        @keyframes particleAnimation {
+          0% {
+            transform: translate(0, 0);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(var(--tx), var(--ty));
+            opacity: 0;
+          }
+        }
+        #lockModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: min(90vw, 520px);
+        }
+        button {
+            padding: 12px 20px;
+            margin: 8px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #0072ff, #00c6ff);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 114, 255, 0.3);
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        #downloadButton {
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            font-size: 14px;
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+            color: #1a1a2e;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+            z-index: 10;
+        }
+        #downloadButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+        .digit {
+            color: #00ff88;
+            font-size: 24px;
+            margin: 5px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin: 10px 0;
+            width: 80%;
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            font-size: 16px;
+        }
+        h3 {
+            margin-bottom: 20px;
+            color: #00c6ff;
+        }
+        #instructionsModal, #successModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: min(96vw, 1100px);
+            max-width: 96vw;
+            text-align: center;
+        }
+
+        #instructionsModal input#topicInput {
+            width: 100%;
+            margin: 12px 0;
+        }
+
+        /* --- Layout 2 columnas (instrucciones + BYOP) --- */
+        #instructionsModal .modal-content {
+            text-align: left;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        #instructionsLeft {
+            padding: 4px 2px;
+        }
+
+        #instructionsRight {
+            padding: 4px 2px;
+        }
+
+        #instructionsModal h2 {
+            grid-column: 1 / -1;
+            text-align: left;
+            margin-bottom: 0;
+        }
+
+        #instructionsLeft p,
+        #instructionsLeft ol {
+            margin-left: 0;
+        }
+
+        @media (max-width: 520px) {
+            #instructionsModal, #successModal, #questionModal, #lockModal {
+                padding: 18px;
+            }
+            #instructionsModal .modal-content {
+                grid-template-columns: 1fr;
+            }
+            .api-key-container {
+                gap: 0.5rem;
+                padding: 10px;
+            }
+            input {
+                width: 95%;
+            }
+        }
+        .modal-content {
+            color: #fff;
+            line-height: 1.6;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+        #resultsText {
+            font-size: 18px;
+            color: #f0f0f0;
+        }
+        #blockCompleteModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            color: white;
+            min-width: 300px;
+        }
+        #blockCompleteModal h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+        #blockCompleteModal .digit {
+            font-size: 48px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            margin: 20px 0;
+        }
+        #blockCompleteModal .message {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        #blockCompleteModal button {
+            background: linear-gradient(45deg, #00ff88, #00cc6f);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #blockCompleteModal button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+        #loadingIndicator {
+            font-size: 18px;
+            margin-top: 20px;
+            color: #00c6ff;
+            display: none;
+        }
+
+        /* --- Selector Proveedor + API Key --- */
+        .api-key-container {
+            display: flex;
+            gap: 0.75rem;
+            margin: 15px 0 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .api-key-container label {
+            font-weight: 700;
+            color: #00c6ff;
+            flex-basis: 100%;
+            margin: 0;
+        }
+        #providerSelect {
+            flex: 1 1 220px;
+            min-width: 200px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        #apiKeyInput {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            min-width: 200px;
+        }
+        #modelSelect {
+            flex: 1 1 220px;
+            min-width: 200px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        .api-key-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .api-key-actions button {
+            padding: 10px 14px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            font-weight: 700;
+        }
+        .api-key-actions button:hover:not(:disabled) {
+            background: rgba(0, 198, 255, 0.25);
+            border-color: rgba(0, 198, 255, 0.6);
+        }
+        .api-key-actions button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        #statusApiKey {
+            margin-top: 8px;
+            font-weight: 700;
+            min-height: 22px;
+        }
+
+        /* Título con logo en la misma línea */
+        .title-with-logo {
+            display: grid;
+            grid-template-columns: minmax(64px, 1fr) auto minmax(64px, 1fr);
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .title-with-logo img {
+            height: clamp(42px, 8vw, 72px);
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .title-with-logo img:last-of-type {
+            justify-self: end;
+        }
+
+        /* Adaptación de la pantalla inicial y del tablero a cualquier viewport. */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-width: 320px;
+        }
+
+        body {
+            padding: clamp(8px, 2vw, 20px);
+            overflow-x: hidden;
+        }
+
+        #gameContainer {
+            width: min(800px, 100%);
+            height: auto;
+            aspect-ratio: 4 / 3;
+            min-height: 0;
+        }
+
+        #instructionsModal, #successModal, #questionModal, #lockModal, #blockCompleteModal {
+            max-height: calc(100dvh - 24px);
+            overflow-y: auto;
+        }
+
+        #instructionsModal {
+            width: min(1100px, calc(100vw - 24px));
+            padding: clamp(16px, 3vw, 30px);
+        }
+
+        #instructionsModal .modal-content {
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: clamp(14px, 2vw, 24px);
+        }
+
+        #instructionsModal h2 {
+            text-align: center;
+            font-size: clamp(1.35rem, 3vw, 2rem);
+        }
+
+        .title-with-logo {
+            text-align: center;
+        }
+
+        .title-with-logo > span {
+            min-width: 0;
+        }
+
+        #instructionsLeft, #instructionsRight {
+            min-width: 0;
+        }
+
+        #instructionsLeft p,
+        #instructionsLeft ol {
+            font-size: clamp(1rem, 2.2vw, 1.35rem);
+        }
+
+        #instructionsLeft ol {
+            padding-left: 1.6em;
+        }
+
+        #instructionsModal input#topicInput,
+        #apiKeyInput,
+        #providerSelect,
+        #modelSelect {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .api-key-actions {
+            width: 100%;
+        }
+
+        .api-key-actions button {
+            flex: 1 1 140px;
+            margin: 0;
+        }
+
+        #generateButton {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        @media (max-width: 700px) {
+            #instructionsModal .modal-content {
+                grid-template-columns: 1fr;
+            }
+
+            #instructionsModal h2 {
+                grid-column: auto;
+            }
+
+            #instructionsLeft ol {
+                display: block !important;
+                margin: 15px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #instructionsModal, #successModal, #questionModal, #lockModal, #blockCompleteModal {
+                width: calc(100vw - 16px);
+                padding: 14px;
+            }
+
+            #instructionsModal h2 {
+                line-height: 1.2;
+            }
+
+            .title-with-logo {
+                grid-template-columns: 42px minmax(0, 1fr) 42px;
+                gap: 8px;
+            }
+
+            .title-with-logo img {
+                height: 52px;
+            }
+
+            .api-key-container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="score">Puntaje: <span id="scoreValue">0</span> | Bloques: <span id="remainingBlocks">12</span></div>
+        <button id="downloadButton">Descargar Juego</button>
+        <div id="paddle"></div>
+        <div id="ball"></div>
+    </div>
+
+    <div id="questionModal">
+        <h3 id="questionText"></h3>
+        <div id="options"></div>
+    </div>
+
+    <div id="lockModal">
+        <h3>&#xa1;Ingresa el c&#xf3;digo de 4 d&#xed;gitos!</h3>
+        <input type="text" id="lockCode" maxlength="4">
+        <button onclick="checkLockCode()">Verificar</button>
+    </div>
+
+    <div id="instructionsModal">
+        <div class="modal-content">
+            <h2>
+                <span class="title-with-logo">
+                    <img src="logoPB1.png" alt="Logo Pascual Bravo">
+                    <span>&#xa1;Trivia Breakout!</span>
+                    <img src="logo_escuela.png" alt="Logo de la escuela">
+                </span>
+            </h2>
+
+            <div id="instructionsLeft">
+                <p>Destruye los bloques para responder preguntas sobre un tema de tu elección.</p>
+                <ol style="text-align: left; display: inline-block; margin: 15px 0;">
+                    <li>Ingresa un tema (ej: "Historia del arte", "Insectos", "Python").</li>
+                    <li>El juego generará 12 preguntas sobre ese tema.</li>
+                    <li>Cada 3 bloques destruidos revelarán un dígito del código final.</li>
+                    <li>Reúne los 4 dígitos y obtén el mejor puntaje para ganar.</li>
+                </ol>
+                <div>
+                    <input type="text" id="topicInput" placeholder="Escribe un tema (ej: Matemáticas)...">
+                    <button id="generateButton">&#xa1;Generar y Empezar!</button>
+                    <div id="loadingIndicator">Generando preguntas... por favor espera. Esto puede tardar un momento.</div>
+                </div>
+            </div>
+
+            <div id="instructionsRight">
+                <div class="api-key-container">
+                    <label for="providerSelect">Proveedor de IA</label>
+                    <select id="providerSelect">
+                        <optgroup label="Gratuitos">
+                            <option value="free" selected>Red Descartes</option>
+                            <option value="google">Google AI Studio</option>
+                            <option value="mistral">Mistral AI</option>
+                            <option value="cohere">Cohere</option>
+                            <option value="groq">Groq</option>
+                        </optgroup>
+                        <optgroup label="Pago por uso">
+                            <option value="pollinations">Pollinations AI</option>
+                            <option value="openrouter">OpenRouter</option>
+                            <option value="deepseek">DeepSeek</option>
+                        </optgroup>
+                    </select>
+
+                    <label for="modelSelect" id="modelLabel">Modelo</label>
+                    <select id="modelSelect">
+                        <option value="">Selecciona un proveedor</option>
+                    </select>
+
+                    <label for="apiKeyInput" id="apiKeyLabel">Configuración de API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="Clave/API Key...">
+                    <div class="api-key-actions">
+                        <button id="validateKeyBtn" type="button">✅ Validar</button>
+                        <button id="clearKeyBtn" type="button">🧹 Limpiar</button>
+                    </div>
+                    <div id="statusApiKey"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="successModal">
+        <div class="modal-content">
+            <div class="success-icon">&#x1f3c6;</div>
+            <h2>&#xa1;Felicitaciones!</h2>
+            <p>Has completado el juego y descubierto el código secreto:</p>
+            <h1 id="finalCodeDisplay" style="color: #00ff88; font-size: 48px; margin: 20px 0;"></h1>
+            <p id="resultsText"></p>
+            <p>&#xa1;Eres un experto en tu tema!</p>
+            <button onclick="resetGame()">Jugar de nuevo</button>
+        </div>
+    </div>
+
+    <div id="blockCompleteModal">
+        <h2>&#xa1;Dígito Descubierto!</h2>
+        <p class="message">Has completado el bloque de preguntas número <span id="blockNumber"></span>.</p>
+        <p>El dígito revelado es:</p>
+        <div class="digit" id="discoveredDigit"></div>
+        <button onclick="closeBlockModal()">&#xa1;Continuar!</button>
+    </div>
+
+<script>
+let questions = [];
+let ball = { x: 400, y: 300, dx: 4, dy: -4 };
+let paddle = { x: 350, width: 100 };
+let bricks = [];
+let currentQuestion = null;
+let discoveredDigits = [];
+let finalCode = '';
+let gameLoop;
+let gameContainer = document.getElementById('gameContainer');
+
+    // --- Configuración de Proveedores + API Key ---
+    const PROVIDERS = {
+        pollinations: { name: 'Pollinations AI', url: 'https://gen.pollinations.ai/v1/chat/completions', validateUrl: 'https://gen.pollinations.ai/v1/models', model: 'openai', placeholder: 'plln_sk_...', keyUrl: 'https://enter.pollinations.ai/authorize', free: false },
+        free: { name: 'Red Descartes', url: 'https://node.proyectodescartes.org/api/ia/text', validateUrl: '', model: 'openai', placeholder: '', keyUrl: '', free: true },
+        openrouter: { name: 'OpenRouter', url: 'https://openrouter.ai/api/v1/chat/completions', validateUrl: 'https://openrouter.ai/api/v1/models', model: 'google/gemini-2.5-flash', placeholder: 'sk-or-...', keyUrl: 'https://openrouter.ai/keys', free: false },
+        google: { name: 'Google AI Studio', url: 'https://generativelanguage.googleapis.com/v1beta/models/', validateUrl: 'https://generativelanguage.googleapis.com/v1beta/models', model: 'gemini-3.8-flash', placeholder: 'AIzaSy...', keyUrl: 'https://aistudio.google.com/app/apikey', free: false },
+        mistral: { name: 'Mistral AI', url: 'https://api.mistral.ai/v1/chat/completions', validateUrl: 'https://api.mistral.ai/v1/models', model: 'open-mistral-7b', placeholder: 'Clave Mistral API...', keyUrl: 'https://console.mistral.ai/api-keys/', free: false },
+        cohere: { name: 'Cohere', url: 'https://api.cohere.com/v2/chat', validateUrl: 'https://api.cohere.com/v1/models', model: 'command-a-plus-05-2026', placeholder: 'Clave Cohere API...', keyUrl: 'https://dashboard.cohere.com/api-keys', free: false },
+        groq: { name: 'Groq', url: 'https://api.groq.com/openai/v1/chat/completions', validateUrl: 'https://api.groq.com/openai/v1/models', model: 'llama-3.1-8b-instant', placeholder: 'gsk_...', keyUrl: 'https://console.groq.com/keys', free: false },
+        deepseek: { name: 'DeepSeek', url: 'https://api.deepseek.com/chat/completions', validateUrl: 'https://api.deepseek.com/models', model: 'deepseek-flash', placeholder: 'sk-...', keyUrl: 'https://platform.deepseek.com/api_keys', free: false }
+    };
+
+    const MODEL_OPTIONS = {
+        pollinations: ['openai', 'openai/gpt-5.6-luna', 'moonshotai/kimi-k2.6', 'x-ai/grok-4.3', 'mistral-small-3.2', 'qwen-coder', 'gemini-fast', 'z-ai/glm-5.3-flash', 'openai/gpt-6-luna'],
+        free: ['openai', 'openai-fast', 'gemini-fast', 'gemini-search', 'mistral', 'nova-fast', 'perplexity-fast', 'deepseek'],
+        openrouter: ['google/gemini-2.5-flash', 'deepseek/deepseek-chat-v3-0324', 'openai/gpt-5-mini', 'moonshotai/kimi-k2.6', 'meta-llama/llama-3.3-70b-instruct', 'openrouter/free'],
+        google: ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.1-pro-preview'],
+        mistral: ['open-mistral-7b', 'open-mixtral-8x7b'],
+        cohere: ['command-a-plus-05-2026', 'command-a-03-2025', 'command-a-reasoning-08-2025', 'command-r7b-12-2024'],
+        groq: ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'],
+        deepseek: ['deepseek-flash', 'deepseek-v4-pro']
+    };
+
+    function providerKeyName(provider) { return `${provider}_api_key`; }
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[character]);
+    }
+
+    function getSelectedProvider() {
+        const providerSelect = document.getElementById('providerSelect');
+        return providerSelect ? providerSelect.value : 'free';
+    }
+
+    function updateProviderUi() {
+        const providerSelect = document.getElementById('providerSelect');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const apiKeyLabel = document.getElementById('apiKeyLabel');
+        const modelSelect = document.getElementById('modelSelect');
+        if (!providerSelect || !apiKeyInput || !apiKeyLabel) return;
+
+        const provider = providerSelect.value;
+        const config = PROVIDERS[provider] || PROVIDERS.free;
+
+        apiKeyLabel.textContent = config.free ? `No se requiere API Key (${config.name})` : `Configuración de API Key (${config.name})`;
+        apiKeyInput.placeholder = config.placeholder;
+        apiKeyInput.disabled = Boolean(config.free);
+        apiKeyInput.required = !config.free;
+        apiKeyInput.value = config.free ? '' : (localStorage.getItem(providerKeyName(provider)) || '');
+
+        if (modelSelect) {
+            const options = MODEL_OPTIONS[provider] || [config.model];
+            modelSelect.replaceChildren(...options.map(model => new Option(model, model)));
+            modelSelect.value = config.model;
+        }
+    }
+
+    async function validateProviderKey() {
+        const provider = getSelectedProvider();
+        const config = PROVIDERS[provider] || PROVIDERS.free;
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const statusApiKey = document.getElementById('statusApiKey');
+
+        if (!statusApiKey || !apiKeyInput) return;
+
+        const key = apiKeyInput.value.trim();
+        if (config.free) {
+            statusApiKey.innerHTML = `✅ ${escapeHtml(config.name)} no requiere API Key.`;
+            return;
+        }
+        if (!key) {
+            statusApiKey.innerHTML = `<span style="color:#ff7b72">❌ Introduce una API Key antes de validarla.</span>`;
+            return;
+        }
+
+        const validateBtn = document.getElementById('validateKeyBtn');
+        validateBtn.disabled = true;
+        validateBtn.textContent = '⏳ Validando...';
+        try {
+            const headers = {};
+            if (provider === 'google') headers['x-goog-api-key'] = key;
+            else headers.Authorization = `Bearer ${key}`;
+
+            const response = await fetch(config.validateUrl, { method: 'GET', headers });
+            if (!response.ok) {
+                const details = (await response.text()).slice(0, 240);
+                throw new Error(`${response.status}${details ? `: ${details}` : ''}`);
+            }
+
+            localStorage.setItem(providerKeyName(provider), key);
+            statusApiKey.innerHTML = `✅ API Key válida para ${escapeHtml(config.name)}.`;
+        } catch (error) {
+            statusApiKey.innerHTML = `<span style="color:#ff7b72">❌ No se pudo validar la API Key de ${escapeHtml(config.name)}. ${escapeHtml(error.message)}</span>`;
+        } finally {
+            validateBtn.disabled = false;
+            validateBtn.textContent = '✅ Validar';
+        }
+    }
+
+    function clearProviderKey() {
+        const provider = getSelectedProvider();
+        const config = PROVIDERS[provider] || PROVIDERS.free;
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const statusApiKey = document.getElementById('statusApiKey');
+        if (!apiKeyInput || !statusApiKey) return;
+        if (!config.free) {
+            localStorage.removeItem(providerKeyName(provider));
+        }
+        apiKeyInput.value = '';
+        updateProviderUi();
+        statusApiKey.innerHTML = `🧹 API Key eliminada del navegador${config.free ? ' (no aplica, proveedor gratuito)' : ` para ${escapeHtml(config.name)}`}.`;
+    }
+
+// Game state variables
+let totalScore = 0;
+let questionAttempts = [];
+let completedBlockGroupsCount = 0;
+let audioCtx = null;
+
+function init() {
+    document.getElementById('instructionsModal').style.display = 'block';
+    document.getElementById('generateButton').addEventListener('click', handleGameStart);
+    document.getElementById('downloadButton').addEventListener('click', downloadGame);
+    questionAttempts = new Array(12).fill(0);
+    completedBlockGroupsCount = 0;
+
+    // Wiring del selector/API key
+    const providerSelect = document.getElementById('providerSelect');
+    const validateKeyBtn = document.getElementById('validateKeyBtn');
+    const clearKeyBtn = document.getElementById('clearKeyBtn');
+    if (providerSelect) {
+        const savedProvider = localStorage.getItem('preferred_writer_provider');
+        if (savedProvider && PROVIDERS[savedProvider]) providerSelect.value = savedProvider;
+        providerSelect.addEventListener('change', () => {
+            localStorage.setItem('preferred_writer_provider', providerSelect.value);
+            updateProviderUi();
+        });
+    }
+    if (validateKeyBtn) validateKeyBtn.addEventListener('click', validateProviderKey);
+    if (clearKeyBtn) clearKeyBtn.addEventListener('click', clearProviderKey);
+
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    if (apiKeyInput && !apiKeyInput.disabled) {
+        apiKeyInput.addEventListener('change', () => {
+            const provider = getSelectedProvider();
+            if (!PROVIDERS[provider].free) {
+                localStorage.setItem(providerKeyName(provider), apiKeyInput.value.trim());
+            }
+        });
+    }
+    updateProviderUi();
+}
+
+// --- Audio Synthesis ---
+function playSound(type) {
+    if (!audioCtx) return;
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    let freq = 440, duration = 0.1, vol = 0.3;
+
+    switch (type) {
+        case 'paddle': freq = 300; vol = 0.2; duration = 0.05; break;
+        case 'wall': freq = 200; vol = 0.1; duration = 0.05; break;
+        case 'brick': freq = 440; vol = 0.3; duration = 0.1; break;
+        case 'correct': freq = 600; vol = 0.4; duration = 0.2; break;
+        case 'win': freq = 800; vol = 0.5; duration = 0.5; break;
+    }
+    
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+
+async function handleGameStart() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const topic = document.getElementById('topicInput').value;
+    if (!topic.trim()) { alert("Por favor, ingresa un tema."); return; }
+    
+    const genButton = document.getElementById('generateButton');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    genButton.disabled = true;
+    loadingIndicator.style.display = 'block';
+
+    try {
+        await generateQuestions(topic);
+        document.getElementById('instructionsModal').style.display = 'none';
+        document.getElementById('downloadButton').style.display = 'inline-block';
+        startGame();
+    } catch (error) {
+        console.error("Error final después de varios intentos:", error);
+        alert("No se pudieron generar las preguntas. Por favor, intenta de nuevo.");
+    } finally {
+        genButton.disabled = false;
+        loadingIndicator.style.display = 'none';
+    }
+}
+
+// Helper function to shuffle an array in-place (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// --- FUNCIÓN GENERAR PREGUNTAS (ACTUALIZADA PARA BACKEND SEGURO) ---
+async function generateQuestions(topic) {
+    const maxRetries = 3;
+    
+    // Configuración del prompt para el backend
+    const systemInstruction = `Eres un experto generador de trivia. Genera preguntas de opción múltiple en formato JSON estricto.
+    REGLAS IMPORTANTES:
+    - Si el tema implica matemáticas, ciencias o fórmulas, USA formato LaTeX ($...$).
+    - Devuelve SOLO un array JSON válido y nada más.
+    - ESCAPA DOBLEMENTE las barras invertidas en LaTeX (ej: usa \\\\sqrt{} en lugar de \\sqrt{}).`;
+
+    const userPrompt = `Genera EXACTAMENTE 12 preguntas de opción múltiple en español sobre "${topic}".
+    Formato de respuesta esperado (ejemplo):
+    [
+     {"q":"¿Cuál es el valor de $\\\\pi$ aproximado?","options":["3.14","2.5","4","10"],"correct":"3.14"}
+    ]`;
+
+            const provider = getSelectedProvider();
+            const config = PROVIDERS[provider] || PROVIDERS.free;
+            const modelSelect = document.getElementById('modelSelect');
+            const selectedModel = modelSelect && modelSelect.value ? modelSelect.value : config.model;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`Intento de generación ${attempt}/${maxRetries}...`);
+            
+            // Petición al proveedor (BYOP)
+            const apiKey = document.getElementById('apiKeyInput')?.value?.trim() || '';
+            let apiUrl = config.url;
+            const headers = { 'Content-Type': 'application/json' };
+            let body;
+
+            if (provider === 'free') {
+                body = { prompt: userPrompt, system: systemInstruction, model: selectedModel, json: true };
+            } else if (provider === 'google') {
+                apiUrl += `${selectedModel}:generateContent`;
+                headers['x-goog-api-key'] = apiKey;
+                body = { contents: [{ role: 'user', parts: [{ text: userPrompt }] }], systemInstruction: { parts: [{ text: systemInstruction }] }, generationConfig: { responseMimeType: 'application/json' } };
+            } else {
+                headers.Authorization = `Bearer ${apiKey}`;
+                if (provider === 'openrouter') {
+                    headers['HTTP-Referer'] = window.location.origin;
+                    headers['X-Title'] = 'Trivia Breakout';
+                }
+
+                body = { model: selectedModel, messages: [
+                    { role: 'system', content: systemInstruction },
+                    { role: 'user', content: userPrompt }
+                ] };
+            }
+
+            const response = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify(body) });
+
+            if (!response.ok) throw new Error(`La API falló con estado ${response.status}`);
+            
+            let text = await response.text();
+            
+            // Limpieza básica del texto recibido (eliminar bloques markdown si existen)
+            text = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+
+            // Normalización para algunos proveedores que devuelven JSON con wrappers
+            if (provider !== 'free') {
+                try {
+                    const parsed = JSON.parse(text);
+                    // OpenAI/compat
+                    const content = parsed?.choices?.[0]?.message?.content;
+                    if (typeof content === 'string') text = content;
+                    // Cohere
+                    const cohereContent = parsed?.message?.content;
+                    if (Array.isArray(cohereContent)) {
+                        text = cohereContent.map(p => p?.text || '').join('');
+                    }
+                    // Google
+                    const googleText = parsed?.candidates?.[0]?.content?.parts?.map(p => p?.text || '').join('');
+                    if (googleText) text = googleText;
+                } catch {
+                    // si no es JSON plano, se intenta parsear como estaba
+                }
+                text = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+            }
+            
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                // Intento secundario de limpieza si el JSON no es puro
+                const jsonStart = text.indexOf('[');
+                const jsonEnd = text.lastIndexOf(']');
+                if (jsonStart !== -1 && jsonEnd !== -1) {
+                    data = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
+                } else {
+                    throw e;
+                }
+            }
+            
+            // Validar estructura
+            if (!Array.isArray(data) && data.questions) data = data.questions; 
+            if (!Array.isArray(data) || data.length < 12) {
+                throw new Error('La estructura de datos recibida de la API es inválida o incompleta.');
+            }
+
+            // Shuffle options
+            data.forEach(question => {
+                if (question.options && Array.isArray(question.options)) {
+                    shuffleArray(question.options);
+                }
+            });
+
+            questions = data.slice(0, 12);
+            
+            // Generate final code
+            finalCode = '';
+            for (let i = 0; i < 4; i++) {
+                finalCode += Math.floor(Math.random() * 10);
+            }
+            document.getElementById('finalCodeDisplay').textContent = finalCode;
+            console.log("¡Preguntas generadas exitosamente!");
+            return;
+            
+        } catch (error) {
+            console.warn(`Intento ${attempt} fallido:`, error.message);
+            if (attempt === maxRetries) throw error;
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    }
+}
+
+function startGame() {
+    const scale = gameScale();
+    const paddleElement = document.getElementById('paddle');
+    const ballElement = document.getElementById('ball');
+    paddleElement.style.width = paddle.width * scale + 'px';
+    paddleElement.style.height = 20 * scale + 'px';
+    paddleElement.style.bottom = 20 * scale + 'px';
+    ballElement.style.width = 15 * scale + 'px';
+    ballElement.style.height = 15 * scale + 'px';
+    createBricks();
+    document.addEventListener('pointermove', movePaddle);
+    gameLoop = setInterval(update, 1000 / 60);
+}
+
+function gameScale() {
+  return gameContainer.clientWidth / 800;
+}
+
+function createBricks() {
+  const colors = ['linear-gradient(45deg, #ff6b6b, #ff8787)', 'linear-gradient(45deg, #4ecdc4, #45b7af)', 'linear-gradient(45deg, #ffe066, #ffd43b)', 'linear-gradient(45deg, #a8e6cf, #7dd8b5)', 'linear-gradient(45deg, #ff8c94, #ff6f7d)', 'linear-gradient(45deg, #88d8b0, #6fc396)', 'linear-gradient(45deg, #ffa07a, #ff8c66)', 'linear-gradient(45deg, #87ceeb, #75bde2)', 'linear-gradient(45deg, #dda0dd, #d088d0)', 'linear-gradient(45deg, #98fb98, #82e882)', 'linear-gradient(45deg, #f08080, #e66b6b)', 'linear-gradient(45deg, #b0e0e6, #9cd3db)'];
+  const scale = gameScale();
+  for (let i = 0; i < 12; i++) {
+    let brick = document.createElement('div');
+    brick.className = 'brick';
+    brick.style.background = colors[i];
+    brick.style.width = 190 * scale + 'px';
+    brick.style.height = 30 * scale + 'px';
+    brick.style.left = (i % 4 * 200 + 10) * scale + 'px';
+    brick.style.top = (Math.floor(i / 4) * 40 + 10) * scale + 'px';
+    brick.textContent = `Pregunta ${i + 1}`;
+    brick.dataset.questionIndex = i;
+    gameContainer.appendChild(brick);
+    bricks.push(brick);
+  }
+}
+
+function update() {
+  const scale = gameScale();
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+  if (ball.x < 0 || ball.x > 785) { ball.dx *= -1; playSound('wall'); }
+  if (ball.y < 0) { ball.dy *= -1; playSound('wall'); }
+  if (ball.y > 550 && ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+    ball.dy *= -1; playSound('paddle');
+  }
+  if (ball.y > 600) { ball.x = 400; ball.y = 300; ball.dx = 4; ball.dy = -4; }
+  document.getElementById('ball').style.left = ball.x * scale + 'px';
+  document.getElementById('ball').style.top = ball.y * scale + 'px';
+  bricks.forEach((brick, index) => {
+    if (brick) {
+      let rect = brick.getBoundingClientRect();
+      let ballRect = document.getElementById('ball').getBoundingClientRect();
+      if (ballRect.left < rect.right && ballRect.right > rect.left && ballRect.top < rect.bottom && ballRect.bottom > rect.top) {
+        playSound('brick');
+        showQuestion(index);
+        ball.dy *= -1;
+      }
+    }
+  });
+}
+
+function movePaddle(e) {
+  let containerRect = gameContainer.getBoundingClientRect();
+  let scale = gameScale();
+  let x = (e.clientX - containerRect.left) / scale - paddle.width / 2;
+  x = Math.max(0, Math.min(x, 800 - paddle.width));
+  paddle.x = x;
+  document.getElementById('paddle').style.left = x * scale + 'px';
+}
+
+function showQuestion(brickIndex) {
+  if (questions.length === 0) return;
+  clearInterval(gameLoop);
+  currentQuestion = questions[brickIndex];
+  let modal = document.getElementById('questionModal');
+  let questionText = document.getElementById('questionText');
+  let options = document.getElementById('options');
+  
+  questionText.textContent = currentQuestion.q;
+  options.innerHTML = '';
+  
+  currentQuestion.options.forEach(option => {
+    let button = document.createElement('button');
+    // Para las opciones, también permitimos renderizado LaTeX si lo hay
+    button.innerHTML = option; 
+    button.onclick = () => {
+      questionAttempts[brickIndex]++;
+      checkAnswer(option, brickIndex);
+      modal.style.display = 'none';
+    };
+    options.appendChild(button);
+  });
+  
+  modal.style.display = 'block';
+
+  // Renderizar matemáticas con KaTeX
+  if (window.renderMathInElement) {
+    renderMathInElement(modal, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+    });
+  }
+}
+
+function checkAnswer(answer, brickIndex) {
+  // Comparamos texto plano o HTML dependiendo de cómo vino
+  // Para simplificar, comparamos string directos, asumimos que no cambia el formato
+  if (answer === currentQuestion.correct) {
+    playSound('correct');
+    let points = 0;
+    switch (questionAttempts[brickIndex]) {
+        case 1: points = 10; break;
+        case 2: points = 6; break;
+        case 3: points = 3; break;
+        default: points = 0; break;
+    }
+    totalScore += points;
+    document.getElementById('scoreValue').textContent = totalScore;
+    
+    clearInterval(gameLoop);
+    createParticles(bricks[brickIndex]);
+    bricks[brickIndex].classList.add('correct-answer-flash');
+    setTimeout(() => {
+      bricks[brickIndex].style.display = 'none';
+      bricks[brickIndex] = null;
+      document.getElementById('remainingBlocks').textContent = bricks.filter(b => b !== null).length;
+      
+      let blockGroupNumber = Math.floor(brickIndex / 3);
+      if (!discoveredDigits.includes(blockGroupNumber) && !bricks.slice(blockGroupNumber * 3, (blockGroupNumber + 1) * 3).some(brick => brick !== null)) {
+        discoveredDigits.push(blockGroupNumber);
+        completedBlockGroupsCount++;
+        const digitToReveal = finalCode[completedBlockGroupsCount - 1];
+        showBlockCompleteModal(completedBlockGroupsCount, digitToReveal);
+      }
+      
+      if (bricks.filter(b => b !== null).length === 0) showLockModal();
+      gameLoop = setInterval(update, 1000 / 60);
+    }, 600);
+  } else {
+    gameLoop = setInterval(update, 1000 / 60);
+  }
+}
+
+function showLockModal() {
+  clearInterval(gameLoop);
+  document.getElementById('lockModal').style.display = 'block';
+}
+
+function checkLockCode() {
+  let code = document.getElementById('lockCode').value;
+  if (code === finalCode) {
+    playSound('win');
+    const maxScore = 120;
+    const percentage = ((totalScore / maxScore) * 100).toFixed(1);
+    document.getElementById('resultsText').textContent = `Obtuviste ${totalScore} de ${maxScore} puntos (${percentage}% de efectividad).`;
+
+    document.getElementById('lockModal').style.display = 'none';
+    document.getElementById('successModal').style.display = 'block';
+  } else {
+    alert('Código incorrecto. Intenta de nuevo.');
+  }
+}
+
+function resetGame() { location.reload(); }
+
+function createParticles(element) {
+  const rect = element.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  for (let i = 0; i < 12; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    document.body.appendChild(particle);
+    const angle = i / 12 * Math.PI * 2;
+    const velocity = 100;
+    const tx = Math.cos(angle) * velocity;
+    const ty = Math.sin(angle) * velocity;
+    particle.style.left = `${centerX}px`;
+    particle.style.top = `${centerY}px`;
+    particle.style.setProperty('--tx', `${tx}px`);
+    particle.style.setProperty('--ty', `${ty}px`);
+    setTimeout(() => particle.remove(), 600);
+  }
+}
+
+function showBlockCompleteModal(blockCount, digit) {
+  const modal = document.getElementById('blockCompleteModal');
+  document.getElementById('blockNumber').textContent = blockCount;
+  document.getElementById('discoveredDigit').textContent = digit;
+  modal.style.display = 'block';
+}
+
+function closeBlockModal() {
+  document.getElementById('blockCompleteModal').style.display = 'none';
+}
+
+function downloadGame() {
+    const topic = document.getElementById('topicInput').value || 'trivia';
+    const filename = `juego-trivia-${topic.toLowerCase().replace(/\s+/g, '-')}.html`;
+    
+    // Scripts necesarios para la versión offline (minificados para ahorrar espacio)
+    const offlineScript = `
+const questions=${JSON.stringify(questions,null,2)},finalCode="${finalCode}";let ball={x:400,y:300,dx:4,dy:-4},paddle={x:350,width:100},bricks=[],currentQuestion=null,discoveredDigits=[],gameLoop,gameContainer=document.getElementById("gameContainer"),totalScore=0,questionAttempts=new Array(12).fill(0),completedBlockGroupsCount=0,audioCtx=null;
+function init(){document.getElementById("instructionsModal").style.display="block";document.getElementById("finalCodeDisplay").textContent=finalCode;createBricks();document.addEventListener("mousemove",movePaddle)}
+function playSound(e){if(!audioCtx)return;const t=audioCtx.createOscillator(),n=audioCtx.createGain();t.connect(n),n.connect(audioCtx.destination);let o=440,a=.1,c=.3;switch(e){case"paddle":o=300,c=.2,a=.05;break;case"wall":o=200,c=.1,a=.05;break;case"brick":o=440,c=.3,a=.1;break;case"correct":o=600,c=.4,a=.2;break;case"win":o=800,c=.5,a=.5}t.type="triangle",t.frequency.setValueAtTime(o,audioCtx.currentTime),n.gain.setValueAtTime(c,audioCtx.currentTime),n.gain.exponentialRampToValueAtTime(1e-4,audioCtx.currentTime+a),t.start(audioCtx.currentTime),t.stop(audioCtx.currentTime+a)}
+function handleGameStart(){audioCtx||(audioCtx=new(window.AudioContext||window.webkitAudioContext));document.getElementById("instructionsModal").style.display="none";gameLoop=setInterval(update,1e3/60)}
+function createBricks(){const e=["linear-gradient(45deg, #ff6b6b, #ff8787)","linear-gradient(45deg, #4ecdc4, #45b7af)","linear-gradient(45deg, #ffe066, #ffd43b)","linear-gradient(45deg, #a8e6cf, #7dd8b5)","linear-gradient(45deg, #ff8c94, #ff6f7d)","linear-gradient(45deg, #88d8b0, #6fc396)","linear-gradient(45deg, #ffa07a, #ff8c66)","linear-gradient(45deg, #87ceeb, #75bde2)","linear-gradient(45deg, #dda0dd, #d088d0)","linear-gradient(45deg, #98fb98, #82e882)","linear-gradient(45deg, #f08080, #e66b6b)","linear-gradient(45deg, #b0e0e6, #9cd3db)"];for(let t=0;t<12;t++){let n=document.createElement("div");n.className="brick",n.style.background=e[t],n.style.left=t%4*200+10+"px",n.style.top=Math.floor(t/4)*40+10+"px",n.textContent=\`Pregunta \${t+1}\`,n.dataset.questionIndex=t,gameContainer.appendChild(n),bricks.push(n)}}
+function update(){ball.x+=ball.dx,ball.y+=ball.dy,ball.x<0||ball.x>785?(ball.dx*=-1,playSound("wall")):ball.y<0?(ball.dy*=-1,playSound("wall")):ball.y>550&&ball.x>paddle.x&&ball.x<paddle.x+paddle.width&&(ball.dy*=-1,playSound("paddle")),ball.y>600&&(ball.x=400,ball.y=300,ball.dx=4,ball.dy=-4),document.getElementById("ball").style.left=ball.x+"px",document.getElementById("ball").style.top=ball.y+"px",bricks.forEach((e,t)=>{if(e){let n=e.getBoundingClientRect(),o=document.getElementById("ball").getBoundingClientRect();o.left<n.right&&o.right>n.left&&o.top<n.bottom&&o.bottom>n.top&&(playSound("brick"),showQuestion(t),ball.dy*=-1)}})}
+function movePaddle(e){let t=gameContainer.getBoundingClientRect(),n=e.clientX-t.left-paddle.width/2;n=Math.max(0,Math.min(n,800-paddle.width)),paddle.x=n,document.getElementById("paddle").style.left=n+"px"}
+function showQuestion(e){if(0===questions.length)return;clearInterval(gameLoop),currentQuestion=questions[e];let t=document.getElementById("questionModal"),n=document.getElementById("questionText"),o=document.getElementById("options");n.textContent=currentQuestion.q,o.innerHTML="",currentQuestion.options.forEach(a=>{let c=document.createElement("button");c.innerHTML=a,c.onclick=()=>{questionAttempts[e]++,checkAnswer(a,e),t.style.display="none"},o.appendChild(c)});t.style.display="block";if(window.renderMathInElement)renderMathInElement(t,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1}],throwOnError:!1})}
+function checkAnswer(e,t){if(e===currentQuestion.correct){playSound("correct");let n=0;switch(questionAttempts[t]){case 1:n=10;break;case 2:n=6;break;case 3:n=3}totalScore+=n,document.getElementById("scoreValue").textContent=totalScore,clearInterval(gameLoop),createParticles(bricks[t]),bricks[t].classList.add("correct-answer-flash"),setTimeout(()=>{bricks[t].style.display="none",bricks[t]=null,document.getElementById("remainingBlocks").textContent=bricks.filter(e=>null!==e).length;let e=Math.floor(t/3);!discoveredDigits.includes(e)&&!bricks.slice(3*e,3*(e+1)).some(e=>null!==e)&&(discoveredDigits.push(e),completedBlockGroupsCount++,showBlockCompleteModal(completedBlockGroupsCount,finalCode[completedBlockGroupsCount-1])),0===bricks.filter(e=>null!==e).length&&showLockModal(),gameLoop=setInterval(update,1e3/60)},600)}else gameLoop=setInterval(update,1e3/60)}
+function showLockModal(){clearInterval(gameLoop),document.getElementById("lockModal").style.display="block"}function checkLockCode(){let e=document.getElementById("lockCode").value;if(e===finalCode){playSound("win");const t=120,n=(totalScore/t*100).toFixed(1);document.getElementById("resultsText").textContent=\`Obtuviste \${totalScore} de \${t} puntos (\${n}% de efectividad).\`,document.getElementById("lockModal").style.display="none",document.getElementById("successModal").style.display="block"}else alert("Código incorrecto. Intenta de nuevo.")}function resetGame(){location.reload()}
+function createParticles(e){const t=e.getBoundingClientRect(),n=t.left+t.width/2,o=t.top+t.height/2;for(let a=0;a<12;a++){const c=document.createElement("div");c.className="particle",document.body.appendChild(c);const l=a/12*Math.PI*2,d=100,r=Math.cos(l)*d,i=Math.sin(l)*d;c.style.left=\`\${n}px\`,c.style.top=\`\${o}px\`,c.style.setProperty("--tx",\`\${r}px\`),c.style.setProperty("--ty",\`\${i}px\`),setTimeout(()=>c.remove(),600)}}
+function showBlockCompleteModal(e,t){const n=document.getElementById("blockCompleteModal");document.getElementById("blockNumber").textContent=e,document.getElementById("discoveredDigit").textContent=t,n.style.display="block"}function closeBlockModal(){document.getElementById("blockCompleteModal").style.display="none"}init();
+`;
+    
+    const staticHTML = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Juego de Trivia - ${topic}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"><\/script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous" onload="renderMathInElement(document.body);"><\/script>
+<style>${document.querySelector('style').innerHTML.replace(/#downloadButton {\\n            display: none;/g, '#downloadButton {\\n            display: none !important;')} </style>
+</head><body>
+<div id="gameContainer"><div id="score">Puntaje: <span id="scoreValue">0</span> | Bloques: <span id="remainingBlocks">12</span></div><div id="paddle"></div><div id="ball"></div></div>
+<div id="questionModal"><h3 id="questionText"></h3><div id="options"></div></div>
+<div id="lockModal"><h3>&#xa1;Ingresa el c&#xf3;digo de 4 d&#xed;gitos!</h3><input type="text" id="lockCode" maxlength="4"><button onclick="checkLockCode()">Verificar</button></div>
+<div id="instructionsModal"><div class="modal-content"><h2>&#xa1;Bienvenido al Juego de Trivia!</h2><p><strong>Tema:</strong> ${topic}</p><p>Usa el mouse para mover la paleta, rompe todos los bloques y responde las preguntas para descubrir el código secreto.</p><button onclick="handleGameStart()">&#xa1;Comenzar!</button></div></div>
+<div id="successModal"><div class="modal-content"><div class="success-icon">&#x1f3c6;</div><h2>&#xa1;Felicitaciones!</h2><p>Has completado el juego y descubierto el código secreto:</p><h1 id="finalCodeDisplay" style="color: #00ff88; font-size: 48px; margin: 20px 0;"></h1><p id="resultsText"></p><p>&#xa1;Eres un experto en ${topic}!</p><button onclick="resetGame()">Jugar de nuevo</button></div></div>
+<div id="blockCompleteModal"><h2>&#xa1;Dígito Descubierto!</h2><p class="message">Has completado el bloque de preguntas número <span id="blockNumber"></span>.</p><p>El dígito revelado es:</p><div class="digit" id="discoveredDigit"></div><button onclick="closeBlockModal()">&#xa1;Continuar!</button></div>
+<script>
+${offlineScript}
+<\/script>
+</body></html>
+    `;
+
+    const blob = new Blob([staticHTML.trim()], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creador Profesional de Fábulas</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #f0f2f5; 
+            padding: 20px; 
+            margin: 0;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+            text-align: center;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 0.95rem; }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 1rem;
+            margin-top: 10px; 
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        button:hover:not(:disabled) { opacity: 0.9; }
+        button:active:not(:disabled) { transform: scale(0.99); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        #generate-btn { background: #2c3e50; color: white; }
+        #download-btn { background: #27ae60; color: white; display: none; flex: 1; }
+        #reset-btn { background: #e74c3c; color: white; display: none; flex: 1; }
+
+        /* Barra de progreso */
+        #progress-wrap { margin-top: 15px; display: none; }
+        #progress-bar-bg { background: #e0e0e0; border-radius: 8px; height: 8px; overflow: hidden; }
+        #progress-bar { background: #2c3e50; height: 100%; width: 0%; transition: width .3s ease; }
+        #status { margin-top: 10px; font-style: italic; color: #555; min-height: 1.2em; text-align: center; }
+
+        /* Lienzo / Visor inferior */
+        #preview-section {
+            margin-top: 30px;
+            display: none;
+            border-top: 2px dashed #e0e0e0;
+            padding-top: 20px;
+        }
+        #preview-section h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        #preview-frame {
+            width: 100%;
+            height: 900px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎨 Creador de Fábulas</h1>
+    <div class="form-group">
+        <label>Tema del cuento:</label>
+        <input type="text" id="topic" placeholder="Ej: La astucia del zorro y el búho sabio...">
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex:1">
+            <label>Modelo Imagen:</label>
+            <select id="imgModel">
+                <option value="zimage" selected>zimage</option>
+                <option value="flux">flux</option>
+                <option value="gptimage">gptimage</option>
+                <option value="klein">klein</option>
+            </select>
+        </div>
+        <div class="form-group" style="flex:1">
+            <label>Modelo Texto:</label>
+            <select id="textModel">
+                <option value="gemini-fast" selected>gemini-fast</option>
+                <option value="openai">openai</option>
+                <option value="openai-fast">openai-fast</option>
+                <option value="mistral">mistral</option>
+                <option value="gemini-search">gemini-search</option>
+                <option value="nova-fast">nova-fast</option>
+                <option value="perplexity-fast">perplexity-fast</option>
+                <option value="deepseek">deepseek</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Estilo Artístico:</label>
+        <select id="artStyle">
+            <option value="Cartoon">Cartoon / Historieta</option>
+            <option value="Acuarela">Acuarela</option>
+            <option value="Flat Art">Ilustración Plana</option>
+            <option value="Fantasía Clásica">Fantasía Clásica</option>
+        </select>
+    </div>
+
+    <button id="generate-btn">Generar Fábula con IA</button>
+    
+    <div class="button-group">
+        <button id="download-btn">📥 Descargar Fábula (.HTML)</button>
+        <button id="reset-btn">🔄 Otra Fábula</button>
+    </div>
+
+    <div id="progress-wrap">
+        <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+    </div>
+    <div id="status"></div>
+
+    <!-- Lienzo para mostrar la fábula directamente en la app -->
+    <div id="preview-section">
+        <h2>📖 Lienzo de la Fábula Generada</h2>
+        <iframe id="preview-frame" title="Lienzo de la Fábula"></iframe>
+    </div>
+</div>
+
+<script>
+    let finalHtml = "";
+    const TIMEOUT_MS = 60000;
+    const API_BASE_URL = 'https://node.proyectodescartes.org/api/ia';
+
+    const PALETTES = {
+        'Cartoon':            { bg1:'#fff1f6', bg2:'#eef7ff', accent:'#ff4fa3', accent2:'#2f7cff', leaf:'#35c47a', sun:'#ffcc4d' },
+        'Acuarela':           { bg1:'#eef6f3', bg2:'#f3eefc', accent:'#5aa9a3', accent2:'#8a7fd1', leaf:'#7fb87a', sun:'#e8c97a' },
+        'Flat Art':           { bg1:'#eef2ff', bg2:'#fef6ee', accent:'#4361ee', accent2:'#f4a261', leaf:'#2a9d8f', sun:'#ffd166' },
+        'Fantasía Clásica':   { bg1:'#f3eefc', bg2:'#eef0fa', accent:'#7c3aed', accent2:'#c2410c', leaf:'#15803d', sun:'#d4af37' }
+    };
+
+    const FONTS = [
+        "'Segoe UI',ui-sans-serif,system-ui,sans-serif",
+        "'Comic Sans MS','Comic Neue',ui-sans-serif,sans-serif",
+        "Georgia,'Times New Roman',serif",
+        "'Trebuchet MS',ui-sans-serif,sans-serif",
+        "'Palatino Linotype',Palatino,Georgia,serif",
+        "ui-serif,Georgia,Cambria,'Times New Roman',serif",
+        "'Gill Sans','Gill Sans MT',ui-sans-serif,sans-serif"
+    ];
+
+    const STICKER_SETS = [
+        ['🦊','🦉','🐢'],
+        ['🌸','🍃','🌿'],
+        ['⭐','🌙','✨'],
+        ['🦋','🐝','🌺'],
+        ['🍂','🌰','🐿️'],
+        ['🐺','🐰','🦌'],
+        ['🌻','🌷','🌱'],
+        ['🐱','🐭','🐦']
+    ];
+
+    const DECOR_SHAPES = ['circles','blobs','diamonds','none'];
+
+    function randomDesign(artStyle) {
+        const pick = a => a[Math.floor(Math.random() * a.length)];
+        const ri = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const rf = (min, max) => (Math.random() * (max - min) + min).toFixed(2);
+        const chosen = pick(STICKER_SETS);
+        const posPool = [
+            'top:3%;right:2%', 'top:8%;left:2%', 'bottom:12%;right:4%',
+            'bottom:6%;left:3%', 'top:40%;right:1%', 'top:60%;left:2%',
+            'top:15%;right:5%', 'bottom:30%;left:5%', 'bottom:50%;right:2%',
+            'top:70%;left:4%'
+        ];
+        const numStickers = ri(1, 3);
+        const stickers = [];
+        for (let i = 0; i < numStickers; i++) {
+            stickers.push({ emoji: chosen[i % chosen.length], pos: posPool.splice(Math.floor(Math.random() * posPool.length), 1)[0] });
+        }
+        return {
+            corner: ri(12, 32),
+            borderW: ri(2, 6),
+            shadow: rf(0.06, 0.30),
+            grid: pick(['1.35fr .85fr', '1fr 1fr', '1fr', '.85fr 1.35fr']),
+            bgStyle: pick(['radial', 'diagonal', 'circular', 'dots', 'blobs']),
+            stickers,
+            decor: pick(DECOR_SHAPES),
+            accentPct: ri(8, 30),
+            font: pick(FONTS),
+            titleSize: pick(['clamp(24px,3.2vw,38px)', 'clamp(28px,3.8vw,44px)', 'clamp(32px,4.2vw,50px)']),
+            align: pick(['center', 'left']),
+            panelDir: pick(['row', 'row-reverse'])
+        };
+    }
+
+    function buildFabulaCSS(artStyle, d) {
+        const p = PALETTES[artStyle] || PALETTES['Cartoon'];
+        const s = (c, pct) => `color-mix(in srgb, ${c} ${pct}%, white)`;
+        const ri = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const pick = a => a[Math.floor(Math.random() * a.length)];
+
+        let bgCSS;
+        switch (d.bgStyle) {
+            case 'radial':
+                bgCSS = `radial-gradient(1200px 700px at 10% 0%, ${p.bg1}, transparent 55%), radial-gradient(900px 600px at 90% 15%, ${p.bg2}, transparent 50%), linear-gradient(180deg, #ffffff 0%, #fbfbff 35%, #f8f3ff 100%)`;
+                break;
+            case 'diagonal':
+                bgCSS = `linear-gradient(135deg, ${p.bg1}44 0%, ${p.bg2}33 50%, #ffffff 100%), radial-gradient(circle at 30% 40%, ${p.accent}10 0%, transparent 50%)`;
+                break;
+            case 'circular':
+                bgCSS = `radial-gradient(ellipse at 20% 30%, ${p.bg1}55, transparent 60%), radial-gradient(ellipse at 80% 70%, ${p.bg2}55, transparent 50%), linear-gradient(180deg, #ffffff 0%, #f0edff 100%)`;
+                break;
+            case 'dots':
+                bgCSS = `radial-gradient(circle at 25% 30%, ${p.accent}18 0%, transparent 25%), radial-gradient(circle at 75% 20%, ${p.accent2}15 0%, transparent 25%), linear-gradient(135deg, #fafafa 0%, #f0f2ff 100%)`;
+                break;
+            case 'blobs':
+                bgCSS = `radial-gradient(circle at 15% 20%, ${p.bg1}66 0%, transparent 50%), radial-gradient(circle at 85% 60%, ${p.bg2}55 0%, transparent 45%), radial-gradient(circle at 50% 80%, ${p.leaf}10 0%, transparent 40%), linear-gradient(180deg, #ffffff 0%, #f8f4ff 100%)`;
+                break;
+        }
+
+        let decorCSS = '';
+        if (d.decor === 'circles') {
+            decorCSS = `
+        .wrap::before{content:'';position:absolute;width:${ri(160,260)}px;height:${ri(160,260)}px;border-radius:50%;background:${p.accent}10;top:-40px;right:-30px;z-index:0;pointer-events:none}
+        .wrap::after{content:'';position:absolute;width:${ri(120,180)}px;height:${ri(120,180)}px;border-radius:50%;background:${p.accent2}12;bottom:20px;left:-20px;z-index:0;pointer-events:none}`;
+        } else if (d.decor === 'blobs') {
+            decorCSS = `
+        .wrap::before{content:'';position:absolute;width:${ri(240,340)}px;height:${ri(160,240)}px;border-radius:40% 60% 60% 40%/60% 40% 50% 50%;background:${p.leaf}08;top:-60px;right:-40px;z-index:0;pointer-events:none}
+        .wrap::after{content:'';position:absolute;width:${ri(150,220)}px;height:${ri(150,220)}px;border-radius:50% 50% 30% 70%/60% 40% 60% 40%;background:${p.accent}10;bottom:-30px;left:-20px;z-index:0;pointer-events:none}`;
+        } else if (d.decor === 'diamonds') {
+            decorCSS = `
+        .wrap::before{content:'';position:absolute;width:${ri(120,200)}px;height:${ri(120,200)}px;transform:rotate(45deg);background:${p.accent}10;top:-30px;right:10px;z-index:0;pointer-events:none}
+        .wrap::after{content:'';position:absolute;width:${ri(100,160)}px;height:${ri(100,160)}px;transform:rotate(45deg);background:${p.accent2}10;bottom:40px;left:-30px;z-index:0;pointer-events:none}`;
+        }
+
+        let stickerCSS = '';
+        d.stickers.forEach((st, i) => {
+            stickerCSS += `
+        .s${i}{position:fixed;${st.pos};z-index:999;font-size:${34 + i * 6}px;pointer-events:none;animation:fl${i} ${3 + i * 0.7}s ease-in-out infinite}
+        @keyframes fl${i}{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-${10 + i * 4}px) rotate(${pick(['-8','-4','4','8'])}deg)}}`;
+        });
+
+        return `
+        :root{
+          --bg1:${p.bg1}; --bg2:${p.bg2};
+          --ink:#1b1b2a; --muted:#4b4b6a;
+          --card:#ffffffcc; --shadow:0 18px 50px rgba(27,27,42,${d.shadow});
+          --accent:${p.accent}; --accent2:${p.accent2}; --leaf:${p.leaf}; --sun:${p.sun};
+        }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:${d.font};color:var(--ink);background:${bgCSS}}
+        .wrap{position:relative;max-width:980px;margin:28px auto 70px;padding:18px;}
+        header{position:relative;z-index:1;display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px;}
+        .title-card{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.65));border:${d.borderW}px solid rgba(27,27,42,.12);box-shadow:var(--shadow);border-radius:${d.corner}px;padding:18px 18px 16px;position:relative;overflow:hidden;flex:1 1 480px;}
+        .hero-img{width:100%;max-height:340px;object-fit:cover;border-radius:${Math.max(8, d.corner - 6)}px;border:${d.borderW}px solid rgba(27,27,42,.10);box-shadow:var(--shadow);margin-bottom:14px;}
+        h1{margin:0;font-size:${d.titleSize};letter-spacing:-0.02em;line-height:1.05;text-align:${d.align};}
+        .subtitle{margin:8px 0 0;color:var(--muted);font-size:clamp(14px,1.6vw,16px);text-align:${d.align};}
+        .tag{font-weight:800;padding:8px 10px;border-radius:999px;background:${s(p.accent, d.accentPct)};border:${d.borderW - 1 || 2}px solid ${s(p.accent, d.accentPct + 18)};color:var(--accent);font-size:13px;white-space:nowrap;display:inline-block;margin-top:10px;}
+        main{position:relative;z-index:1;display:grid;grid-template-columns:${d.grid};gap:14px;margin-top:14px;}
+        @media (max-width:860px){main{grid-template-columns:1fr}}
+        .panel{background:var(--card);border:${d.borderW}px solid rgba(27,27,42,.12);border-radius:${d.corner}px;box-shadow:var(--shadow);overflow:hidden;position:relative;}
+        .panel-head{padding:14px 16px;background:linear-gradient(90deg,${s(p.accent, d.accentPct)},${s(p.accent2, d.accentPct - 3)});border-bottom:${d.borderW - 1 || 2}px solid rgba(27,27,42,.10);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+        .panel-title{font-weight:900;font-size:16px;display:flex;align-items:center;gap:10px;}
+        .badge{width:30px;height:30px;display:grid;place-items:center;border-radius:${Math.max(6, d.corner - 14)}px;background:rgba(255,255,255,.65);border:${d.borderW - 1 || 2}px solid rgba(27,27,42,.10);}
+        .story{padding:16px 16px 18px;}
+        .story p{margin:0 0 12px;font-size:16px;line-height:1.65;color:#202040;}
+        .speech{margin:14px 0 10px;padding:14px 14px 12px;border-radius:${Math.max(8, d.corner - 6)}px;border:${d.borderW}px solid rgba(27,27,42,.12);background:rgba(255,255,255,.72);box-shadow:0 12px 30px rgba(27,27,42,.10);}
+        .speech .who{font-weight:900;display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+        .who .mini{width:28px;height:28px;border-radius:${Math.max(6, d.corner - 14)}px;display:grid;place-items:center;border:${d.borderW - 1 || 2}px solid rgba(27,27,42,.10);background:${s(p.accent2, d.accentPct - 2)};}
+        .speech .line{margin:0;color:#21214a;font-size:15px;line-height:1.5;font-weight:700;font-style:italic;}
+        .moral{padding:14px 16px 18px;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.75));border-top:${d.borderW - 1 || 2}px dashed rgba(27,27,42,.18);}
+        .moral h2{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:10px;font-weight:900;}
+        .moral h2 .m{width:30px;height:30px;border-radius:${Math.max(8, d.corner - 10)}px;display:grid;place-items:center;background:${s('var(--sun)', d.accentPct + 8)};border:${d.borderW - 1 || 2}px solid ${s('var(--sun)', d.accentPct + 22)};}
+        .moral p{margin:0;color:#2b2b53;font-size:16px;line-height:1.6;font-weight:700;}
+        .chiprow{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 12px;}
+        .chip{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:${Math.max(8, d.corner - 8)}px;border:${d.borderW}px solid rgba(27,27,42,.10);background:rgba(255,255,255,.70);box-shadow:0 10px 22px rgba(27,27,42,.08);font-weight:900;}
+        .dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 3px rgba(0,0,0,.06) inset;border:2px solid rgba(255,255,255,.55);}
+        .timeline{display:grid;gap:10px;margin-top:6px;}
+        .step{padding:12px 12px 10px;border-radius:${Math.max(8, d.corner - 6)}px;border:${d.borderW}px solid rgba(27,27,42,.10);background:rgba(255,255,255,.68);box-shadow:0 12px 28px rgba(27,27,42,.10);position:relative;overflow:hidden;}
+        .step .n{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+        .crumb{font-size:12px;color:var(--muted);font-weight:900;background:${s(p.accent2, d.accentPct - 5)};border:2px solid ${s(p.accent2, d.accentPct + 4)};border-radius:999px;padding:6px 10px;white-space:nowrap;}
+        .step p{margin:0;font-size:14px;line-height:1.55;font-weight:700;color:#23234b;}
+        footer{position:relative;z-index:1;margin-top:14px;padding:12px 10px 0;color:var(--muted);font-weight:800;text-align:center;font-size:13px;}
+        ${decorCSS}
+        ${stickerCSS}
+        `;
+    }
+
+    const statusEl = document.getElementById('status');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressBar = document.getElementById('progress-bar');
+    const previewSection = document.getElementById('preview-section');
+    const previewFrame = document.getElementById('preview-frame');
+
+    function setProgress(pct, msg) {
+        progressWrap.style.display = 'block';
+        progressBar.style.width = pct + '%';
+        statusEl.textContent = msg;
+    }
+
+    function fetchWithTimeout(url, options, ms = TIMEOUT_MS) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), ms);
+        return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
+    }
+
+    function blobToDataURL(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+
+    function cleanAndParseJSON(str) {
+        if (!str) throw new Error("Respuesta vacía del servidor.");
+        try {
+            const cleanedStr = str.replace(/```json\s*|```\s*/g, '').trim();
+            const objStart = cleanedStr.indexOf('{');
+            const objEnd = cleanedStr.lastIndexOf('}');
+            if (objStart !== -1 && objEnd !== -1) {
+                return JSON.parse(cleanedStr.substring(objStart, objEnd + 1));
+            }
+            return JSON.parse(cleanedStr);
+        } catch (e) {
+            console.error("Error parseando JSON:", str);
+            throw new Error("No se pudo interpretar el formato de la historia generada.");
+        }
+    }
+
+    document.getElementById('generate-btn').onclick = async () => {
+        const topic = document.getElementById('topic').value.trim();
+        const imgModel = document.getElementById('imgModel').value;
+        const textModel = document.getElementById('textModel').value;
+        const artStyle = document.getElementById('artStyle').value;
+        const genBtn = document.getElementById('generate-btn');
+
+        if (!topic) {
+            setProgress(0, 'Por favor escribe un tema para la fábula.');
+            return;
+        }
+
+        genBtn.disabled = true;
+        previewSection.style.display = 'none';
+        setProgress(15, 'Generando texto e ilustración en paralelo...');
+
+        try {
+            // 1. GENERACIÓN DE TEXTO
+            const systemPrompt = `Eres un escritor experto de fábulas y literatura infantil. Responde ÚNICAMENTE con un objeto JSON válido, sin bloques markdown ni texto explicativo.`;
+            const userPrompt = `Escribe una fábula corta para una app educativa, sobre "${topic}", con tono de estilo "${artStyle}". ` +
+                `Responde ÚNICAMENTE con un objeto JSON válido con esta estructura EXACTA: ` +
+                `{\n` +
+                `  "titulo": "string, 2-5 palabras",\n` +
+                `  "subtitulo": "string, una frase breve y evocadora sobre la fábula",\n` +
+                `  "parrafos": ["array de 4 a 6 strings, cada uno un párrafo del cuento, sin diálogos dentro"],\n` +
+                `  "dialogos": [{"personaje": "nombre", "linea": "frase corta dicha por ese personaje", "emoji": "un solo emoji representativo"}] (1 a 2 elementos),\n` +
+                `  "personajes": [{"nombre": "string", "color": "#hexcolor", "emoji": "un emoji"}] (2 a 3 elementos),\n` +
+                `  "momentos": [{"titulo": "2-4 palabras", "etiqueta": "2-3 palabras", "texto": "una frase que resuma el momento"}] (exactamente 3 elementos),\n` +
+                `  "moraleja": "string, 1-2 frases"\n` +
+                `}`;
+
+            const textPromise = fetchWithTimeout(`${API_BASE_URL}/text`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: userPrompt,
+                    model: textModel,
+                    system: systemPrompt,
+                    json: true
+                })
+            }).then(async (res) => {
+                if (!res.ok) throw new Error(`Fallo en generación de texto (HTTP ${res.status})`);
+                const raw = await res.text();
+                return cleanAndParseJSON(raw);
+            });
+
+            // 2. GENERACIÓN DE IMAGEN
+            async function generarImagen() {
+                const basePrompt = `Ilustración narrativa de "${topic}", estilo ${artStyle}, expresividad facial, paleta de colores intencional, alta calidad`;
+                const seed = Math.floor(Math.random() * 50000) + 10;
+
+                const res = await fetchWithTimeout(`${API_BASE_URL}/image`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: basePrompt,
+                        model: imgModel,
+                        seed: seed,
+                        width: 768,
+                        height: 768
+                    })
+                });
+
+                if (!res.ok) throw new Error(`Fallo en generación de imagen (HTTP ${res.status})`);
+                const blob = await res.blob();
+                return await blobToDataURL(blob);
+            }
+
+            const imgPromise = generarImagen();
+
+            // Esperar ambas promesas en paralelo
+            const [storyData, base64Image] = await Promise.all([textPromise, imgPromise]);
+
+            const design = randomDesign(artStyle);
+
+            setProgress(85, 'Ensamblando fábula y cargando lienzo...');
+
+            // 3. Ensamblaje del HTML
+            const s = storyData;
+            const titulo = s.titulo || topic;
+            const personajes = Array.isArray(s.personajes) ? s.personajes : [];
+            const dialogos = Array.isArray(s.dialogos) ? s.dialogos : [];
+            const momentos = Array.isArray(s.momentos) ? s.momentos : [];
+            const parrafos = Array.isArray(s.parrafos) ? s.parrafos : [String(s.cuento || '')];
+
+            let storyHtml = '';
+            parrafos.forEach((p, i) => {
+                storyHtml += `<p>${escapeHtml(p)}</p>`;
+                const dlg = dialogos[Math.floor(i / 2)];
+                const isLastOfPair = (i % 2 === 1) || (i === parrafos.length - 1);
+                if (dlg && isLastOfPair && i < parrafos.length - 1) {
+                    storyHtml += `
+                    <div class="speech">
+                      <div class="who"><span class="mini">${escapeHtml(dlg.emoji || '💬')}</span><span>${escapeHtml(dlg.personaje || '')}</span></div>
+                      <p class="line">${escapeHtml(dlg.linea || '')}</p>
+                    </div>`;
+                }
+            });
+
+            const chipsHtml = personajes.map((c) => `
+                <div class="chip"><span class="dot" style="background:${escapeHtml(c.color || '#888')}"></span>${escapeHtml(c.emoji ? c.emoji + ' ' : '')}${escapeHtml(c.nombre || '')}</div>
+            `).join('');
+
+            const timelineHtml = momentos.map((m, i) => `
+                <div class="step">
+                  <div class="n"><strong>${i + 1}) ${escapeHtml(m.titulo || '')}</strong><span class="crumb">${escapeHtml(m.etiqueta || '')}</span></div>
+                  <p>${escapeHtml(m.texto || '')}</p>
+                </div>
+            `).join('');
+
+            const stickerHtml = design.stickers.map((st, i) =>
+                `<div class="s${i}" aria-hidden="true">${escapeHtml(st.emoji)}</div>`
+            ).join('\n');
+
+            finalHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fábula: ${escapeHtml(titulo)}</title>
+<style>
+${buildFabulaCSS(artStyle, design)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title-card">
+        <img src="${base64Image}" class="hero-img" alt="${escapeHtml(titulo)}">
+        <h1>${escapeHtml(titulo)}</h1>
+        <p class="subtitle">${escapeHtml(s.subtitulo || '')}</p>
+        <span class="tag">${escapeHtml(artStyle)} • Fábula</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><span class="badge">📖</span><span>La historia</span></div>
+        </div>
+        <div class="story">
+          ${storyHtml}
+        </div>
+        <div class="moral">
+          <h2><span class="m">🌟</span>Moraleja</h2>
+          <p>${escapeHtml(s.moraleja || '')}</p>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><span class="badge">👀</span><span>Personajes</span></div>
+        </div>
+        <div class="story">
+          <div class="chiprow">${chipsHtml}</div>
+          <div class="timeline">${timelineHtml}</div>
+        </div>
+      </aside>
+    </main>
+
+    <footer>Fin • Hecho con estilo ${escapeHtml(artStyle)} ✨</footer>
+  </div>
+  ${stickerHtml}
+</body>
+</html>`;
+
+            // 4. Mostrar en el lienzo inferior
+            previewFrame.srcdoc = finalHtml;
+            previewSection.style.display = 'block';
+
+            setProgress(100, '¡Fábula lista! 🎉 Puedes verla abajo en el lienzo.');
+            genBtn.style.display = 'none';
+            document.getElementById('download-btn').style.display = 'block';
+            document.getElementById('reset-btn').style.display = 'block';
+
+            // Desplazamiento suave hacia el lienzo
+            previewSection.scrollIntoView({ behavior: 'smooth' });
+
+        } catch (e) {
+            console.error(e);
+            const isAbort = e.name === 'AbortError';
+            statusEl.textContent = isAbort
+                ? 'Tiempo de espera agotado. Intenta de nuevo.'
+                : 'Error: ' + (e.message || 'Error al comunicarse con el servidor.');
+            progressBar.style.width = '0%';
+            genBtn.disabled = false;
+        }
+    };
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    document.getElementById('reset-btn').onclick = () => location.reload();
+    document.getElementById('download-btn').onclick = () => {
+        const blob = new Blob([finalHtml], {type: 'text/html'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "mi_fabula.html";
+        a.click();
+    };
+</script>
+</body>
+</html>
