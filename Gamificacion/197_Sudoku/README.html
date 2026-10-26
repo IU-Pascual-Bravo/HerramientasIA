@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Exportado — OmniConvert Pro</title>
+    <style>
+        :root { --bg:#f1f5f9; --text:#1e293b; --card:#ffffff; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:15px; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        img,video,iframe { max-width:100%; height:auto; border-radius:8px; }
+        .table-responsive-wrapper { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:1.5rem; border-radius:6px; box-shadow:0 0 0 1px #e2e8f0; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        pre { background:#f8fafc; padding:15px; border-radius:8px; overflow-x:auto; font-size:.9em; border:1px solid #e2e8f0; }
+        footer { text-align:center; margin-top:40px; padding-top:20px; color:#64748b; font-size:.875rem; border-top:1px solid #e2e8f0; }
+        @media(min-width:768px){ body{padding:40px;} .container{padding:50px;} table{min-width:100%;} }
+    </style>
+</head>
+<body>
+    <div class="container"><h1>Sudoku Red Descartes</h1>
+<p>Sudoku web autocontenido con niveles de dificultad, generación mediante IA y generación local de respaldo. Las soluciones locales se construyen con backtracking aleatorio y las soluciones recibidas de IA se rechazan si presentan patrones visuales repetidos entre los bloques.</p>
+<h2>Uso</h2>
+<p>Abre <code>index.html</code> en un navegador. Selecciona el nivel y el modelo de lenguaje, y pulsa <strong>Generar Sudoku</strong>.</p>
+<p>Los niveles disponibles son:</p>
+<ul>
+<li>Facil</li>
+<li>Intermedio</li>
+<li>Dificil</li>
+<li>Experto</li>
+<li>Maestro</li>
+<li>Diabolico</li>
+</ul>
+<p>El botón <strong>Posibles</strong> aparece cuando no hay jugadas deterministas evidentes. Muestra los candidatos en una matriz 3x3 fija, con los valores <code>1 2 3</code>, <code>4 5 6</code> y <code>7 8 9</code> en sus posiciones correspondientes. Al seleccionar un valor asignado se resaltan sus coincidencias y candidatos.</p>
+<h2>Página de prueba</h2>
+<p>Abre <code>prueba.html</code> para comprobar manualmente el funcionamiento de <strong>Posibles</strong> sin depender del backend de IA. Esta página usa un tablero fijo y mantiene el botón habilitado incluso cuando existen jugadas evidentes.</p>
+<p>Permite verificar:</p>
+<ul>
+<li>Candidatos en posiciones constantes dentro de cada celda.</li>
+<li>Resaltado de valores asignados y candidatos coincidentes.</li>
+<li>Colocación de valores mediante los botones del teclado o las teclas <code>1</code> a <code>9</code>.</li>
+<li>Mensajes fugaces <code>👼</code> para aciertos y <code>😈</code> para errores.</li>
+<li>Borrado y reinicio del tablero de prueba.</li>
+</ul>
+<h2>Archivos</h2>
+<ul>
+<li><code>index.html</code>: aplicación principal.</li>
+<li><code>prueba.html</code>: tablero de prueba local.</li>
+<li><code>Ejemplos/</code>: ejemplos HTML descargados de partidas anteriores.</li>
+</ul>
+</div>
+    <footer><p>Exportado con OmniConvert Pro</p></footer>
+</body>
+</html>
