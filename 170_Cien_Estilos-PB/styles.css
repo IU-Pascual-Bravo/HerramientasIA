@@ -1,15 +1,25 @@
+/* ============================================
+   ESTILOS RESPONSIVE - BASE MOBILE FIRST
+   ============================================ */
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #eff0f1;
     color: #20303a;
     margin: 0;
-    padding: 20px;
+    padding: 10px;
     display: flex;
     justify-content: center;
+    min-height: 100vh;
 }
 
 .container {
-    width: 1100px;
+    width: 100%;
+    max-width: 1100px;
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -18,15 +28,15 @@ body {
     flex-direction: column;
 }
 
-/* Brand header keeps both marks balanced without competing with the controls. */
+/* Brand header - responsive */
 .brand-header {
-    min-height: 84px;
-    padding: 14px 22px;
+    min-height: auto;
+    padding: 10px 12px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 12px;
     border-bottom: 1px solid #e6e9ec;
     background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
 }
@@ -34,8 +44,8 @@ body {
 .brand-logo {
     display: flex;
     align-items: center;
-    height: 56px;
-    max-width: 42%;
+    height: 40px;
+    max-width: 45%;
     transition: filter 0.25s ease, opacity 0.2s ease;
 }
 
@@ -46,7 +56,7 @@ body {
 .brand-logo img {
     display: block;
     max-width: 100%;
-    max-height: 56px;
+    max-height: 40px;
     width: auto;
     height: auto;
     object-fit: contain;
@@ -56,43 +66,56 @@ body {
     justify-content: flex-end;
 }
 
-/* Language Selector */
+/* Language Selector - fixed position */
 .language-selector {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
     z-index: 100;
 }
 
 .language-selector select {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 2px solid #0082ff;
     border-radius: 4px;
     background-color: white;
     color: #0082ff;
     font-weight: bold;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
 }
 
-/* Content Areas */
+/* Content Areas - responsive layout */
 .content {
-    padding: 15px;
+    padding: 10px;
     display: flex;
-    flex-direction: row;
-    height: 680px;
+    flex-direction: column;
+    min-height: 100%;
     box-sizing: border-box;
+    gap: 10px;
 }
 
 /* Left Controls */
 .controls {
-    width: 320px;
-    padding-right: 15px;
-    border-right: 1px solid #eee;
+    width: 100%;
+    padding: 0;
+    border: none;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
     overflow-y: auto;
+}
+
+#gen-controls-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#gen-controls-group > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
 
 /* Right Preview */
@@ -101,10 +124,9 @@ body {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     background-color: #fafafa;
-    margin-left: 20px;
-    padding: 10px;
+    padding: 8px;
     position: relative;
     overflow-y: auto;
 }
@@ -113,7 +135,7 @@ body {
 label {
     font-weight: bold;
     color: #0072df;
-    margin-bottom: 1px;
+    margin-bottom: 2px;
     display: block;
     font-size: 12px;
 }
@@ -122,7 +144,7 @@ select,
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 6px 8px;
+    padding: 8px 10px;
     font-size: 13px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -131,8 +153,8 @@ input[type="password"] {
 
 textarea {
     width: 100%;
-    height: 45px;
-    padding: 6px;
+    height: 50px;
+    padding: 8px;
     font-size: 13px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -144,8 +166,9 @@ textarea {
 
 .row {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 /* Botones */
@@ -154,19 +177,23 @@ button {
     border: none;
     border-radius: 4px;
     transition: opacity 0.2s;
+    padding: 10px 12px;
+    font-size: 13px;
 }
 
 button:hover {
     opacity: 0.9;
 }
 
+button:active {
+    transform: scale(0.98);
+}
+
 button.action-btn {
     background-color: #007ef6;
     color: white;
-    padding: 6px;
-    font-size: 14px;
     width: 100%;
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 button.trash-btn {
@@ -178,14 +205,17 @@ button.trash-btn {
 button.secondary-btn {
     background-color: #7a00ff;
     color: white;
-    padding: 8px 15px;
-    font-size: 14px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 120px;
 }
 
 button.action-btn.download-all {
     font-size: 11px;
-    padding: 5px 6px;
+    padding: 6px 8px;
     white-space: nowrap;
+    flex: 1;
+    min-width: 100px;
 }
 
 button.action-btn.download-all:hover {
@@ -200,7 +230,7 @@ button.action-btn.download-all:disabled {
 
 /* Recuadro y Zoom/Pan */
 #img-container {
-    border: 5px solid #0058fe;
+    border: 3px solid #0058fe;
     border-radius: 5px;
     overflow: hidden;
     background-color: #fff;
@@ -208,8 +238,9 @@ button.action-btn.download-all:disabled {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 640px;
-    height: 360px;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 16 / 9;
     cursor: grab;
     position: relative;
 }
@@ -229,11 +260,18 @@ button.action-btn.download-all:disabled {
 }
 
 .zoom-control {
-    width: 80%;
-    margin-top: 15px;
+    width: 90%;
+    max-width: 400px;
+    margin-top: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 6px;
+}
+
+.zoom-control label {
+    font-size: 12px;
+    color: #0082fe;
 }
 
 input[type=range] {
@@ -242,13 +280,13 @@ input[type=range] {
 }
 
 .copy-json-btn {
-    margin-top: 12px;
+    margin-top: 8px;
     display: block;
     width: 100%;
     background-color: #7a00ff;
     color: white;
-    padding: 8px 15px;
-    font-size: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -265,8 +303,32 @@ input[type=range] {
     opacity: 0.6;
 }
 
+#img-buttons {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    max-width: 500px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#img-buttons .secondary-btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+#download-section {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 500px;
+}
+
 #gallery-section {
     width: 100%;
+    max-width: 500px;
     overflow: visible;
 }
 
@@ -275,6 +337,10 @@ input[type=range] {
     scrollbar-color: #007ef6 #eee;
     overflow-x: auto;
     min-width: 0;
+    display: flex;
+    gap: 5px;
+    padding: 5px 0;
+    max-height: 90px;
 }
 
 #gallery-thumbnails::-webkit-scrollbar {
@@ -291,16 +357,29 @@ input[type=range] {
 }
 
 .loading-text {
-    font-size: 24px;
+    font-size: 18px;
     color: #20303a;
     display: none;
     position: absolute;
     z-index: 10;
     background: rgba(255, 255, 255, 0.9);
-    padding: 10px 20px;
+    padding: 12px 16px;
     border-radius: 8px;
     pointer-events: none;
+    text-align: center;
 }
+
+footer {
+    padding: 10px 12px;
+    color: #666;
+    font-size: 11px;
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
 
 @media (prefers-color-scheme: dark) {
     body {
@@ -342,6 +421,7 @@ input[type=range] {
 
     #img-container {
         background-color: #141b22;
+        border-color: #0072df;
     }
 
     .loading-text {
@@ -355,33 +435,315 @@ input[type=range] {
     }
 }
 
-@media (max-width: 640px) {
-    body {
-        padding: 0;
-    }
+/* ============================================
+   TABLET (768px and up)
+   ============================================ */
 
-    .language-selector {
-        top: 78px;
-        right: 14px;
+@media (min-width: 768px) {
+    body {
+        padding: 15px;
     }
 
     .container {
-        width: 100%;
-        min-height: 100vh;
-        border-radius: 0;
+        border-radius: 8px;
     }
 
     .brand-header {
-        min-height: 72px;
-        padding: 10px 14px;
+        min-height: 70px;
+        padding: 12px 18px;
+        gap: 18px;
     }
 
     .brand-logo {
-        height: 44px;
-        max-width: 46%;
+        height: 48px;
+        max-width: 45%;
     }
 
     .brand-logo img {
-        max-height: 44px;
+        max-height: 48px;
+    }
+
+    .language-selector {
+        top: 15px;
+        right: 15px;
+    }
+
+    .language-selector select {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .content {
+        padding: 15px;
+        flex-direction: row;
+        gap: 15px;
+    }
+
+    .controls {
+        width: 280px;
+        padding-right: 15px;
+        border-right: 1px solid #eee;
+        border-bottom: none;
+    }
+
+    .preview {
+        flex: 1;
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    #img-container {
+        width: 100%;
+        max-width: 500px;
+        max-height: 400px;
+    }
+
+    select,
+    input[type="text"],
+    input[type="password"],
+    textarea {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    button {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    button.secondary-btn {
+        min-width: 140px;
+    }
+
+    footer {
+        padding: 12px 18px;
+        font-size: 12px;
+    }
+}
+
+/* ============================================
+   DESKTOP (1024px and up)
+   ============================================ */
+
+@media (min-width: 1024px) {
+    body {
+        padding: 20px;
+    }
+
+    .brand-header {
+        min-height: 84px;
+        padding: 14px 22px;
+        gap: 24px;
+    }
+
+    .brand-logo {
+        height: 56px;
+        max-width: 42%;
+    }
+
+    .brand-logo img {
+        max-height: 56px;
+    }
+
+    .language-selector {
+        top: 20px;
+        right: 20px;
+    }
+
+    .language-selector select {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .content {
+        padding: 15px;
+        flex-direction: row;
+        height: auto;
+        min-height: 680px;
+        gap: 20px;
+    }
+
+    .controls {
+        width: 320px;
+        border-right: 1px solid #eee;
+    }
+
+    .preview {
+        flex: 1;
+        margin-left: 20px;
+    }
+
+    #img-container {
+        width: 640px;
+        height: 360px;
+        aspect-ratio: auto;
+    }
+
+    select,
+    input[type="text"],
+    input[type="password"] {
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+
+    textarea {
+        height: 45px;
+        padding: 6px;
+        font-size: 13px;
+    }
+
+    button {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    button.secondary-btn {
+        min-width: 130px;
+    }
+
+    .copy-json-btn {
+        margin-top: 12px;
+        padding: 8px 15px;
+    }
+
+    footer {
+        padding: 10px 18px;
+        font-size: 12px;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (max 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    body {
+        padding: 8px;
+    }
+
+    .container {
+        border-radius: 4px;
+    }
+
+    .brand-header {
+        min-height: 50px;
+        padding: 8px 10px;
+        gap: 10px;
+    }
+
+    .brand-logo {
+        height: 32px;
+        max-width: 48%;
+    }
+
+    .brand-logo img {
+        max-height: 32px;
+    }
+
+    .language-selector {
+        top: 8px;
+        right: 8px;
+    }
+
+    .language-selector select {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+
+    .content {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .controls {
+        width: 100%;
+        padding: 0;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+    }
+
+    #gen-controls-group > div {
+        gap: 2px;
+    }
+
+    label {
+        font-size: 11px;
+    }
+
+    select,
+    input[type="text"],
+    input[type="password"],
+    textarea {
+        font-size: 12px;
+        padding: 7px 8px;
+    }
+
+    textarea {
+        height: 40px;
+    }
+
+    button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    button.secondary-btn {
+        min-width: 100px;
+    }
+
+    button.action-btn.download-all {
+        font-size: 10px;
+        padding: 5px 6px;
+    }
+
+    .preview {
+        padding: 6px;
+    }
+
+    .preview h2 {
+        font-size: 16px;
+        margin: 4px 0;
+    }
+
+    #img-container {
+        max-width: 100%;
+        max-height: 250px;
+    }
+
+    .zoom-control {
+        width: 100%;
+        max-width: 100%;
+        margin-top: 8px;
+    }
+
+    #img-buttons {
+        max-width: 100%;
+        gap: 5px;
+    }
+
+    #img-buttons .secondary-btn {
+        min-width: 90px;
+        font-size: 11px;
+    }
+
+    #download-section {
+        max-width: 100%;
+        gap: 4px;
+    }
+
+    .copy-json-btn {
+        margin-top: 6px;
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    #gallery-section {
+        max-width: 100%;
+    }
+
+    footer {
+        padding: 8px 10px;
+        font-size: 10px;
     }
 }

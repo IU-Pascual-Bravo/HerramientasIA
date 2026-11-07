@@ -490,22 +490,27 @@ function addToGallery(imageUrl) {
 
     const thumb = document.createElement('img');
     thumb.src = imageUrl;
-    thumb.style.height = '70px';
+    thumb.style.height = '60px';
     thumb.style.width = 'auto';
-    thumb.style.maxWidth = '120px';
+    thumb.style.maxWidth = '100px';
     thumb.style.borderRadius = '4px';
     thumb.style.cursor = 'pointer';
     thumb.style.border = '2px solid transparent';
     thumb.style.flexShrink = '0';
+    thumb.style.touchAction = 'manipulation';
     thumb.onmouseenter = () => { thumb.style.borderColor = '#007ef6'; };
     thumb.onmouseleave = () => { thumb.style.borderColor = 'transparent'; };
+    thumb.ontouchstart = () => { thumb.style.borderColor = '#007ef6'; };
+    thumb.ontouchend = () => { thumb.style.borderColor = 'transparent'; };
     thumb.onclick = function() {
         const m = document.getElementById('slide-modal');
         const mi = document.getElementById('modal-img');
         if (m && mi) { mi.src = this.src; m.style.display = 'flex'; }
     };
     document.getElementById('gallery-thumbnails').appendChild(thumb);
-    document.getElementById('gallery-thumbnails').scrollLeft = document.getElementById('gallery-thumbnails').scrollWidth;
+    setTimeout(() => {
+        document.getElementById('gallery-thumbnails').scrollLeft = document.getElementById('gallery-thumbnails').scrollWidth;
+    }, 0);
 }
 
 function generateImage() {
