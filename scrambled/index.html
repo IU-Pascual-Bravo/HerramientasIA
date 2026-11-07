@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrambled</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            line-height: 1.2;
+            margin: 0;
+        }
+        .header-branding {
+            display: grid;
+            grid-template-columns: minmax(100px, 1fr) auto minmax(100px, 1fr);
+            align-items: center;
+            gap: 20px;
+        }
+        .header-logo {
+            display: block;
+            width: auto;
+            height: 60px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        .header-logo:last-child { justify-self: end; }
+        .api-key-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .theme-form .api-key-actions button {
+            margin-top: 0;
+        }
+        .api-key-actions #clear-key-btn { background-color: #7f8c8d; }
+        .api-key-actions #clear-key-btn:hover { background-color: #687778; }
+        .provider-status {
+            min-height: 1.2em;
+            margin: 0;
+            font-size: 14px;
+        }
+        .provider-status.success { color: #218838; }
+        .provider-status.error { color: #c0392b; }
+        .provider-status.info { color: #4a5568; }
+        .hidden { display: none !important; }
+        @media (max-width: 560px) {
+            .header-branding { grid-template-columns: 64px minmax(0, 1fr) 64px; gap: 8px; }
+            .header-logo { height: 52px; }
+            h1 { font-size: 1.5em; }
+            .api-key-container { flex-direction: column; }
+        }
+        .theme-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .theme-form label {
+            color: #4a5568;
+            margin-top: 5px;
+        }
+        .theme-form input, .theme-form select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .theme-form button {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .theme-form button:hover {
+            background-color: #2980b9;
+        }
+        .theme-form button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .api-key-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .api-key-container input {
+            flex: 1;
+        }
+        .api-key-container input:disabled {
+            background-color: #edf0f2;
+            color: #718096;
+            cursor: not-allowed;
+        }
+        .api-key-container .btn-auth {
+            padding: 10px 15px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        .api-key-container .btn-auth:hover {
+            background-color: #2ecc71;
+        }
+
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+        .exercise-container {
+            display: none;
+        }
+        .exercise {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .exercise h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .letter-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .letter-slot {
+            width: 50px;
+            height: 50px;
+            border: 2px dashed #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            margin: 5px;
+        }
+        .letter-slot.dragover {
+            background-color: #e8f4f8;
+            border-style: solid;
+        }
+
+        /* --- ESTILOS 3D PARA LAS LETRAS --- */
+        .letter {
+            width: 50px;
+            height: 50px;
+            background-color: #3498db; /* Color azul principal */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: move;
+            user-select: none;
+            border-radius: 8px; /* Bordes más suaves */
+            margin: 5px;
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background-color 0.3s;
+            position: relative;
+            
+            /* Efecto 3D: sombra inferior para profundidad y sombra ambiental */
+            box-shadow: 0 4px 0px #2577ae, /* Sombra "extruida" (versión más oscura del azul) */
+                        0 6px 8px rgba(0, 0, 0, 0.2); /* Sombra proyectada suave */
+            
+            /* Sombra para el texto dentro de la letra para darle relieve */
+            text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.4);
+        }
+
+        .letter:hover {
+            transform: translateY(-3px) scale(1.08); /* Levantar un poco más y escalar */
+            /* Aumentar la sombra para un efecto más pronunciado al pasar el mouse */
+            box-shadow: 0 7px 0px #2577ae, 
+                        0 9px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .letter.dragging {
+            opacity: 0.75; /* Ligeramente menos transparente para ver mejor el efecto 3D */
+            transform: translateY(-5px) scale(1.12) rotateZ(4deg); /* Más levantada, escalada y con ligera rotación */
+            /* Sombra más intensa y oscura al arrastrar */
+            box-shadow: 0 10px 0px #1f608c, /* Sombra extruida más oscura */
+                        0 12px 20px rgba(0, 0, 0, 0.35);
+            z-index: 1000; /* Asegurar que esté por encima de otros elementos */
+        }
+
+        .letter.incorrect {
+            background-color: #e74c3c; /* Rojo para incorrecto */
+            /* Sombra roja oscura para el efecto 3D */
+            box-shadow: 0 4px 0px #c0392b, 
+                        0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+        .letter.incorrect:hover {
+            background-color: #d64535; /* Rojo un poco más oscuro al hacer hover */
+            box-shadow: 0 7px 0px #c0392b, 
+                        0 9px 15px rgba(0, 0, 0, 0.3);
+        }
+        .letter.incorrect.dragging {
+            background-color: #e74c3c;
+            box-shadow: 0 10px 0px #a52a1a, /* Sombra extruida roja muy oscura */
+                        0 12px 20px rgba(0, 0, 0, 0.35);
+        }
+        /* --- FIN ESTILOS 3D PARA LAS LETRAS --- */
+
+        .scrambled-letters {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 60px; /* Ajustado para dar espacio a las sombras */
+            padding: 10px 5px; /* Padding para que las sombras no se corten */
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .score {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+        .final-result {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .final-result h2 {
+            color: #2c3e50;
+        }
+        .final-result p {
+            font-size: 18px;
+            color: #34495e;
+            margin: 10px 0;
+        }
+        .download-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .download-btn {
+            padding: 15px 25px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <header class="header-branding">
+        <img src="logoPB1.png" alt="Logo Pascual Bravo" class="header-logo">
+        <h1><span id="main-title-text">Scrambled</span></h1>
+        <img src="logo_escuela.png" alt="Logo de la escuela" class="header-logo">
+    </header>
+    
+    <div class="theme-form">
+        <label for="theme">Ingresa un tema para generar palabras:</label>
+        <input type="text" id="theme" placeholder="Ejemplo: animales, deportes, comida...">
+        
+        <label for="provider-select">🤖 Proveedor de IA</label>
+        <select id="provider-select">
+            <optgroup label="Gratuitos">
+                <option value="free">Red Descartes</option>
+                <option value="google">Google AI Studio</option>
+                <option value="mistral">Mistral AI</option>
+                <option value="cohere">Cohere</option>
+                <option value="groq">Groq</option>
+            </optgroup>
+            <optgroup label="Pago por uso">
+                <option value="pollinations">Pollinations AI</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="deepseek">DeepSeek</option>
+            </optgroup>
+        </select>
+        <label for="model-select">🧠 Modelo de texto</label>
+        <select id="model-select"></select>
+        <div id="provider-key-field">
+            <label for="apiKeyInput" id="key-label">🔑 Configuración de API Key</label>
+            <div class="api-key-container">
+                <input type="password" id="apiKeyInput" placeholder="" autocomplete="off">
+                <div class="api-key-actions">
+                    <button type="button" id="getApiKeyBtn" class="btn-auth">🔑 Obtener API Key</button>
+                    <button type="button" id="validate-key-btn" class="btn-auth">Validar</button>
+                    <button type="button" id="clear-key-btn" class="btn-auth">Limpiar</button>
+                </div>
+            </div>
+        </div>
+        <p id="provider-status" class="provider-status" role="status" aria-live="polite"></p>
+
+        <label for="num-words">Número de palabras (3-10):</label>
+        <input type="number" id="num-words" value="5" min="3" max="10">
+        <button id="generate-btn">Generar Ejercicios</button>
+    </div>
+    
+    <div id="loading" class="loading">
+        <p>Generando palabras y ejercicios...</p>
+    </div>
+    
+    <div id="exercise-container" class="exercise-container">
+        <div class="score">
+            Puntuación: <span id="score">0</span>
+        </div>
+        
+        <div id="current-exercise" class="exercise">
+            <h2>Ejercicio <span id="exercise-number">1</span> de <span id="total-exercises-display">5</span></h2>
+            <div id="letter-container" class="letter-container"></div>
+            <div id="scrambled-letters" class="scrambled-letters"></div>
+            
+            <div class="navigation">
+                <button id="prev-btn" class="btn" disabled>Anterior</button>
+                <button id="next-btn" class="btn">Siguiente</button>
+            </div>
+        </div>
+
+        <div id="final-result" class="final-result">
+            <h2>¡Juego Terminado!</h2>
+            <p>Puntuación Final: <span id="final-score">0</span></p>
+            <p>Puntaje Máximo Posible: <span id="max-possible-score">0</span></p>
+            <p>Porcentaje de Acierto: <span id="percentage-score">0.00</span>%</p>
+        </div>
+        
+        <div class="download-container">
+            <button id="download-btn" class="download-btn">Descargar Juego</button>
+        </div>
+    </div>
+    
+    <footer>
+        Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 2.5 Pro
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeInput = document.getElementById('theme');
+            const numWordsInput = document.getElementById('num-words');
+            const generateBtn = document.getElementById('generate-btn');
+            const loadingDiv = document.getElementById('loading');
+            const exerciseContainer = document.getElementById('exercise-container');
+            const letterContainer = document.getElementById('letter-container');
+            const scrambledLettersContainer = document.getElementById('scrambled-letters');
+            const exerciseNumber = document.getElementById('exercise-number');
+            const totalExercisesDisplay = document.getElementById('total-exercises-display');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const scoreElement = document.getElementById('score');
+            const downloadBtn = document.getElementById('download-btn');
+            const mainTitleText = document.getElementById('main-title-text');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const getApiKeyBtn = document.getElementById('getApiKeyBtn');
+            const providerSelect = document.getElementById('provider-select');
+            const keyLabel = document.getElementById('key-label');
+            const modelSelect = document.getElementById('model-select');
+            const validateKeyBtn = document.getElementById('validate-key-btn');
+            const clearKeyBtn = document.getElementById('clear-key-btn');
+            const providerStatus = document.getElementById('provider-status');
+
+            const providerConfigs = {
+                pollinations: { name: 'Pollinations AI', url: 'https://gen.pollinations.ai/v1/chat/completions', validationUrl: 'https://gen.pollinations.ai/v1/models', model: 'openai', placeholder: 'plln_sk_...', keyUrl: 'https://enter.pollinations.ai/authorize' },
+                free: { name: 'Red Descartes', url: 'https://node.proyectodescartes.org/api/ia/text', model: 'openai', free: true, placeholder: '', keyUrl: '' },
+                openrouter: { name: 'OpenRouter', url: 'https://openrouter.ai/api/v1/chat/completions', validationUrl: 'https://openrouter.ai/api/v1/models', model: 'google/gemini-2.5-flash', placeholder: 'sk-or-...', keyUrl: 'https://openrouter.ai/keys' },
+                google: { name: 'Google AI Studio', url: 'https://generativelanguage.googleapis.com/v1beta/models/', validationUrl: 'https://generativelanguage.googleapis.com/v1beta/models', model: 'gemini-3.8-flash', placeholder: 'AIzaSy...', keyUrl: 'https://aistudio.google.com/app/apikey' },
+                mistral: { name: 'Mistral AI', url: 'https://api.mistral.ai/v1/chat/completions', validationUrl: 'https://api.mistral.ai/v1/models', model: 'open-mistral-7b', placeholder: 'Clave Mistral API...', keyUrl: 'https://console.mistral.ai/api-keys/' },
+                cohere: { name: 'Cohere', url: 'https://api.cohere.com/v2/chat', validationUrl: 'https://api.cohere.com/v1/models', model: 'command-a-plus-05-2026', placeholder: 'Clave Cohere API...', keyUrl: 'https://dashboard.cohere.com/api-keys' },
+                groq: { name: 'Groq', url: 'https://api.groq.com/openai/v1/chat/completions', validationUrl: 'https://api.groq.com/openai/v1/models', model: 'llama-3.1-8b-instant', placeholder: 'gsk_...', keyUrl: 'https://console.groq.com/keys' },
+                deepseek: { name: 'DeepSeek', url: 'https://api.deepseek.com/chat/completions', validationUrl: 'https://api.deepseek.com/models', model: 'deepseek-flash', placeholder: 'sk-...', keyUrl: 'https://platform.deepseek.com/api_keys' }
+            };
+            const modelOptions = {
+                pollinations: ['openai', 'openai/gpt-5.6-luna', 'moonshotai/kimi-k2.6', 'x-ai/grok-4.3', 'mistral-small-3.2', 'qwen-coder', 'gemini-fast', 'z-ai/glm-5.3-flash', 'openai/gpt-6-luna', 'minimax/minimax-m3', 'meta/llama-3.3-70b-instruct', 'google/gemini-3.8-flash', 'anthropic/claude-haiku-5.5', 'mistralai/mistral-large-4'],
+                free: ['openai', 'openai-fast', 'gemini-fast', 'gemini-search', 'mistral', 'nova-fast', 'perplexity-fast', 'deepseek'],
+                openrouter: ['google/gemini-2.5-flash', 'deepseek/deepseek-chat-v3-0324', 'openai/gpt-5-mini', 'moonshotai/kimi-k2.6', 'meta-llama/llama-3.3-70b-instruct', 'openrouter/free'],
+                google: ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.1-pro-preview'],
+                mistral: ['open-mistral-7b', 'open-mixtral-8x7b'],
+                cohere: ['command-a-plus-05-2026', 'command-a-03-2025', 'command-a-reasoning-08-2025', 'command-r7b-12-2024'],
+                groq: ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'],
+                deepseek: ['deepseek-flash', 'deepseek-v4-pro']
+            };
+            const providerKeyName = provider => `${provider}_api_key`;
+            const requiresApiKey = provider => !providerConfigs[provider].free;
+
+            function setProviderStatus(message, type = 'info') {
+                providerStatus.textContent = message;
+                providerStatus.className = `provider-status ${type}`;
+            }
+
+            function extractProviderText(payload, depth = 0) {
+                if (typeof payload === 'string') {
+                    if (depth < 4) {
+                        try { return extractProviderText(JSON.parse(payload), depth + 1); } catch (_) {}
+                    }
+                    return payload;
+                }
+                if (!payload || typeof payload !== 'object' || depth >= 4) return '';
+                if (payload.choices?.[0]?.message?.content != null) return extractProviderText(payload.choices[0].message.content, depth + 1);
+                for (const key of ['data', 'result', 'output', 'response', 'text', 'content']) {
+                    if (payload[key] != null) return extractProviderText(payload[key], depth + 1);
+                }
+                return '';
+            }
+
+            function saveProviderKey(provider = providerSelect.value) {
+                if (!requiresApiKey(provider)) return;
+                const key = apiKeyInput.value.trim();
+                if (key) localStorage.setItem(providerKeyName(provider), key);
+                else localStorage.removeItem(providerKeyName(provider));
+            }
+
+            function updateProviderControls() {
+                const provider = providerSelect.value;
+                const config = providerConfigs[provider];
+                const required = requiresApiKey(provider);
+                const models = modelOptions[provider] || [config.model];
+                modelSelect.replaceChildren(...models.map(model => new Option(model, model)));
+                modelSelect.value = config.model;
+                apiKeyInput.required = required;
+                apiKeyInput.disabled = !required;
+                apiKeyInput.value = required ? localStorage.getItem(providerKeyName(provider)) || '' : '';
+                keyLabel.textContent = config.free ? 'No se requiere API Key' : `🔑 Configuración de API Key (${config.name})`;
+                apiKeyInput.placeholder = config.placeholder;
+                getApiKeyBtn.style.display = config.free ? 'none' : '';
+                getApiKeyBtn.title = `Obtener API Key de ${config.name}`;
+                localStorage.setItem('preferred_writer_provider', provider);
+                setProviderStatus('');
+            }
+
+            async function validateProviderKey() {
+                const provider = providerSelect.value;
+                const key = apiKeyInput.value.trim();
+                if (!requiresApiKey(provider)) {
+                    setProviderStatus('Red Descartes no requiere API key.', 'info');
+                    return;
+                }
+                if (!key) {
+                    setProviderStatus(`Introduce la API key de ${providerConfigs[provider].name}.`, 'error');
+                    apiKeyInput.focus();
+                    return;
+                }
+                validateKeyBtn.disabled = true;
+                validateKeyBtn.textContent = '⏳ Validando...';
+                try {
+                    const headers = provider === 'google' ? { 'x-goog-api-key': key } : { Authorization: `Bearer ${key}` };
+                    const response = await fetch(providerConfigs[provider].validationUrl, { method: 'GET', headers });
+                    if (!response.ok) {
+                        const details = (await response.text()).slice(0, 240);
+                        throw new Error(`${response.status}${details ? `: ${details}` : ''}`);
+                    }
+                    saveProviderKey(provider);
+                    setProviderStatus(`API key de ${providerConfigs[provider].name} válida.`, 'success');
+                } catch (error) {
+                    setProviderStatus(`No se pudo validar la API key de ${providerConfigs[provider].name}: ${error.message}`, 'error');
+                } finally {
+                    validateKeyBtn.disabled = false;
+                    validateKeyBtn.textContent = '✅ Validar';
+                }
+            }
+
+            async function requestWordsFromProvider(prompt) {
+                const provider = providerSelect.value;
+                const config = providerConfigs[provider];
+                const key = apiKeyInput.value.trim();
+                const selectedModel = modelSelect.value;
+                const headers = { 'Content-Type': 'application/json' };
+                let url = config.url;
+                let body;
+
+                if (provider === 'free') {
+                    body = { prompt, model: selectedModel };
+                } else if (!key) {
+                    throw new Error(`Introduce la API key de ${config.name}.`);
+                } else if (provider === 'google') {
+                    url += `${selectedModel}:generateContent`;
+                    headers['x-goog-api-key'] = key;
+                    body = { contents: [{ role: 'user', parts: [{ text: prompt }] }] };
+                } else if (provider === 'cohere') {
+                    headers.Authorization = `Bearer ${key}`;
+                    body = { model: selectedModel, messages: [{ role: 'user', content: prompt }] };
+                } else {
+                    headers.Authorization = `Bearer ${key}`;
+                    if (provider === 'openrouter') {
+                        headers['HTTP-Referer'] = window.location.origin;
+                        headers['X-Title'] = 'Scrambled';
+                    }
+                    body = { model: selectedModel, messages: [{ role: 'user', content: prompt }] };
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(body)
+                });
+                if (!response.ok) {
+                    const details = (await response.text()).slice(0, 240);
+                    throw new Error(`Error HTTP ${response.status}${details ? `: ${details}` : ''}`);
+                }
+                const responseText = await response.text();
+                let payload;
+                try { payload = JSON.parse(responseText); } catch (_) { return responseText; }
+                if (typeof payload === 'string') return payload;
+                if (provider === 'google') return payload.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('') || '';
+                if (provider === 'cohere') return payload.message?.content?.map(part => part.text || '').join('') || '';
+                return extractProviderText(payload);
+            }
+
+            const finalResultDiv = document.getElementById('final-result');
+            const finalScoreDisplay = document.getElementById('final-score');
+            const maxPossibleScoreDisplay = document.getElementById('max-possible-score');
+            const percentageScoreDisplay = document.getElementById('percentage-score');
+            
+            let words = [];
+            let currentExercise = 0;
+            let score = 0;
+            let userTheme = '';
+            let draggedElement = null;
+            let targetNumWords = parseInt(numWordsInput.value) || 5;
+            
+            function scrambleWord(word) {
+                const letters = word.split('');
+                for (let i = letters.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [letters[i], letters[j]] = [letters[j], letters[i]];
+                }
+                return letters;
+            }
+
+            function isGameEffectivelyOver() {
+                return finalResultDiv.style.display === 'block';
+            }
+            
+            function showFinalResults() {
+                let totalPossibleScore = 0;
+                words.forEach(word => {
+                    totalPossibleScore += word.length * 10;
+                });
+
+                let percentage = 0;
+                if (totalPossibleScore > 0) {
+                    percentage = (score / totalPossibleScore) * 100;
+                } else if (score === 0 && totalPossibleScore === 0) {
+                    percentage = 100; 
+                } else {
+                    percentage = 0; 
+                }
+                
+                if (finalScoreDisplay) finalScoreDisplay.textContent = score;
+                if (maxPossibleScoreDisplay) maxPossibleScoreDisplay.textContent = totalPossibleScore;
+                if (percentageScoreDisplay) percentageScoreDisplay.textContent = percentage.toFixed(2);
+                
+                if (finalResultDiv) finalResultDiv.style.display = 'block';
+                
+                if (prevBtn) prevBtn.disabled = true;
+                if (nextBtn) nextBtn.disabled = true;
+            }
+
+            function checkExerciseCompletion() {
+                if (isGameEffectivelyOver()) return;
+
+                const slots = letterContainer.querySelectorAll('.letter-slot');
+                let allFilled = true;
+                let wordCorrect = true;
+                
+                slots.forEach(slot => {
+                    if (!slot.hasChildNodes()) {
+                        allFilled = false;
+                    } else if (slot.firstChild.dataset.letter !== slot.dataset.letter) {
+                        wordCorrect = false;
+                    }
+                });
+                
+                if (allFilled && wordCorrect) {
+                    if (currentExercise < words.length - 1) {
+                        setTimeout(() => {
+                            if (isGameEffectivelyOver()) return;
+                            currentExercise++;
+                            showExercise(currentExercise);
+                        }, 1000);
+                    } else {
+                        showFinalResults();
+                    }
+                }
+            }
+            
+            function showExercise(index) {
+                if (!words || index < 0 || index >= words.length || isGameEffectivelyOver()) {
+                    if (isGameEffectivelyOver()) {
+                         if (prevBtn) prevBtn.disabled = true;
+                         if (nextBtn) nextBtn.disabled = true;
+                    }
+                    return;
+                }
+                
+                const word = words[index];
+                exerciseNumber.textContent = index + 1;
+                if (totalExercisesDisplay) totalExercisesDisplay.textContent = words.length;
+                
+                letterContainer.innerHTML = '';
+                scrambledLettersContainer.innerHTML = '';
+                
+                for (let i = 0; i < word.length; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'letter-slot';
+                    slot.dataset.index = i;
+                    slot.dataset.letter = word[i].toLowerCase();
+                    
+                    slot.addEventListener('dragenter', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+                    slot.addEventListener('dragover', function(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+                    slot.addEventListener('dragleave', function() { this.classList.remove('dragover'); });
+                    
+                    slot.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        if (isGameEffectivelyOver()) return;
+                        this.classList.remove('dragover');
+                        if (!draggedElement) return;
+
+                        if (this.hasChildNodes() && this.firstChild !== draggedElement) {
+                            scrambledLettersContainer.appendChild(this.firstChild);
+                        }
+                        
+                        this.appendChild(draggedElement);
+                        draggedElement.classList.remove('dragging');
+                        
+                        if (draggedElement.dataset.letter === this.dataset.letter) {
+                            draggedElement.classList.remove('incorrect');
+                            score += 10;
+                        } else {
+                            draggedElement.classList.add('incorrect');
+                            score -= 10;
+                        }
+                        scoreElement.textContent = score;
+                        checkExerciseCompletion();
+                    });
+                    letterContainer.appendChild(slot);
+                }
+                
+                const scrambledWordLetters = scrambleWord(word);
+                scrambledWordLetters.forEach((letter, i) => {
+                    const letterDiv = document.createElement('div');
+                    letterDiv.className = 'letter';
+                    letterDiv.textContent = letter.toUpperCase();
+                    letterDiv.id = `letter-${index}-${i}`;
+                    letterDiv.draggable = true;
+                    letterDiv.dataset.letter = letter.toLowerCase();
+                    
+                    letterDiv.addEventListener('dragstart', function(e) {
+                        if (isGameEffectivelyOver()) { e.preventDefault(); return; }
+                        draggedElement = this;
+                        this.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', this.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    letterDiv.addEventListener('dragend', function() {
+                        this.classList.remove('dragging');
+                        draggedElement = null;
+                    });
+                    scrambledLettersContainer.appendChild(letterDiv);
+                });
+                
+                prevBtn.disabled = index === 0 || isGameEffectivelyOver();
+                nextBtn.disabled = isGameEffectivelyOver();
+            }
+
+            function initializeApp() {
+                const savedProvider = localStorage.getItem('preferred_writer_provider') || localStorage.getItem('preferred_provider');
+                providerSelect.value = providerConfigs[savedProvider] ? savedProvider : 'free';
+                updateProviderControls();
+
+                // Capturar API key desde URL (Flujo BYOP)
+                const hashParams = new URLSearchParams(window.location.hash.slice(1));
+                const urlApiKey = hashParams.get('api_key');
+                if (urlApiKey) {
+                    providerSelect.value = 'pollinations';
+                    localStorage.setItem('preferred_provider', 'pollinations');
+                    updateProviderControls();
+                    if (apiKeyInput) apiKeyInput.value = urlApiKey;
+                    saveProviderKey('pollinations');
+                    // Limpiar URL
+                    window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                    console.log('API Key obtenida con éxito mediante BYOP');
+                }
+
+                if (window.INITIAL_GAME_STATE && window.INITIAL_GAME_STATE.isClone) {
+                    words = window.INITIAL_GAME_STATE.words || [];
+                    currentExercise = window.INITIAL_GAME_STATE.currentExercise || 0;
+                    score = window.INITIAL_GAME_STATE.score || 0;
+                    userTheme = window.INITIAL_GAME_STATE.userTheme || '';
+                    targetNumWords = window.INITIAL_GAME_STATE.targetNumWords || words.length || 5;
+
+                    if (themeInput) themeInput.value = userTheme;
+                    scoreElement.textContent = score;
+                    if (mainTitleText) mainTitleText.textContent = 'Scrambled';
+                    document.title = 'Scrambled';
+                    if (totalExercisesDisplay) totalExercisesDisplay.textContent = words.length;
+
+                    const themeFormEl = document.querySelector('.theme-form');
+                    if (themeFormEl) themeFormEl.style.display = 'none';
+                    if (loadingDiv) loadingDiv.style.display = 'none';
+                    const downloadContainerEl = document.querySelector('.download-container');
+                    if (downloadContainerEl) downloadContainerEl.style.display = 'none';
+                    const footerEl = document.querySelector('footer');
+                    if (footerEl) footerEl.style.display = 'none';
+
+                    if (words.length > 0) {
+                        exerciseContainer.style.display = 'block';
+                        if (window.INITIAL_GAME_STATE.isFinalResultsVisible) {
+                            showFinalResults();
+                        } else {
+                            if (finalResultDiv) finalResultDiv.style.display = 'none';
+                            showExercise(currentExercise);
+                        }
+                    } else {
+                        if (themeFormEl) themeFormEl.style.display = 'flex';
+                        exerciseContainer.style.display = 'none';
+                    }
+                } else {
+                    targetNumWords = parseInt(numWordsInput.value) || 5;
+                    if (totalExercisesDisplay) totalExercisesDisplay.textContent = targetNumWords;
+                    if (finalResultDiv) finalResultDiv.style.display = 'none';
+                    exerciseContainer.style.display = 'none';
+                    loadingDiv.style.display = 'none';
+                    const themeFormEl = document.querySelector('.theme-form');
+                    if (themeFormEl) themeFormEl.style.display = 'flex';
+                }
+            }
+            
+            if (getApiKeyBtn) {
+                getApiKeyBtn.addEventListener('click', function() {
+                    const keyUrl = providerConfigs[providerSelect.value].keyUrl;
+                    if (!keyUrl) return;
+                    if (providerSelect.value === 'pollinations') {
+                        const redirectUrl = window.location.href.split('#')[0];
+                        window.location.href = `${keyUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`;
+                    } else {
+                        window.open(keyUrl, '_blank', 'noopener,noreferrer');
+                    }
+                });
+            }
+
+            if (apiKeyInput) {
+                apiKeyInput.addEventListener('input', () => saveProviderKey());
+            }
+
+            providerSelect.addEventListener('change', () => {
+                localStorage.setItem('preferred_provider', providerSelect.value);
+                updateProviderControls();
+            });
+            validateKeyBtn.addEventListener('click', validateProviderKey);
+            clearKeyBtn.addEventListener('click', () => {
+                const provider = providerSelect.value;
+                localStorage.removeItem(providerKeyName(provider));
+                apiKeyInput.value = '';
+                setProviderStatus(`API key eliminada del navegador para ${providerConfigs[provider].name}.`, 'success');
+            });
+
+            if (numWordsInput) {
+                numWordsInput.addEventListener('input', () => {
+                    let val = parseInt(numWordsInput.value);
+                    if (isNaN(val) || val < 3) val = 3;
+                    if (val > 10) val = 10;
+                    numWordsInput.value = val;
+                    targetNumWords = val;
+                    if (!exerciseContainer.style.display || exerciseContainer.style.display === 'none') {
+                        if (totalExercisesDisplay) totalExercisesDisplay.textContent = targetNumWords;
+                    }
+                });
+            }
+
+            if (generateBtn) {
+                generateBtn.addEventListener('click', async function() {
+                    userTheme = themeInput.value.trim();
+                    targetNumWords = parseInt(numWordsInput.value);
+
+                    if (!userTheme) {
+                        alert('Por favor, ingresa un tema.');
+                        return;
+                    }
+                    
+                    generateBtn.disabled = true;
+                    loadingDiv.style.display = 'block';
+                    exerciseContainer.style.display = 'none';
+                    if (finalResultDiv) finalResultDiv.style.display = 'none';
+                    
+                    try {
+                        let allPossibleWords = [];
+                        const placeholderThemes = {
+                            "animales": ["perro", "gato", "leon", "tigre", "elefante", "jirafa", "mono", "cebra", "oso", "lobo", "pato", "rana"],
+                            "frutas": ["manzana", "banana", "naranja", "frutilla", "uva", "pera", "sandia", "melon", "kiwi", "mango", "coco", "limon"],
+                            "deportes": ["futbol", "tenis", "basket", "voley", "golf", "rugby", "boxeo", "nadar", "correr", "beisbol", "surf", "remo"],
+							
+							"ciudades": ["Medellín", "Madrid", "Lima", "Budapest", "Moscú", "Kiev", "Caracas", "Barcelona", "Quito", "Londres", "Tirana", "Dublín"],
+							
+							"países": ["Colombia", "Perú", "Argentina", "España", "Italia", "Venezuela", "Ecuador", "Alemania", "Francia", "Inglaterra", "Bulgaria", "Egipto"],
+							
+							"comidas": ["Paella", "Tacos", "Pizza", "Sushi", "Arepa", "Empanada", "Ceviche", "Lasagna", "Enchiladas", "Curry", "Hamburguesa", "Tamal"],
+                        };
+                        
+                        if (placeholderThemes[userTheme.toLowerCase()]) {
+                            allPossibleWords = [...placeholderThemes[userTheme.toLowerCase()]];
+                            console.log("Usando palabras del placeholder para el tema:", userTheme);
+                        } else {
+                            console.log("Tema no encontrado en placeholders. Intentando API para:", userTheme);
+                            try {
+                                const apiPrompt = `dame al menos 10 palabras en español relacionadas con ${userTheme}, separadas por espacio, sin comas ni puntos, solo palabras individuales`;
+                                const text = await requestWordsFromProvider(apiPrompt);
+                                console.log("Respuesta de API (bruta):", text);
+                                const apiWords = String(text).toLowerCase()
+                                    .split(/[\s,.;¡!¿?"“”()]+/g) 
+                                    .map(word => word.replace(/[^a-zñáéíóúü]/g, '')) 
+                                    .filter(word => word.length >= 3 && word.length <= 10 && /^[a-zñáéíóúü]+$/.test(word));
+                                
+                                if (apiWords.length > 0) {
+                                    allPossibleWords = apiWords;
+                                    console.log("Palabras obtenidas de API (filtradas):", allPossibleWords);
+                                } else {
+                                    console.log("API no devolvió palabras válidas o suficientes.");
+                                }
+                            } catch (apiError) {
+                                console.error('Error al obtener palabras de la API:', apiError);
+                                alert("No se pudo conectar con el generador de palabras para este tema. Intentando alternativas.");
+                            }
+                        }
+
+                        if (allPossibleWords.length === 0) {
+                            console.log("Ni placeholder ni API proporcionaron palabras. Usando pool genérico por defecto.");
+                            allPossibleWords = ['tema', 'nuevo', 'palabra', 'juego', 'azar', 'lista', 'ejemplo', 'prueba', 'facil', 'dificil', 'otro', 'mas', 'extra', 'idea', 'mente'];
+                        }
+                        
+                        allPossibleWords.sort(() => 0.5 - Math.random()); 
+                        words = allPossibleWords.slice(0, targetNumWords); 
+
+                        const defaultWordsPool = ['juego', 'palabra', 'letra', 'orden', 'tema', 'ejercicio', 'arrastrar', 'soltar', 'posicion', 'correcta', 'ayuda', 'probar', 'bien', 'listo', 'html', 'css', 'idea', 'mente'];
+                        let defaultIdx = 0;
+                        const currentWordsSet = new Set(words); 
+
+                        while(words.length < targetNumWords && defaultIdx < defaultWordsPool.length) {
+                            const dWord = defaultWordsPool[defaultIdx++];
+                            if (!currentWordsSet.has(dWord) && dWord.length >=3 && dWord.length <=10) {
+                                words.push(dWord);
+                                currentWordsSet.add(dWord);
+                            }
+                        }
+                        words = words.slice(0, targetNumWords); 
+
+                        if (words.length === 0 && targetNumWords > 0) { 
+                           alert("No se pudieron generar palabras para el tema. Usando un conjunto mínimo por defecto.");
+                           words = ['error', 'datos', 'jugar', 'lista', 'vacio'].filter(w => w.length >=3 && w.length <=10).slice(0, targetNumWords);
+                        }
+                        
+                        currentExercise = 0;
+                        score = 0;
+                        scoreElement.textContent = score;
+                        if (totalExercisesDisplay) totalExercisesDisplay.textContent = words.length; 
+                        showExercise(currentExercise);
+                        
+                        loadingDiv.style.display = 'none';
+                        exerciseContainer.style.display = 'block';
+                        if (mainTitleText) mainTitleText.textContent = 'Scrambled';
+                        document.title = 'Scrambled';
+
+                    } catch (error) { 
+                        console.error('Error principal generando palabras:', error);
+                        alert('Ocurrió un error inesperado al generar los ejercicios. Usando palabras por defecto.');
+                        words = ['error', 'ayuda', 'tema', 'palabra', 'jugar', 'probar', 'bien', 'listo', 'html', 'css'].slice(0, targetNumWords > 0 ? targetNumWords : 5);
+                        currentExercise = 0; score = 0; scoreElement.textContent = score;
+                        if (totalExercisesDisplay) totalExercisesDisplay.textContent = words.length;
+                        showExercise(currentExercise);
+                        loadingDiv.style.display = 'none'; exerciseContainer.style.display = 'block';
+                    } finally {
+                        generateBtn.disabled = false;
+                    }
+                });
+            }
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    if (currentExercise > 0 && !isGameEffectivelyOver()) {
+                        currentExercise--;
+                        showExercise(currentExercise);
+                    }
+                });
+            }
+            
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    if (isGameEffectivelyOver()) return;
+
+                    if (currentExercise < words.length - 1) {
+                        currentExercise++;
+                        showExercise(currentExercise);
+                    } else {
+                        showFinalResults();
+                    }
+                });
+            }
+            
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', function() {
+                    if (words.length === 0 && !isGameEffectivelyOver()) {
+                        alert('Primero debes generar ejercicios o completar un juego.');
+                        return;
+                    }
+                    
+                    const clonedDoc = document.documentElement.cloneNode(true);
+                    const newDoc = document.implementation.createHTMLDocument(document.title);
+                    newDoc.documentElement.replaceWith(clonedDoc);
+
+                    const elementsToHideInClone = ['.theme-form', '#loading', '.download-container', 'footer'];
+                    elementsToHideInClone.forEach(selector => {
+                        newDoc.querySelectorAll(selector).forEach(el => el.style.display = 'none');
+                    });
+                    
+                    const exerciseContainerInClone = newDoc.querySelector('#exercise-container');
+                    if (exerciseContainerInClone) exerciseContainerInClone.style.display = 'block';
+
+                    const titleElementInClone = newDoc.querySelector('title');
+                    if (titleElementInClone) titleElementInClone.textContent = 'Scrambled';
+                    const titleTextInClone = newDoc.querySelector('#main-title-text');
+                    if (titleTextInClone) titleTextInClone.textContent = 'Scrambled';
+                    newDoc.querySelectorAll('.header-logo').forEach(logo => {
+                        logo.src = new URL(logo.getAttribute('src'), window.location.href).href;
+                    });
+
+                    const scriptData = newDoc.createElement('script');
+                    const safeUserThemeForScript = userTheme.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                    scriptData.textContent = `
+            window.INITIAL_GAME_STATE = {
+                words: ${JSON.stringify(words)},
+                currentExercise: ${currentExercise},
+                score: ${score},
+                userTheme: "${safeUserThemeForScript}",
+                targetNumWords: ${targetNumWords},
+                isClone: true,
+                isFinalResultsVisible: ${isGameEffectivelyOver()}
+            };`;
+                    newDoc.body.appendChild(scriptData);
+                    
+                    const htmlContent = newDoc.documentElement.outerHTML;
+                    const blob = new Blob([htmlContent], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    const safeFileNameTheme = userTheme ? userTheme.replace(/[^a-zA-Z0-9_.-]/g, '_') : 'general';
+                    a.download = `juego-palabras-${safeFileNameTheme}.html`;
+                    a.href = url;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
