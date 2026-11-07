@@ -19,10 +19,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const topicInput = document.getElementById('topicInput');
     const descriptionInput = document.getElementById('descriptionInput');
     const paletaBtn = document.getElementById('paletaBtn');
+    const darkModeToggle = document.getElementById('darkModeToggle');
 
     let youtubeUrl = '';
     let youtubeVideoInfo = null;
     let isProcessing = false;
+    
+    // ----- DARK MODE FUNCTIONALITY -----
+    function initDarkMode() {
+        const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+        if (darkModeEnabled) {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️ Modo claro';
+        } else {
+            document.body.classList.remove('dark-mode');
+            darkModeToggle.textContent = '🌙 Modo oscuro';
+        }
+    }
+    
+    function toggleDarkMode() {
+        const isDarkMode = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', isDarkMode);
+        darkModeToggle.textContent = isDarkMode ? '☀️ Modo claro' : '🌙 Modo oscuro';
+    }
+    
+    darkModeToggle.addEventListener('click', toggleDarkMode);
+    initDarkMode();
 
     let slidesData = [];
     let slideImageUrls = [];
