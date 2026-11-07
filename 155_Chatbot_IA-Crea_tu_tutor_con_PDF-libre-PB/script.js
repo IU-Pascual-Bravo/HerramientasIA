@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pdf3TextContent = "";
     let currentPdf3Name = "";
     let conversationHistory = [];
-    let currentTheme = localStorage.getItem('theme') || 'light';
+    let currentTheme = localStorage.getItem('theme') || 'dark';
     let currentPalette = null;
     let botAvatarDataUrl = "";
     let userAvatarDataUrl = "";
@@ -1248,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Theme and palette
-    let currentTheme = localStorage.getItem('theme') || 'light';
+    let currentTheme = localStorage.getItem('theme') || 'dark';
     let currentPalette = null;
 
     function hexToRgb(hex) {
