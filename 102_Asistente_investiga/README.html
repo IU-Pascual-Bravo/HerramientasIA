@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>README · Asistente de Proyectos de Investigación</title>
+    <style>
+        :root { color-scheme: light; --bg: #f1f5f9; --card: #fff; --text: #1e293b; --muted: #475569; --accent: #4338ca; --border: #cbd5e1; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 2rem 1rem; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+        article { max-width: 900px; margin: auto; padding: 2rem 2.5rem; background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 18px #0f172a18; }
+        h1, h2 { color: var(--accent); line-height: 1.25; }
+        h1 { margin-top: 0; }
+        h2 { margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: .35rem; }
+        code { padding: .15rem .35rem; background: #e2e8f0; border-radius: 4px; }
+        li { margin: .3rem 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: .65rem .75rem; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+        th { background: #eef2ff; color: #312e81; }
+        .note { padding: 1rem; background: #fffbeb; border-left: 4px solid #f59e0b; }
+        @media (max-width: 600px) { article { padding: 1.25rem; } table { display: block; overflow-x: auto; } }
+    </style>
+</head>
+<body>
+<article>
+    <h1>Asistente de Proyectos de Investigación</h1>
+    <p>Aplicación web para generar títulos y perfiles de proyectos de investigación con ayuda de distintos proveedores de inteligencia artificial.</p>
+
+    <h2>Características</h2>
+    <ul>
+        <li>Selección de tema y población o ámbito de estudio.</li>
+        <li>Generación de títulos académicos.</li>
+        <li>Creación de perfiles con objetivos, justificación, variables y enfoque metodológico.</li>
+        <li>Generación de preguntas de investigación.</li>
+        <li>Exportación del informe en HTML y PDF.</li>
+        <li>Compatibilidad con varios proveedores de IA.</li>
+        <li>Modo claro y modo oscuro con preferencia guardada en el navegador.</li>
+        <li>Logos institucionales de Pascual Bravo y de la escuela.</li>
+    </ul>
+
+    <h2>Archivos principales</h2>
+    <table>
+        <thead><tr><th>Archivo</th><th>Descripción</th></tr></thead>
+        <tbody>
+            <tr><td><code>index.html</code></td><td>Aplicación completa: estructura, estilos y lógica JavaScript.</td></tr>
+            <tr><td><code>logoPB1.png</code></td><td>Logo de Pascual Bravo.</td></tr>
+            <tr><td><code>logo_escuela.png</code></td><td>Logo de la escuela.</td></tr>
+            <tr><td><code>Modelo_logos/</code></td><td>Aplicación de referencia para el uso de los logos.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Uso</h2>
+    <ol>
+        <li>Abra <code>index.html</code> en un navegador moderno.</li>
+        <li>Pulse <strong>🌙 Modo oscuro</strong> para activar el tema oscuro o <strong>☀️ Modo claro</strong> para volver al tema claro.</li>
+        <li>Seleccione el proveedor de IA y configure la clave si es necesaria.</li>
+        <li>Seleccione el tema, ámbito, número de títulos y modelo de IA.</li>
+        <li>Pulse <strong>Generar Títulos</strong>.</li>
+        <li>Elija un título o introduzca uno manualmente con el número <code>0</code>.</li>
+        <li>Pulse <strong>Generar Perfil</strong> y luego <strong>Generar Preguntas de Investigación</strong>.</li>
+        <li>Descargue el informe en HTML o PDF.</li>
+    </ol>
+
+    <h2>Proveedores disponibles</h2>
+    <ul>
+        <li>Red Descartes, sin clave API.</li><li>Google AI Studio.</li><li>Mistral AI.</li>
+        <li>Cohere.</li><li>Groq.</li><li>Pollinations AI.</li><li>OpenRouter.</li><li>DeepSeek.</li>
+    </ul>
+    <p>Las claves se almacenan únicamente en el <code>localStorage</code> del navegador actual y no se incluyen en los archivos del proyecto.</p>
+
+    <h2>Dependencias externas</h2>
+    <p>La aplicación carga Tailwind CSS, <code>html2canvas</code> y <code>jsPDF</code> desde CDN. Se necesita conexión a Internet para cargarlas y para consultar los proveedores de IA.</p>
+
+    <p class="note"><strong>Nota de seguridad:</strong> no comparta sus claves API. En equipos compartidos, elimine la clave con <strong>Limpiar</strong> y cierre la sesión del navegador.</p>
+
+    <h2>Autoría</h2>
+    <p>Diseñado por Juan Guillermo Rivera Berrío.</p>
+</article>
+</body>
+</html>

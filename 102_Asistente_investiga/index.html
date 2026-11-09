@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Proyectos de Investigación</title>
+    <!-- Inclusión de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inclusión de librerías para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Cabecera con los dos logos institucionales --- */
+        .title-row {
+            display: grid;
+            grid-template-columns: minmax(100px, 1fr) auto minmax(100px, 1fr);
+            align-items: center;
+            gap: 20px;
+        }
+        .header-logo {
+            display: block;
+            width: auto;
+            height: 72px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        .header-logo:last-child {
+            justify-self: end;
+        }
+
+        /* --- Tema claro/oscuro --- */
+        body {
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+        #themeToggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            background: #ffffff;
+            color: #334155;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+        }
+        #themeToggle:hover { background: #e2e8f0; }
+        body.dark-mode { background-color: #0f172a; color: #e2e8f0; }
+        body.dark-mode main { background-color: #1e293b; }
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode label { color: #f1f5f9 !important; }
+        body.dark-mode .text-slate-600,
+        body.dark-mode .text-slate-500,
+        body.dark-mode .text-slate-700,
+        body.dark-mode .text-slate-800 { color: #cbd5e1 !important; }
+        body.dark-mode .border-slate-200,
+        body.dark-mode .border-slate-300 { border-color: #475569 !important; }
+        body.dark-mode select,
+        body.dark-mode input,
+        body.dark-mode #api-config select,
+        body.dark-mode #api-config input { background-color: #334155; color: #f1f5f9; border-color: #64748b; }
+        body.dark-mode #api-config .api-key-container { background-color: #273449; border-color: #475569; }
+        body.dark-mode #api-config .api-key-actions button { background-color: #334155; color: #f1f5f9; border-color: #64748b; }
+        body.dark-mode #api-config .api-key-actions button:hover:not(:disabled) { background-color: #4f46e5; border-color: #6366f1; }
+        body.dark-mode #themeToggle { background: #334155; color: #f8fafc; border-color: #64748b; }
+        body.dark-mode #themeToggle:hover { background: #475569; }
+        @media (max-width: 600px) {
+            .title-row {
+                grid-template-columns: 64px minmax(0, 1fr) 64px;
+                gap: 8px;
+            }
+            .header-logo {
+                height: 52px;
+            }
+        }
+
+        /* --- Selector de proveedores y API Key (diseño/lógica tomados de Modelo1) --- */
+        #api-config {
+            --api-surface: #eef2ff;
+            --api-input-bg: #ffffff;
+            --api-text: #1e293b;
+            --api-border: #c7d2fe;
+            --api-accent: #4338ca;
+            --api-btn-bg: #4f46e5;
+            --api-btn-text: #ffffff;
+            --api-error: #b3261e;
+            --api-success: #1a7f37;
+            margin-bottom: 2rem;
+        }
+        .api-key-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background-color: var(--api-surface);
+            border: 1px solid var(--api-border);
+            border-radius: 5px;
+        }
+        .api-key-container label {
+            flex-basis: 100%;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--api-accent);
+        }
+        #providerSelect,
+        #apiKeyInput {
+            flex-grow: 1;
+            min-width: 200px;
+            padding: 0.65rem 1rem;
+            font-size: 1rem;
+            background-color: var(--api-input-bg);
+            color: var(--api-text);
+            border: 1px solid var(--api-border);
+            border-radius: 5px;
+            outline: none;
+        }
+        #providerSelect { flex: 1 1 220px; cursor: pointer; }
+        #providerSelect:focus,
+        #apiKeyInput:focus { border-color: var(--api-accent); box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15); }
+        #apiKeyInput:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        .api-key-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .api-key-actions button {
+            padding: 0.65rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background-color: var(--api-input-bg);
+            color: var(--api-text);
+            border: 1px solid var(--api-border);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        .api-key-actions button:hover:not(:disabled) {
+            background-color: var(--api-btn-bg);
+            border-color: var(--api-btn-bg);
+            color: var(--api-btn-text);
+        }
+        .api-key-actions button:disabled { opacity: 0.55; cursor: not-allowed; }
+        .api-key-actions #getApiKeyBtn { border-color: var(--api-btn-bg); color: var(--api-btn-bg); font-weight: 600; }
+        .api-key-actions #getApiKeyBtn:hover:not(:disabled) { color: var(--api-btn-text); }
+        .api-key-status {
+            flex-basis: 100%;
+            margin: 0.25rem 0 0;
+            min-height: 1.25rem;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #475569;
+        }
+        .api-key-status.is-success { color: var(--api-success); font-style: normal; font-weight: 600; }
+        .api-key-status.is-error { color: var(--api-error); font-style: normal; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-slate-100 flex flex-col items-center justify-center min-h-screen py-12">
+
+    <button id="themeToggle" type="button" aria-label="Cambiar a modo oscuro" aria-pressed="false">🌙 Modo oscuro</button>
+
+    <main class="bg-white p-8 rounded-xl shadow-lg max-w-4xl w-full">
+        
+        <header class="mb-6 text-center">
+            <div class="title-row">
+                <img src="logoPB1.png" alt="Logo Pascual Bravo" class="header-logo">
+                <h1 class="text-3xl font-bold text-slate-800">Asistente de Proyectos de Investigación</h1>
+                <img src="logo_escuela.png" alt="Logo de la escuela" class="header-logo">
+            </div>
+            <p class="text-slate-600 mt-2">Define tu tema y ámbito para generar un perfil completo y exportable de tu proyecto.</p>
+        </header>
+
+        <!-- PASO 0: CONFIGURACIÓN DE API -->
+        <section id="api-config">
+            <div class="api-key-container">
+                <label for="providerSelect">Proveedor de IA</label>
+                <select id="providerSelect">
+                    <optgroup label="Gratuitos">
+                        <option value="free">Red Descartes</option>
+                        <option value="google">Google AI Studio</option>
+                        <option value="mistral">Mistral AI</option>
+                        <option value="cohere">Cohere</option>
+                        <option value="groq">Groq</option>
+                    </optgroup>
+                    <optgroup label="Pago por uso">
+                        <option value="pollinations" selected>Pollinations AI</option>
+                        <option value="openrouter">OpenRouter</option>
+                        <option value="deepseek">DeepSeek</option>
+                    </optgroup>
+                </select>
+
+                <label for="apiKeyInput" id="apiKeyLabel">Configuración de API Key (Pollinations AI)</label>
+                <input type="password" id="apiKeyInput" placeholder="plln_sk_..." aria-describedby="apiKeyStatus">
+                <div class="api-key-actions">
+                    <button id="getApiKeyBtn" type="button" title="Obtener API Key de Pollinations AI">🔑 Obtener API Key</button>
+                    <button id="validateKeyBtn" type="button">✅ Validar</button>
+                    <button id="clearKeyBtn" type="button">🧹 Limpiar</button>
+                </div>
+                <p id="apiKeyStatus" class="api-key-status" role="status" aria-live="polite"></p>
+            </div>
+        </section>
+
+        <!-- PASO 1: CONFIGURACIÓN -->
+        <section id="configuracion" class="space-y-6">
+            <div><label for="tema" class="block text-sm font-medium text-slate-700 mb-2">1. Elige tu Tema de Investigación:</label><select id="tema" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"><option value="">Selecciona un tema</option>
+    <option value="Otro">Especificar manualmente</option>
+    <option value="Salud Pública">Salud Pública</option>
+    <option value="Cambio Climático">Cambio Climático</option>
+    <option value="Inteligencia Artificial">Inteligencia Artificial</option>
+    <option value="Educación Inclusiva">Educación Inclusiva</option>
+    <option value="Economía Sostenible">Economía Sostenible</option>
+    <option value="Derechos Humanos">Derechos Humanos</option>
+    <option value="Arte y Cultura">Arte y Cultura</option>
+    <option value="Energías Renovables">Energías Renovables</option>
+    <option value="Psicología y Bienestar">Psicología y Bienestar</option>
+    <option value="Agricultura y Seguridad Alimentaria">Agricultura y Seguridad Alimentaria</option>
+    <option value="Biotecnología">Biotecnología</option>
+    <option value="Historia y Sociedad">Historia y Sociedad</option>
+    <option value="Ingeniería y Tecnología">Ingeniería y Tecnología</option>
+    <option value="Literatura y Comunicación">Literatura y Comunicación</option>
+    <option value="Ciencias Espaciales">Ciencias Espaciales</option>
+    <option value="Política y Gobernanza">Política y Gobernanza</option></select></div>
+            <div id="otroTemaContainer" class="hidden"><input type="text" id="otroTemaInput" placeholder="Especifica tu tema" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></div>
+            <div><label for="poblacion" class="block text-sm font-medium text-slate-700 mb-2">2. Delimita la Población o Ámbito (Opcional):</label><select id="poblacion" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"><option value="">Selecciona una población/ámbito</option><option value="Otro">Especificar manualmente</option><option value="Estudiantes de Informática">Estudiantes de Informática</option><option value="Docentes Universitarios">Docentes Universitarios</option><option value="Instituciones Educativas">Instituciones Educativas</option><option value="Empresas Tecnológicas">Empresas Tecnológicas</option><option value="Redes Universitarias">Redes Universitarias</option><option value="Centros de Investigación">Centros de Investigación</option><option value="Comunidades Digitales">Comunidades Digitales</option><option value="Organizaciones Públicas">Organizaciones Públicas</option><option value="Plataformas Virtuales">Plataformas Virtuales</option><option value="Ambientes de Aprendizaje">Ambientes de Aprendizaje</option></select></div>
+            <div id="otroPoblacionContainer" class="hidden"><input type="text" id="otroPoblacionInput" placeholder="Especifica la población" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><label for="numeroTitulos" class="block text-sm font-medium text-slate-700 mb-2">3. Número de Títulos:</label><select id="numeroTitulos" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"><option value="10">10</option><option value="12" selected>12</option><option value="15">15</option></select></div>
+                <div><label for="modelo" class="block text-sm font-medium text-slate-700 mb-2">4. Modelo de IA:</label><select id="modelo" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+				<option value="openai-large" selected>OpenAI Large</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="gemini-large">Gemini Large</option>
+                            <option value="gemini">Gemini</option>
+                            <option value="claude">Claude</option>
+                            <option value="grok">Grok</option>
+                            <option value="perplexity-fast">Perplexity Fast</option>
+                            <option value="kimi-k2-thinking">Kimi K2 Thinking</option>
+				</select></div>
+            </div>
+            <button id="generarBtn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors">Generar Títulos</button>
+        </section>
+        
+        <section id="resultados" class="mt-8 pt-6 border-t border-slate-200"><h2 class="text-xl font-semibold text-slate-700 mb-4">Paso 2: Títulos Sugeridos</h2><div id="loadingTitulos" class="hidden flex flex-col items-center text-center"><div class="loader"></div><p class="text-slate-500 mt-3">Generando ideas...</p></div><ol id="listaTitulos" class="list-decimal list-inside space-y-3 text-slate-800"></ol></section>
+        
+        <section id="seleccionContainer" class="hidden mt-8 pt-6 border-t border-slate-200"><h2 class="text-xl font-semibold text-slate-700 mb-4">Paso 3: Desarrolla el Perfil</h2><p class="text-slate-600 mb-4">Introduce el número del título para generar el perfil completo de la investigación.</p><div class="flex items-end gap-4">
+            <div class="flex-grow">
+                <label for="numeroTituloElegido" class="block text-sm font-medium text-slate-700 mb-2">Número del título (0 para ingresarlo manualmente):</label>
+                <input type="number" id="numeroTituloElegido" min="0" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div id="manualTituloContainer" class="hidden flex-grow">
+                <label for="manualTituloInput" class="block text-sm font-medium text-slate-700 mb-2">Título a investigar:</label>
+                <input type="text" id="manualTituloInput" placeholder="Escribe tu título aquí" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <button id="generarPerfilBtn" class="bg-teal-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors">Generar Perfil</button>
+        </div></section>
+        
+        <section id="perfilContainer" class="hidden mt-8 pt-6 border-t border-slate-200"><h2 class="text-xl font-semibold text-slate-700 mb-4">Informe de Investigación</h2><div id="loadingPerfil" class="hidden flex flex-col items-center text-center"><div class="loader"></div><p class="text-slate-500 mt-3">Elaborando perfil...</p></div><div id="perfilContenido" class="hidden space-y-6 p-4 bg-slate-50 rounded-lg">
+            <div id="exportableReport" class="space-y-6">
+                <div class="space-y-6">
+                    <div><h3 class="font-bold text-lg text-slate-800">Título de la Investigación:</h3><p id="tituloFinal" class="mt-1 text-indigo-700 text-lg"></p></div>
+                    <div><h4 class="font-bold text-md text-slate-800">Objetivo General:</h4><p id="objetivoGeneralResultado" class="mt-1 text-slate-700"></p></div>
+                    <div><h4 class="font-bold text-md text-slate-800">Objetivos Específicos:</h4><ul id="objetivosEspecificosResultado" class="mt-1 list-disc list-inside text-slate-700 space-y-1"></ul></div>
+                    <div><h4 class="font-bold text-md text-slate-800">Justificación del Proyecto:</h4><p id="justificacionResultado" class="mt-1 text-slate-700"></p></div>
+                    <div><h4 class="font-bold text-md text-slate-800">Variables de Estudio:</h4><div class="mt-2 pl-4 border-l-2 border-slate-300 space-y-2"><p><strong class="text-slate-600">Independiente (Causa/Tema):</strong> <span id="variableIndependienteResultado"></span></p><p><strong class="text-slate-600">Dependiente (Efecto/Resultado):</strong> <span id="variableDependienteResultado"></span></p></div></div>
+                    <div><h4 class="font-bold text-md text-slate-800">Enfoque Metodológico Sugerido:</h4><p id="enfoqueResultado" class="mt-1 text-slate-700 font-semibold"></p></div>
+                </div>
+                <div id="preguntasSubContainer" class="hidden pt-6 border-t border-slate-300">
+                    <div id="loadingPreguntas" class="hidden flex flex-col items-center text-center"><div class="loader"></div><p class="text-slate-500 mt-3">Formulando preguntas...</p></div>
+                    <div><h4 class="font-bold text-md text-slate-800">Preguntas de Investigación:</h4><ol id="listaPreguntas" class="mt-1 list-decimal list-inside text-slate-700 space-y-1"></ol></div>
+                </div>
+            </div>
+            <div id="errorPerfil" class="text-red-600"></div>
+            <div class="pt-4 border-t border-slate-200 space-y-3">
+                <button id="generarPreguntasBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">Generar Preguntas de Investigación</button>
+                <div id="downloadContainer" class="hidden grid grid-cols-2 gap-4">
+                    <button id="downloadHtmlBtn" class="w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors">Descargar HTML</button>
+                    <button id="downloadPdfBtn" class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">Descargar PDF</button>
+                </div>
+            </div>
+        </div></section>
+
+    </main>
+    
+    <footer class="w-full text-center py-6 text-sm text-slate-500">Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 2.5 Pro y la API de Pollinations</footer>
+
+    <script>
+        const $ = (selector) => document.querySelector(selector);
+        const { jsPDF } = window.jspdf;
+
+        const themeToggle = $('#themeToggle');
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            document.body.classList.toggle('dark-mode', isDark);
+            themeToggle.textContent = isDark ? '☀️ Modo claro' : '🌙 Modo oscuro';
+            themeToggle.setAttribute('aria-label', isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+            themeToggle.setAttribute('aria-pressed', String(isDark));
+        }
+        applyTheme(localStorage.getItem('research-assistant-theme') || 'light');
+        themeToggle.addEventListener('click', () => {
+            const nextTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+            applyTheme(nextTheme);
+            localStorage.setItem('research-assistant-theme', nextTheme);
+        });
+        
+        const generarBtn = $('#generarBtn'), generarPerfilBtn = $('#generarPerfilBtn'), generarPreguntasBtn = $('#generarPreguntasBtn');
+        const providerSelect = $('#providerSelect'), apiKeyInput = $('#apiKeyInput'), apiKeyLabel = $('#apiKeyLabel');
+        const getApiKeyBtn = $('#getApiKeyBtn'), validateKeyBtn = $('#validateKeyBtn'), clearKeyBtn = $('#clearKeyBtn'), apiKeyStatus = $('#apiKeyStatus');
+        const downloadHtmlBtn = $('#downloadHtmlBtn'), downloadPdfBtn = $('#downloadPdfBtn'), downloadContainer = $('#downloadContainer');
+        const temaSelect = $('#tema'), otroTemaContainer = $('#otroTemaContainer'), otroTemaInput = $('#otroTemaInput');
+        const poblacionSelect = $('#poblacion'), otroPoblacionContainer = $('#otroPoblacionContainer'), otroPoblacionInput = $('#otroPoblacionInput');
+        const numeroTitulosSelect = $('#numeroTitulos'), modeloSelect = $('#modelo');
+        const loadingTitulos = $('#loadingTitulos'), listaTitulos = $('#listaTitulos');
+        const seleccionContainer = $('#seleccionContainer'), numeroTituloElegido = $('#numeroTituloElegido');
+        const manualTituloContainer = $('#manualTituloContainer'); // NEW
+        const manualTituloInput = $('#manualTituloInput');       // NEW
+        const perfilContainer = $('#perfilContainer'), loadingPerfil = $('#loadingPerfil'), perfilContenido = $('#perfilContenido');
+        const tituloFinal = $('#tituloFinal'), objetivoGeneralResultado = $('#objetivoGeneralResultado'), objetivosEspecificosResultado = $('#objetivosEspecificosResultado');
+        const justificacionResultado = $('#justificacionResultado');
+        const variableIndependienteResultado = $('#variableIndependienteResultado'), variableDependienteResultado = $('#variableDependienteResultado'), enfoqueResultado = $('#enfoqueResultado'), errorPerfil = $('#errorPerfil');
+        const preguntasSubContainer = $('#preguntasSubContainer'), loadingPreguntas = $('#loadingPreguntas'), listaPreguntas = $('#listaPreguntas');
+
+        let titulosGenerados = [];
+        let perfilInvestigacion = {};
+
+        temaSelect.addEventListener('change', () => otroTemaContainer.classList.toggle('hidden', temaSelect.value !== 'Otro'));
+        poblacionSelect.addEventListener('change', () => otroPoblacionContainer.classList.toggle('hidden', poblacionSelect.value !== 'Otro'));
+
+        /* ============================================================
+           SELECTOR DE PROVEEDORES Y API KEY
+           Misma estructura, opciones y lógica de validación/limpieza
+           que la aplicación de referencia Modelo1.
+           ============================================================ */
+        const PROVIDERS = {
+            pollinations: { name: 'Pollinations AI', url: 'https://gen.pollinations.ai/v1/chat/completions', validateUrl: 'https://gen.pollinations.ai/v1/models', model: 'openai-large', placeholder: 'plln_sk_...', keyUrl: 'https://enter.pollinations.ai/authorize' },
+            free: { name: 'Red Descartes', url: 'https://node.proyectodescartes.org/api/ia/text', model: 'openai', free: true, placeholder: '', keyUrl: '' },
+            openrouter: { name: 'OpenRouter', url: 'https://openrouter.ai/api/v1/chat/completions', validateUrl: 'https://openrouter.ai/api/v1/models', model: 'google/gemini-2.5-flash', placeholder: 'sk-or-...', keyUrl: 'https://openrouter.ai/keys' },
+            google: { name: 'Google AI Studio', url: 'https://generativelanguage.googleapis.com/v1beta/models/', validateUrl: 'https://generativelanguage.googleapis.com/v1beta/models', model: 'gemini-3.8-flash', placeholder: 'AIzaSy...', keyUrl: 'https://aistudio.google.com/app/apikey' },
+            mistral: { name: 'Mistral AI', url: 'https://api.mistral.ai/v1/chat/completions', validateUrl: 'https://api.mistral.ai/v1/models', model: 'open-mistral-7b', placeholder: 'Clave Mistral API...', keyUrl: 'https://console.mistral.ai/api-keys/' },
+            cohere: { name: 'Cohere', url: 'https://api.cohere.com/v2/chat', validateUrl: 'https://api.cohere.com/v1/models', model: 'command-a-plus-05-2026', placeholder: 'Clave Cohere API...', keyUrl: 'https://dashboard.cohere.com/api-keys' },
+            groq: { name: 'Groq', url: 'https://api.groq.com/openai/v1/chat/completions', validateUrl: 'https://api.groq.com/openai/v1/models', model: 'llama-3.1-8b-instant', placeholder: 'gsk_...', keyUrl: 'https://console.groq.com/keys' },
+            deepseek: { name: 'DeepSeek', url: 'https://api.deepseek.com/chat/completions', validateUrl: 'https://api.deepseek.com/models', model: 'deepseek-flash', placeholder: 'sk-...', keyUrl: 'https://platform.deepseek.com/api_keys' }
+        };
+        const MODEL_OPTIONS = {
+            pollinations: ['openai-large', 'openai', 'gemini-large', 'gemini', 'claude', 'grok', 'perplexity-fast', 'kimi-k2-thinking'],
+            free: ['openai', 'openai-fast', 'gemini-fast', 'gemini-search', 'mistral', 'nova-fast', 'perplexity-fast', 'deepseek'],
+            openrouter: ['google/gemini-2.5-flash', 'deepseek/deepseek-chat-v3-0324', 'openai/gpt-5-mini', 'moonshotai/kimi-k2.6', 'meta-llama/llama-3.3-70b-instruct', 'openrouter/free'],
+            google: ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.1-pro-preview'],
+            mistral: ['open-mistral-7b', 'open-mixtral-8x7b'],
+            cohere: ['command-a-plus-05-2026', 'command-a-03-2025', 'command-a-reasoning-08-2025', 'command-r7b-12-2024'],
+            groq: ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'],
+            deepseek: ['deepseek-flash', 'deepseek-v4-pro']
+        };
+
+        function providerKeyName(provider) { return `${provider}_api_key`; }
+
+        function setApiStatus(message, type = 'info') {
+            apiKeyStatus.textContent = message;
+            apiKeyStatus.className = `api-key-status is-${type}`;
+        }
+
+        function updateProvider() {
+            const provider = providerSelect.value;
+            const config = PROVIDERS[provider];
+            const options = MODEL_OPTIONS[provider] || [config.model];
+
+            modeloSelect.replaceChildren(...options.map(model => new Option(model, model)));
+            modeloSelect.value = config.model;
+
+            apiKeyLabel.textContent = config.free ? 'No se requiere API Key' : `Configuración de API Key (${config.name})`;
+            apiKeyInput.placeholder = config.placeholder;
+            apiKeyInput.disabled = Boolean(config.free);
+            apiKeyInput.required = !config.free;
+            apiKeyInput.value = config.free ? '' : (localStorage.getItem(providerKeyName(provider)) || '');
+            getApiKeyBtn.style.display = config.free ? 'none' : '';
+            getApiKeyBtn.title = `Obtener API Key de ${config.name}`;
+            localStorage.setItem('preferred_research_provider', provider);
+
+            setApiStatus(config.free
+                ? `${config.name} no requiere API Key.`
+                : `La API Key de ${config.name} se guarda únicamente en este navegador.`, 'info');
+        }
+
+        const savedProvider = localStorage.getItem('preferred_research_provider');
+        providerSelect.value = PROVIDERS[savedProvider] ? savedProvider : 'pollinations';
+        providerSelect.addEventListener('change', updateProvider);
+        updateProvider();
+
+        apiKeyInput.addEventListener('input', () => {
+            const provider = providerSelect.value;
+            if (PROVIDERS[provider].free) return;
+            const key = apiKeyInput.value.trim();
+            if (key) localStorage.setItem(providerKeyName(provider), key);
+            else localStorage.removeItem(providerKeyName(provider));
+        });
+
+        // Flujo BYOP (Pollinations): la clave llega en el hash de la URL
+        const hashParams = new URLSearchParams(window.location.hash.slice(1));
+        const apiKeyFromHash = hashParams.get('api_key');
+        if (apiKeyFromHash) {
+            localStorage.setItem(providerKeyName('pollinations'), apiKeyFromHash);
+            providerSelect.value = 'pollinations';
+            updateProvider();
+            window.history.replaceState(null, null, window.location.pathname + window.location.search);
+            setApiStatus('✅ API Key de Pollinations AI obtenida correctamente.', 'success');
+        }
+
+        getApiKeyBtn.addEventListener('click', () => {
+            const config = PROVIDERS[providerSelect.value];
+            if (!config.keyUrl) return;
+            if (providerSelect.value === 'pollinations') {
+                const redirectUrl = window.location.href.split('#')[0];
+                window.location.href = `${config.keyUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`;
+                return;
+            }
+            window.open(config.keyUrl, '_blank', 'noopener,noreferrer');
+        });
+
+        async function validateProviderKey() {
+            const provider = providerSelect.value;
+            const config = PROVIDERS[provider];
+            const key = apiKeyInput.value.trim();
+
+            if (config.free) {
+                setApiStatus(`✅ ${config.name} no requiere API Key.`, 'success');
+                return;
+            }
+            if (!key) {
+                setApiStatus('❌ Introduce una API Key antes de validarla.', 'error');
+                apiKeyInput.focus();
+                return;
+            }
+
+            validateKeyBtn.disabled = true;
+            validateKeyBtn.textContent = '⏳ Validando...';
+            setApiStatus(`⏳ Validando la API Key de ${config.name}...`, 'info');
+            try {
+                const headers = {};
+                if (provider === 'google') headers['x-goog-api-key'] = key;
+                else headers.Authorization = `Bearer ${key}`;
+                const response = await fetch(config.validateUrl, { method: 'GET', headers });
+                if (!response.ok) {
+                    const details = (await response.text()).slice(0, 240);
+                    throw new Error(`${response.status}${details ? `: ${details}` : ''}`);
+                }
+                localStorage.setItem(providerKeyName(provider), key);
+                setApiStatus(`✅ API Key válida para ${config.name}.`, 'success');
+            } catch (error) {
+                setApiStatus(`❌ No se pudo validar la API Key de ${config.name}. ${error.message}`, 'error');
+            } finally {
+                validateKeyBtn.disabled = false;
+                validateKeyBtn.textContent = '✅ Validar';
+            }
+        }
+        validateKeyBtn.addEventListener('click', validateProviderKey);
+
+        clearKeyBtn.addEventListener('click', () => {
+            const provider = providerSelect.value;
+            const config = PROVIDERS[provider];
+            apiKeyInput.value = '';
+            localStorage.removeItem(providerKeyName(provider));
+            sessionStorage.removeItem(providerKeyName(provider));
+            apiKeyInput.focus();
+            setApiStatus(`🧹 API Key eliminada del navegador para ${config.name}.`, 'success');
+        });
+        /* ================== FIN SELECTOR PROVEEDORES ================== */
+
+        // NEW: Event listener for numeroTituloElegido to toggle manual input visibility
+        numeroTituloElegido.addEventListener('input', () => {
+            const numVal = parseInt(numeroTituloElegido.value);
+            if (numVal === 0) {
+                manualTituloContainer.classList.remove('hidden');
+            } else {
+                manualTituloContainer.classList.add('hidden');
+            }
+        });
+
+        generarBtn.addEventListener('click', async () => {
+            const tema = (temaSelect.value === 'Otro' ? otroTemaInput.value.trim() : temaSelect.value);
+            if (!tema) return alert('Por favor, selecciona o especifica un tema.');
+            const poblacion = (poblacionSelect.value === 'Otro' ? otroPoblacionInput.value.trim() : poblacionSelect.value);
+            [listaTitulos.innerHTML, titulosGenerados] = ['', []];
+            [seleccionContainer, perfilContainer].forEach(el => el.classList.add('hidden'));
+            loadingTitulos.classList.remove('hidden');
+            let promptBase = `Genera una lista de ${numeroTitulosSelect.value} títulos académicos sobre: "${tema}"`;
+            if (poblacion) promptBase += `, enfocado en: "${poblacion}".`;
+            const promptFinal = promptBase + " Formatea la respuesta como una lista numerada. Solo la lista.";
+            try {
+                const rawText = await fetchApi(promptFinal, modeloSelect.value);
+                titulosGenerados = rawText.split('\n').filter(l => l.trim().length > 5).map(l => l.replace(/^\d+\.\s*/, '').trim());
+                if (titulosGenerados.length > 0) {
+                    titulosGenerados.forEach(titulo => listaTitulos.appendChild(document.createElement('li')).textContent = titulo);
+                    seleccionContainer.classList.remove('hidden');
+                    numeroTituloElegido.max = titulosGenerados.length;
+                    numeroTituloElegido.min = 0; // Ensure min is 0 to allow manual entry option
+                } else { listaTitulos.innerHTML = '<li>No se pudieron generar títulos.</li>'; }
+            } catch (error) { console.error('Error:', error); listaTitulos.innerHTML = `<li class="text-red-600"><strong>Error:</strong> No se pudo conectar.</li>`; } 
+            finally { loadingTitulos.classList.add('hidden'); }
+        });
+
+        generarPerfilBtn.addEventListener('click', async () => {
+            let tituloElegido = '';
+            const num = parseInt(numeroTituloElegido.value);
+
+            if (num === 0) {
+                tituloElegido = manualTituloInput.value.trim();
+                if (!tituloElegido) {
+                    return alert('Por favor, ingresa un título manualmente o selecciona un número de la lista.');
+                }
+            } else {
+                if (isNaN(num) || num < 1 || num > titulosGenerados.length) {
+                    return alert(`Introduce un número válido entre 1 y ${titulosGenerados.length}.`);
+                }
+                tituloElegido = titulosGenerados[num - 1];
+            }
+
+            perfilContainer.classList.remove('hidden');
+            perfilContenido.classList.add('hidden');
+            preguntasSubContainer.classList.add('hidden');
+            downloadContainer.classList.add('hidden');
+            generarPreguntasBtn.classList.remove('hidden');
+            loadingPerfil.classList.remove('hidden');
+            errorPerfil.textContent = '';
+
+            // MEJORADO: Prompt con contexto para el enfoque metodológico
+            const prompt = `Para el título de investigación: "${tituloElegido}", genera un perfil de investigación completo. Usa estas etiquetas exactas:
+[TITULO]${tituloElegido}[/TITULO]
+[OBJETIVO_GENERAL]Aquí el objetivo general.[/OBJETIVO_GENERAL]
+[OBJETIVOS_ESPECIFICOS]
+1. Primer objetivo específico.
+2. Segundo.
+3. Tercero.
+[/OBJETIVOS_ESPECIFICOS]
+[JUSTIFICACION]Redacta una breve justificación (2-3 frases) explicando la importancia y relevancia de esta investigación.[/JUSTIFICACION]
+[VAR_INDEPENDIENTE]Identifica la variable independiente.[/VAR_INDEPENDIENTE]
+[VAR_DEPENDIENTE]Identifica la variable dependiente.[/VAR_DEPENDIENTE]
+[ENFOQUE]Basándote en el título, elige el enfoque más adecuado. Usa 'Cualitativa' si el estudio parece centrarse en la comprensión profunda, revisiones o análisis de conceptos (ej. fenómenos sociales, culturales). Usa 'Cuantitativa' si sugiere análisis numérico, estadísticas o medición de variables. Usa 'Mixta' si podría combinar ambos.[/ENFOQUE]`;
+
+            try {
+                const rawText = await fetchApi(prompt, modeloSelect.value);
+                perfilInvestigacion = {
+                    titulo: tituloElegido,
+                    objGeneral: extractContent(rawText, 'OBJETIVO_GENERAL'),
+                    objEspecificos: extractContent(rawText, 'OBJETIVOS_ESPECIFICOS'),
+                    justificacion: extractContent(rawText, 'JUSTIFICACION'),
+                    varIndependiente: extractContent(rawText, 'VAR_INDEPENDIENTE'),
+                    varDependiente: extractContent(rawText, 'VAR_DEPENDIENTE'),
+                    enfoque: extractContent(rawText, 'ENFOQUE')
+                };
+                tituloFinal.textContent = perfilInvestigacion.titulo;
+                objetivoGeneralResultado.textContent = perfilInvestigacion.objGeneral || "No generado.";
+                justificacionResultado.textContent = perfilInvestigacion.justificacion || "No generada.";
+                variableIndependienteResultado.textContent = perfilInvestigacion.varIndependiente || "No generado.";
+                variableDependienteResultado.textContent = perfilInvestigacion.varDependiente || "No generado.";
+                enfoqueResultado.textContent = perfilInvestigacion.enfoque || "No generado.";
+                objetivosEspecificosResultado.innerHTML = '';
+                if (perfilInvestigacion.objEspecificos) {
+                    perfilInvestigacion.objEspecificos.split('\n').filter(l => l.trim()).forEach(obj => {
+                        objetivosEspecificosResultado.appendChild(document.createElement('li')).textContent = obj.replace(/^\d+\.\s*/, '');
+                    });
+                } else { objetivosEspecificosResultado.innerHTML = "<li>No generados.</li>"; }
+                perfilContenido.classList.remove('hidden');
+            } catch (error) { console.error('Error:', error); errorPerfil.textContent = 'Error: No se pudo generar el perfil.'; perfilContenido.classList.remove('hidden'); } 
+            finally { loadingPerfil.classList.add('hidden'); }
+        });
+        
+        generarPreguntasBtn.addEventListener('click', async () => {
+            preguntasSubContainer.classList.remove('hidden');
+            loadingPreguntas.classList.remove('hidden');
+            downloadContainer.classList.add('hidden');
+            listaPreguntas.innerHTML = '';
+            generarPreguntasBtn.disabled = true;
+
+            const prompt = `Basado en el siguiente perfil de investigación:\nTítulo: ${perfilInvestigacion.titulo}\nJustificación: ${perfilInvestigacion.justificacion}\nObjetivo General: ${perfilInvestigacion.objGeneral}\n\nRedacta una lista de 4 a 5 preguntas de investigación pertinentes. Formatea la respuesta como una lista numerada, sin texto introductorio.`;
+            try {
+                const rawText = await fetchApi(prompt, modeloSelect.value);
+                const preguntas = rawText.split('\n').filter(l => l.trim());
+                if(preguntas.length > 0) {
+                    perfilInvestigacion.preguntas = preguntas;
+                    preguntas.forEach(p => listaPreguntas.appendChild(document.createElement('li')).textContent = p.replace(/^\d+\.\s*/, ''));
+                    downloadContainer.classList.remove('hidden');
+                    generarPreguntasBtn.classList.add('hidden');
+                } else { listaPreguntas.innerHTML = '<li>No se pudieron generar preguntas.</li>'; }
+            } catch (error) { console.error('Error:', error); listaPreguntas.innerHTML = `<li class="text-red-600"><strong>Error:</strong> No se pudo conectar.</li>`; }
+            finally { loadingPreguntas.classList.add('hidden'); generarPreguntasBtn.disabled = false; }
+        });
+
+        downloadHtmlBtn.addEventListener('click', () => {
+            const safeTitle = perfilInvestigacion.titulo.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const filename = `informe_${safeTitle}.html`;
+            const questionsHtml = (perfilInvestigacion.preguntas || []).map(p => `<li>${p}</li>`).join('');
+            const content = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe de Investigación</title><style>body{font-family: sans-serif; line-height: 1.6; margin: 2em;} h1, h2{color: #333;} h2{border-bottom: 1px solid #ccc; padding-bottom: 5px;} p, li{color: #444;}</style></head><body><h1>${perfilInvestigacion.titulo}</h1><h2>Objetivo General</h2><p>${perfilInvestigacion.objGeneral}</p><h2>Objetivos Específicos</h2><ul>${objetivosEspecificosResultado.innerHTML}</ul><h2>Justificación</h2><p>${perfilInvestigacion.justificacion}</p><h2>Variables</h2><p><strong>Independiente:</strong> ${perfilInvestigacion.varIndependiente}</p><p><strong>Dependiente:</strong> ${perfilInvestigacion.varDependiente}</p><h2>Enfoque Metodológico</h2><p>${perfilInvestigacion.enfoque}</p><h2>Preguntas de Investigación</h2><ol>${questionsHtml}</ol></body></html>`;
+            const blob = new Blob([content], { type: 'text/html' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; link.click(); URL.revokeObjectURL(link.href);
+        });
+
+        downloadPdfBtn.addEventListener('click', async () => {
+            const btn = downloadPdfBtn; btn.textContent = 'Generando...'; btn.disabled = true;
+            const contentToExport = $('#exportableReport');
+            try {
+                const canvas = await html2canvas(contentToExport, { scale: 2 });
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth - 20, pdfHeight > 277 ? 277 : pdfHeight); // Add margin and prevent overflow
+                const safeTitle = perfilInvestigacion.titulo.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                pdf.save(`informe_${safeTitle}.pdf`);
+            } catch (error) { console.error("Error al generar el PDF:", error); alert("Hubo un error al generar el PDF."); } 
+            finally { btn.textContent = 'Descargar PDF'; btn.disabled = false; }
+        });
+
+        async function fetchApi(prompt, model) {
+            const provider = providerSelect.value;
+            const config = PROVIDERS[provider];
+            const apiKey = apiKeyInput.value.trim();
+
+            if (!config.free && !apiKey) {
+                alert(`Por favor, ingresa tu clave API de ${config.name} o usa el botón "🔑 Obtener API Key".`);
+                throw new Error('No API key provided');
+            }
+
+            let apiUrl = config.url;
+            const headers = { 'Content-Type': 'application/json' };
+            let body;
+
+            if (provider === 'free') {
+                body = { prompt: prompt, model: model };
+            } else if (provider === 'google') {
+                apiUrl += `${model}:generateContent`;
+                headers['x-goog-api-key'] = apiKey;
+                body = { contents: [{ role: 'user', parts: [{ text: prompt }] }] };
+            } else if (provider === 'cohere') {
+                headers.Authorization = `Bearer ${apiKey}`;
+                body = { model: model, messages: [{ role: 'user', content: prompt }] };
+            } else {
+                headers.Authorization = `Bearer ${apiKey}`;
+                if (provider === 'openrouter') {
+                    headers['HTTP-Referer'] = window.location.origin;
+                    headers['X-Title'] = 'Asistente de Proyectos de Investigación';
+                }
+                body = { model: model, messages: [{ role: 'user', content: prompt }] };
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let details = errorText;
+                try {
+                    const parsed = JSON.parse(errorText);
+                    details = parsed.error?.message || parsed.message || (typeof parsed.error === 'string' ? parsed.error : errorText);
+                } catch (e) { /* la respuesta no es JSON */ }
+                throw new Error(`Error ${response.status} de ${config.name}: ${String(details).slice(0, 300)}`);
+            }
+
+            const responseText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch {
+                // Red Descartes puede devolver directamente el texto/HTML generado.
+                return responseText;
+            }
+            if (typeof data === 'string') return data;
+            if (provider === 'google') return data.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('') || '';
+            if (provider === 'cohere') return data.message?.content?.map(part => part.text || '').join('') || '';
+            if (provider === 'free') return data.text || data.response || data.choices?.[0]?.message?.content || '';
+            return data.choices?.[0]?.message?.content || '';
+        }
+        
+        function extractContent(text, tag) {
+            const regex = new RegExp(`\\[${tag}\\]([\\s\\S]*?)\\[\\/${tag}\\]`, 'i');
+            const match = text.match(regex);
+            return match ? match[1].trim() : null;
+        }
+    </script>
+</body>
+</html>
