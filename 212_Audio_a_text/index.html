@@ -794,6 +794,14 @@
         return;
       }
 
+      // El audio se envía en base64 al backend de Red Descartes; el JSON crece
+      // aproximadamente un 33 %. Evitar el 413 de Apache, que el navegador
+      // suele presentar como un genérico "Failed to fetch".
+      if (config.free && selectedAudioFile.size > 12 * 1024 * 1024) {
+        showAlert('Este audio pesa más de 12 MB y el servidor puede rechazarlo al enviarlo. Comprímelo o divídelo en fragmentos más cortos e inténtalo de nuevo.');
+        return;
+      }
+
       hideAlert();
       setLoading(true);
 
@@ -807,7 +815,8 @@
             model: modelSelect.value,
             audio: await fileToBase64(selectedAudioFile),
             mimeType: selectedAudioFile.type || 'audio/mpeg',
-            filename: selectedAudioFile.name || 'audio.mp3'
+            filename: selectedAudioFile.name || 'audio.mp3',
+            response_format: 'verbose_json'
           };
           if (lang) payload.language = lang;
 
@@ -821,6 +830,7 @@
           const formData = new FormData();
           formData.append('file', selectedAudioFile);
           formData.append('model', modelSelect.value);
+          formData.append('response_format', 'verbose_json');
           if (lang) formData.append('language', lang);
 
           response = await fetch(config.url, {
@@ -850,7 +860,7 @@
         }
 
         const data = await response.json();
-        const transcriptionText = data.text || JSON.stringify(data, null, 2);
+        const transcriptionText = formatTranscriptionResponse(data);
 
         transcriptionOutput.value = transcriptionText;
         updateWordCount(transcriptionText);
@@ -866,15 +876,107 @@
       }
     });
 
+    function formatTranscriptionResponse(data) {
+      const segments = Array.isArray(data?.segments) ? data.segments : [];
+      // El servicio puede devolver solo texto plano (sin segmentos ni marcas de tiempo).
+      // En ese caso detectamos las intervenciones conversacionales por sus marcadores.
+      const sourceText = segments.length
+        ? segments.map(segment => String(segment?.text || '').trim()).filter(Boolean).join(' ')
+        : String(data?.text || '');
+      if (!sourceText) return JSON.stringify(data, null, 2);
+
+      const paragraphs = [];
+      let currentParagraph = [];
+      let previousSegment = null;
+      const pauseThresholdSeconds = 1.2;
+      const transcriptSentences = sourceText.match(/[^.!?…]+(?:[.!?…]+["'»”)]*|$)/g) || [sourceText];
+      const speakerCue = /^(?:Exactamente|Exacto|Así es|Tal cual|Claro|Completamente|Sí|Ah,? ya veo|Un marco de referencia|Es un excelente punto de partida|Tienes que ir al origen de todo|A ver,? ¿y cómo funciona esa ilusión|Un entrenamiento mental constante|Es una gran pregunta)\b/i;
+      const sentenceLooksLikeSpeakerTurn = (sentence) => speakerCue.test(sentence.trim());
+
+      if (!segments.length) {
+        // Whisper suele devolver solo un string. En ese caso no hay marcas de
+        // tiempo reales: crear párrafos legibles por oración, con límite fijo
+        // para garantizar que nunca quede un bloque largo único aunque falte puntuación.
+        const sentencesPerParagraph = 3;
+        const maxParagraphChars = 450;
+        const plainSentences = sourceText
+          .replace(/\s+/g, ' ')
+          .match(/[^.!?…]+(?:[.!?…]+["'»”)]*|$)/g) || [sourceText];
+
+        for (const rawSentence of plainSentences) {
+          const sentence = rawSentence.trim();
+          if (!sentence) continue;
+          const startsNewTurn = currentParagraph.length > 0 && sentenceLooksLikeSpeakerTurn(sentence);
+          const exceedsLength = currentParagraph.length > 0 &&
+            currentParagraph.join(' ').length + sentence.length + 1 > maxParagraphChars;
+          if (startsNewTurn || exceedsLength || currentParagraph.length >= sentencesPerParagraph) {
+            paragraphs.push(currentParagraph.join(' ').trim());
+            currentParagraph = [];
+          }
+
+          // A sentence without punctuation can itself be very long: split it at
+          // word boundaries so the paragraph limit remains guaranteed.
+          let remaining = sentence;
+          while (remaining.length > maxParagraphChars) {
+            let splitAt = remaining.lastIndexOf(' ', maxParagraphChars);
+            if (splitAt < 1) splitAt = maxParagraphChars;
+            const piece = remaining.slice(0, splitAt).trim();
+            if (piece) paragraphs.push(piece);
+            remaining = remaining.slice(splitAt).trim();
+          }
+          if (remaining) currentParagraph.push(remaining);
+        }
+        if (currentParagraph.length) paragraphs.push(currentParagraph.join(' ').trim());
+        return paragraphs.join('\n\n');
+      }
+
+      for (const segment of segments) {
+        const text = String(segment?.text || '').trim();
+        if (!text) continue;
+
+        const start = Number(segment.start);
+        const previousEnd = Number(previousSegment?.end);
+        const hasTiming = Number.isFinite(start) && Number.isFinite(previousEnd);
+        const hasSpeakerChange = previousSegment?.speaker_id != null &&
+          segment.speaker_id != null && previousSegment.speaker_id !== segment.speaker_id;
+        const hasLongPause = hasTiming && start - previousEnd >= pauseThresholdSeconds;
+
+        if (currentParagraph.length && (hasLongPause || hasSpeakerChange)) {
+          paragraphs.push(currentParagraph.join(' ').trim());
+          currentParagraph = [];
+        }
+
+        currentParagraph.push(text);
+        previousSegment = segment;
+      }
+
+      if (currentParagraph.length) paragraphs.push(currentParagraph.join(' ').trim());
+      return paragraphs.length ? paragraphs.join('\n\n') : (data?.text || '');
+    }
+
     // 6. Utilidades: Copiar, Descargar, Limpiar
     function updateWordCount(text) {
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       wordCount.textContent = `${words} palabra${words !== 1 ? 's' : ''}`;
     }
 
+    function getFormattedTranscriptionForExport() {
+      const text = transcriptionOutput.value.trim();
+      if (!text) return '';
+
+      // Salvaguarda en la ruta de exportación: si el área todavía contiene
+      // texto plano, aplicar el formateador antes de crear el archivo.
+      const formatted = /\\n\\s*\\n/.test(text)
+        ? text
+        : formatTranscriptionResponse({ text });
+      transcriptionOutput.value = formatted;
+      updateWordCount(formatted);
+      return formatted;
+    }
+
     copyBtn.addEventListener('click', async () => {
       try {
-        await navigator.clipboard.writeText(transcriptionOutput.value);
+        await navigator.clipboard.writeText(getFormattedTranscriptionForExport());
         copyBtn.textContent = '✅ ¡Copiado!';
         setTimeout(() => copyBtn.textContent = '📋 Copiar', 2000);
       } catch (e) {
@@ -883,7 +985,7 @@
     });
 
     downloadBtn.addEventListener('click', () => {
-      const text = transcriptionOutput.value;
+      const text = getFormattedTranscriptionForExport();
       if (!text) return;
       const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
       const a = document.createElement('a');
@@ -928,7 +1030,7 @@
     }
 
     wordDownloadBtn.addEventListener('click', () => {
-      const text = transcriptionOutput.value;
+      const text = getFormattedTranscriptionForExport();
       if (!text) return;
 
       const formattedText = formatTextForWord(text);
