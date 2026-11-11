@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sonotext</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --input-bg: #0b1120;
+      --drop-bg: #0b1120;
+      --record-bg: #0b1120;
+      --tab-active-bg: #334155;
+      --radius: 12px;
+    }
+
+    body.light {
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --card-border: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --input-bg: #ffffff;
+      --drop-bg: #f8fafc;
+      --record-bg: #f8fafc;
+      --tab-active-bg: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      margin-bottom: 0.5rem;
+    }
+
+    .title-row {
+      display: grid;
+      grid-template-columns: minmax(90px, 1fr) auto minmax(90px, 1fr);
+      align-items: center;
+      gap: 1rem;
+      min-height: 88px;
+    }
+
+    .brand-logo {
+      width: auto;
+      height: clamp(64px, 9vw, 88px);
+      max-width: 150px;
+      object-fit: contain;
+    }
+
+    .brand-logo.left {
+      justify-self: start;
+    }
+
+    .brand-logo.right {
+      justify-self: end;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    select option,
+    select optgroup {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .btn {
+      cursor: pointer;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: var(--tab-active-bg);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--card-border);
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.85rem;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background-color: #dc2626;
+    }
+
+    /* Tabs de audio */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+      background: var(--tab-active-bg);
+    }
+
+    /* Drag and drop zone */
+    .drop-zone {
+      border: 2px dashed var(--card-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+      background: var(--input-bg);
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--primary);
+      background: color-mix(in srgb, var(--primary) 18%, var(--drop-bg));
+    }
+
+    .drop-zone p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Grabación con micrófono */
+    .record-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: var(--input-bg);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    .record-timer {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--danger);
+    }
+
+    /* Reproductor y detalles */
+    .audio-preview {
+      margin-top: 1rem;
+      background: var(--input-bg);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    audio {
+      width: 100%;
+      height: 40px;
+    }
+
+    .audio-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Salida de transcripción */
+    .transcription-area {
+      width: 100%;
+      min-height: 180px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 1rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .actions-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .illustrated-download {
+      width: 100%;
+      margin-top: 1rem;
+      background: #16a34a;
+    }
+
+    .illustrated-download:hover:not(:disabled) {
+      background: #15803d;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .alert-error {
+      background: #451a1a;
+      border: 1px solid #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 18px;
+      height: 18px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .site-footer {
+      width: 100%;
+      max-width: 760px;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .site-footer strong { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .title-row {
+        grid-template-columns: minmax(64px, 1fr) auto minmax(64px, 1fr);
+        gap: 0.5rem;
+        min-height: 64px;
+      }
+
+      .brand-logo {
+        height: 64px;
+        max-width: 92px;
+      }
+
+      header h1 {
+        font-size: 1.45rem;
+      }
+
+      .row-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button type="button" class="btn btn-secondary theme-toggle" id="themeToggle" aria-label="Cambiar a modo claro">☀️ Modo claro</button>
+  <div class="container">
+    <header>
+      <div class="title-row">
+        <img class="brand-logo left" src="logoPB1.png" alt="Logo PB1" />
+        <h1>Sonotext</h1>
+        <img class="brand-logo right" src="logo_escuela.png" alt="Logo de la escuela" />
+      </div>
+      <p>Convierte voz a texto con la <strong>Red Descartes</strong> (gratis, sin API Key), <strong>Pollinations AI</strong> o <strong>Groq</strong></p>
+    </header>
+
+    <!-- 1. Configuración de API Key y Modelo -->
+    <div class="card">
+      <div class="card-title">🔑 1. Configuración y Credenciales</div>
+      
+      <div class="form-group">
+        <label for="providerSelect">Proveedor de IA:</label>
+        <select id="providerSelect">
+          <optgroup label="Gratuitos">
+            <option value="free" selected>Red Descartes</option>
+          </optgroup>
+          <optgroup label="Con API Key propia">
+            <option value="pollinations">Pollinations AI</option>
+            <option value="groq">Groq</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="form-group" id="apiKeyGroup">
+        <label for="apiKey" id="apiKeyLabel">API Key:</label>
+        <div class="input-row">
+          <input type="password" id="apiKey" placeholder="Ingresa tu API Key" autocomplete="off" />
+          <button type="button" class="btn btn-secondary" id="toggleKeyBtn">👁️</button>
+        </div>
+        <small id="apiKeyHelp" style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">
+          ¿No tienes una clave? Consíguela en <a id="apiKeyLink" href="" target="_blank" rel="noopener noreferrer" style="color: #818cf8;">aquí</a>
+        </small>
+      </div>
+
+      <p class="free-note" id="freeNote" style="display: none; color: var(--text-muted); font-size: 0.85rem;">
+        ✅ Red Descartes no requiere API Key.
+      </p>
+
+      <div class="row-2" style="margin-top: 1rem;">
+        <div class="form-group">
+          <label for="model">Modelo:</label>
+          <select id="model"></select>
+        </div>
+
+        <div class="form-group">
+          <label for="language">Idioma (Opcional):</label>
+          <select id="language">
+            <option value="" selected>Auto-detectar</option>
+            <option value="es">Español (es)</option>
+            <option value="en">Inglés (en)</option>
+            <option value="fr">Francés (fr)</option>
+            <option value="de">Alemán (de)</option>
+            <option value="it">Italiano (it)</option>
+            <option value="pt">Portugués (pt)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Selección o Grabación de Audio -->
+    <div class="card">
+      <div class="card-title">🎙️ 2. Audio de Entrada</div>
+      
+      <div class="tabs">
+        <button class="tab-btn active" id="tabUploadBtn">Subir Archivo</button>
+        <button class="tab-btn" id="tabRecordBtn">Grabar Micrófono</button>
+      </div>
+
+      <!-- Pestaña: Subir archivo -->
+      <div id="panelUpload">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept="audio/*,video/mp4" style="display: none;" />
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <p><strong>Haz clic o arrastra un archivo de audio aquí</strong></p>
+          <p>Soporta MP3, WAV, M4A, WEBM, OGG, MP4</p>
+        </div>
+      </div>
+
+      <!-- Pestaña: Grabar micrófono -->
+      <div id="panelRecord" style="display: none;">
+        <div class="record-box">
+          <div class="record-timer" id="recordTimer">00:00</div>
+          <button type="button" class="btn btn-danger" id="recordBtn">
+            <span>● Iniciar Grabación</span>
+          </button>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Presiona el botón para comenzar a hablar. Al terminar se cargará el audio automáticamente.
+          </p>
+        </div>
+      </div>
+
+      <!-- Previsualización del audio seleccionado -->
+      <div class="audio-preview" id="audioPreview" style="display: none;">
+        <div class="audio-meta">
+          <span id="audioFileName">archivo.mp3</span>
+          <span id="audioFileSize">0 MB</span>
+        </div>
+        <audio id="audioPlayer" controls></audio>
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="podcastTitleInput">Título del audio ilustrado:</label>
+        <input type="text" id="podcastTitleInput" placeholder="Ejemplo: Mi historia sonora" />
+      </div>
+      <div class="row-2" style="margin-top: 1rem;">
+        <div class="form-group">
+          <label for="presenterAInput">Nombre de PRESENTADOR A (opcional):</label>
+          <input type="text" id="presenterAInput" placeholder="Ejemplo: Ana" />
+        </div>
+        <div class="form-group">
+          <label for="presenterBInput">Nombre de PRESENTADOR B (opcional):</label>
+          <input type="text" id="presenterBInput" placeholder="Ejemplo: Carlos" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón de Transcripción y Mensajes -->
+    <div id="alertBox" class="alert alert-error"></div>
+
+    <button id="transcribeBtn" class="btn" style="width: 100%; padding: 1rem; font-size: 1.05rem;" disabled>
+      <span id="btnSpinner" class="spinner" style="display: none;"></span>
+      <span id="btnText">Generar el audio-texto</span>
+    </button>
+
+    <!-- 3. Resultado de la Transcripción -->
+    <div class="card">
+      <div class="card-title" style="justify-content: space-between;">
+        <span>📝 3. Transcripción</span>
+        <span id="wordCount" style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">0 palabras</span>
+      </div>
+
+      <textarea id="transcriptionOutput" class="transcription-area" placeholder="Aquí aparecerá el texto transcrito..." readonly></textarea>
+
+      <div class="actions-row">
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" id="copyBtn" disabled>📋 Copiar</button>
+          <button type="button" class="btn btn-secondary" id="downloadBtn" disabled>💾 Descargar .txt</button>
+          <button type="button" class="btn btn-secondary" id="wordDownloadBtn" disabled>📝 Descargar Word</button>
+        </div>
+        <button type="button" class="btn btn-secondary" id="clearBtn">Limpiar todo</button>
+      </div>
+      <button type="button" class="btn illustrated-download" id="illustratedDownloadBtn" disabled>
+        🎧 Generar y descargar audio ilustrado
+      </button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    Diseñado por <strong>Juan Guillermo Rivera Berrío</strong> con la <strong>Red Descartes</strong>, las APIs de <strong>Pollinations AI</strong>, <strong>Groq</strong> y tecnología <strong>Gemini 3.8 Flash</strong>
+  </footer>
+
+  <script>
+    // Referencias del DOM
+    const providerSelect = document.getElementById('providerSelect');
+    const apiKeyGroup = document.getElementById('apiKeyGroup');
+    const apiKeyLabel = document.getElementById('apiKeyLabel');
+    const apiKeyLink = document.getElementById('apiKeyLink');
+    const freeNote = document.getElementById('freeNote');
+    const apiKeyInput = document.getElementById('apiKey');
+    const toggleKeyBtn = document.getElementById('toggleKeyBtn');
+    const modelSelect = document.getElementById('model');
+    const languageSelect = document.getElementById('language');
+
+    const tabUploadBtn = document.getElementById('tabUploadBtn');
+    const tabRecordBtn = document.getElementById('tabRecordBtn');
+    const panelUpload = document.getElementById('panelUpload');
+    const panelRecord = document.getElementById('panelRecord');
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const recordBtn = document.getElementById('recordBtn');
+    const recordTimer = document.getElementById('recordTimer');
+
+    const audioPreview = document.getElementById('audioPreview');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const audioFileName = document.getElementById('audioFileName');
+    const audioFileSize = document.getElementById('audioFileSize');
+    const podcastTitleInput = document.getElementById('podcastTitleInput');
+    const presenterAInput = document.getElementById('presenterAInput');
+    const presenterBInput = document.getElementById('presenterBInput');
+    const brandLogoLeft = document.querySelector('.brand-logo.left');
+    const brandLogoRight = document.querySelector('.brand-logo.right');
+
+    const transcribeBtn = document.getElementById('transcribeBtn');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const btnText = document.getElementById('btnText');
+    const alertBox = document.getElementById('alertBox');
+
+    const transcriptionOutput = document.getElementById('transcriptionOutput');
+    const wordCount = document.getElementById('wordCount');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const wordDownloadBtn = document.getElementById('wordDownloadBtn');
+    const illustratedDownloadBtn = document.getElementById('illustratedDownloadBtn');
+    const clearBtn = document.getElementById('clearBtn');
+     const themeToggle = document.getElementById('themeToggle');
+
+    // Estado interno
+    let selectedAudioFile = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordInterval = null;
+    let recordSeconds = 0;
+    let timedTranscript = [];
+
+     // Tema visual: se conserva la preferencia del usuario entre visitas.
+     function applyTheme(theme) {
+       const isLight = theme === 'light';
+       document.body.classList.toggle('light', isLight);
+       themeToggle.textContent = isLight ? '🌙 Modo oscuro' : '☀️ Modo claro';
+       themeToggle.setAttribute('aria-label', isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+     }
+
+     applyTheme(localStorage.getItem('audio_transcriber_theme') || 'dark');
+     themeToggle.addEventListener('click', () => {
+       const nextTheme = document.body.classList.contains('light') ? 'dark' : 'light';
+       localStorage.setItem('audio_transcriber_theme', nextTheme);
+       applyTheme(nextTheme);
+     });
+
+    // 0. Proveedores y modelos de transcripción
+    // Red Descartes: backend propio (sin API Key) que reenvía a Pollinations.
+    const PROVIDERS = {
+      free: { name: 'Red Descartes', url: 'https://node.proyectodescartes.org/api/ia/transcribe', model: 'openai/whisper-large-v3', free: true },
+      pollinations: { name: 'Pollinations AI', url: 'https://gen.pollinations.ai/v1/audio/transcriptions', model: 'openai/whisper-large-v3', free: false },
+      groq: { name: 'Groq', url: 'https://api.groq.com/openai/v1/audio/transcriptions', model: 'whisper-large-v3-turbo', free: false }
+    };
+
+    // Valor / etiqueta amigable
+    const TRANSCRIBE_MODELS = [
+      ['openai/whisper-large-v3', 'Whisper Large v3 (OpenAI) · Recomendado'],
+      ['microsoft/mai-transcribe-2', 'MAI Transcribe 2 (Microsoft)'],
+      ['openai/gpt-transcribe', 'GPT Transcribe (OpenAI)'],
+      ['elevenlabs/scribe-v2', 'Scribe v2 (ElevenLabs)'],
+      ['google/gemini-3.5-transcribe', 'Gemini 3.5 Transcribe (Google)']
+    ];
+    const MODEL_OPTIONS = {
+      free: TRANSCRIBE_MODELS,
+      pollinations: [...TRANSCRIBE_MODELS, ['whisper-1', 'Whisper-1 (OpenAI)']],
+      groq: [
+        ['whisper-large-v3-turbo', 'Whisper Large v3 Turbo (Recomendado)'],
+        ['whisper-large-v3', 'Whisper Large v3 (Mayor precisión)']
+      ]
+    };
+
+    // Tamaño máximo para Red Descartes (JSON base64 con límite de 50 MB en el servidor)
+    const FREE_MAX_BYTES = 35 * 1024 * 1024;
+
+    function updateProvider() {
+      const provider = providerSelect.value;
+      const config = PROVIDERS[provider];
+      const options = MODEL_OPTIONS[provider];
+
+      // Verificar que options esté definido antes de usar
+      if (!options) {
+        console.error(`No se encontraron modelos para proveedor: ${provider}`, MODEL_OPTIONS);
+        return;
+      }
+
+      modelSelect.replaceChildren(...options.map(([value, label]) => new Option(label, value)));
+      modelSelect.value = config.model;
+
+      apiKeyGroup.style.display = config.free ? 'none' : '';
+      freeNote.style.display = config.free ? '' : 'none';
+
+      // Actualizar label y link del API Key dinámicamente
+      if (provider === 'pollinations') {
+        apiKeyLabel.textContent = 'Pollinations API Key (Secret Key):';
+        apiKeyInput.placeholder = 'sk_... o pk_...';
+        apiKeyLink.href = 'https://enter.pollinations.ai';
+        apiKeyLink.textContent = 'enter.pollinations.ai';
+      } else if (provider === 'groq') {
+        apiKeyLabel.textContent = 'Groq API Key:';
+        apiKeyInput.placeholder = 'gsk_...';
+        apiKeyLink.href = 'https://console.groq.com/keys';
+        apiKeyLink.textContent = 'console.groq.com/keys';
+      }
+
+      localStorage.setItem('preferred_transcriber_provider', provider);
+      updateTranscribeBtnState();
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.onerror = () => reject(new Error('No se pudo leer el archivo de audio.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 1. Cargar API Keys guardadas en LocalStorage (por proveedor)
+    const getApiKeyStorageKey = (provider) => `${provider}_api_key`;
+    
+    const loadApiKeyForProvider = (provider) => {
+      const key = localStorage.getItem(getApiKeyStorageKey(provider));
+      apiKeyInput.value = key || '';
+    };
+
+    apiKeyInput.addEventListener('input', () => {
+      const provider = providerSelect.value;
+      if (!PROVIDERS[provider].free) {
+        localStorage.setItem(getApiKeyStorageKey(provider), apiKeyInput.value.trim());
+      }
+      updateTranscribeBtnState();
+    });
+
+    providerSelect.addEventListener('change', () => {
+      const provider = providerSelect.value;
+      loadApiKeyForProvider(provider);
+      updateProvider();
+    });
+
+    toggleKeyBtn.addEventListener('click', () => {
+      const isPass = apiKeyInput.type === 'password';
+      apiKeyInput.type = isPass ? 'text' : 'password';
+      toggleKeyBtn.textContent = isPass ? '🔒' : '👁️';
+    });
+
+    // 2. Control de Pestañas
+    tabUploadBtn.addEventListener('click', () => {
+      tabUploadBtn.classList.add('active');
+      tabRecordBtn.classList.remove('active');
+      panelUpload.style.display = 'block';
+      panelRecord.style.display = 'none';
+    });
+
+    tabRecordBtn.addEventListener('click', () => {
+      tabRecordBtn.classList.add('active');
+      tabUploadBtn.classList.remove('active');
+      panelRecord.style.display = 'block';
+      panelUpload.style.display = 'none';
+    });
+
+    // 3. Manejo de archivos (File Input y Drag & Drop)
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleAudioSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleAudioSelection(e.target.files[0]);
+      }
+    });
+
+    function handleAudioSelection(file) {
+      hideAlert();
+      selectedAudioFile = file;
+
+      audioFileName.textContent = file.name;
+      audioFileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+      
+      const audioUrl = URL.createObjectURL(file);
+      audioPlayer.src = audioUrl;
+      audioPreview.style.display = 'flex';
+
+      updateTranscribeBtnState();
+      updateIllustratedDownloadState();
+    }
+
+    // 4. Grabación con micrófono
+    recordBtn.addEventListener('click', async () => {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          recordedChunks = [];
+          mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const file = new File([blob], `grabacion_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.webm`, { type: 'audio/webm' });
+            handleAudioSelection(file);
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start();
+          recordSeconds = 0;
+          recordTimer.textContent = '00:00';
+          recordInterval = setInterval(() => {
+            recordSeconds++;
+            const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+            const s = String(recordSeconds % 60).padStart(2, '0');
+            recordTimer.textContent = `${m}:${s}`;
+          }, 1000);
+
+          recordBtn.innerHTML = '<span>■ Detener Grabación</span>';
+          recordBtn.classList.remove('btn-danger');
+          recordBtn.classList.add('btn-secondary');
+        } catch (err) {
+          showAlert('No se pudo acceder al micrófono: ' + err.message);
+        }
+      } else {
+        mediaRecorder.stop();
+        clearInterval(recordInterval);
+        recordBtn.innerHTML = '<span>● Iniciar Grabación</span>';
+        recordBtn.classList.remove('btn-secondary');
+        recordBtn.classList.add('btn-danger');
+      }
+    });
+
+    function updateIllustratedDownloadState() {
+      illustratedDownloadBtn.disabled = !(selectedAudioFile && transcriptionOutput.value.trim());
+    }
+
+    function updateTranscribeBtnState() {
+      const isFree = PROVIDERS[providerSelect.value].free;
+      const hasKey = isFree || apiKeyInput.value.trim().length > 0;
+      const hasFile = selectedAudioFile !== null;
+      transcribeBtn.disabled = !(hasKey && hasFile);
+    }
+
+    const savedProvider = localStorage.getItem('preferred_transcriber_provider');
+    providerSelect.value = PROVIDERS[savedProvider] ? savedProvider : 'free';
+    loadApiKeyForProvider(providerSelect.value);
+    updateProvider();
+
+    // 5. Llamada a la API (Red Descartes o Pollinations)
+    transcribeBtn.addEventListener('click', async () => {
+      const provider = providerSelect.value;
+      const config = PROVIDERS[provider];
+      const apiKey = apiKeyInput.value.trim();
+
+      if (!config.free && !apiKey) {
+        showAlert(`Por favor ingresa tu API Key de ${config.name}.`);
+        return;
+      }
+
+      if (!selectedAudioFile) {
+        showAlert('Por favor selecciona o graba un archivo de audio primero.');
+        return;
+      }
+
+      if (config.free && selectedAudioFile.size > FREE_MAX_BYTES) {
+        showAlert('El audio supera los 35 MB permitidos para Red Descartes. Usa un archivo más corto o comprimido.');
+        return;
+      }
+
+      hideAlert();
+      setLoading(true);
+
+      try {
+        const lang = languageSelect.value;
+        let response;
+
+        if (config.free) {
+          // Red Descartes: JSON con el audio en base64 (sin API Key)
+          const payload = {
+            model: modelSelect.value,
+            audio: await fileToBase64(selectedAudioFile),
+            mimeType: selectedAudioFile.type || 'audio/mpeg',
+            filename: selectedAudioFile.name || 'audio.mp3'
+          };
+          if (lang) payload.language = lang;
+
+          response = await fetch(config.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Pollinations y Groq: ambos usan multipart/form-data
+          const formData = new FormData();
+          formData.append('file', selectedAudioFile);
+          formData.append('model', modelSelect.value);
+          if (lang) formData.append('language', lang);
+
+          response = await fetch(config.url, {
+            method: 'POST',
+            // NOTA: NO incluir 'Content-Type': fetch lo define automáticamente junto con el boundary
+            headers: { 'Authorization': `Bearer ${apiKey}` },
+            body: formData
+          });
+        }
+
+        if (!response.ok) {
+          let errorMsg = `Error HTTP ${response.status}: ${response.statusText}`;
+          const raw = await response.text();
+          try {
+            const errData = JSON.parse(raw);
+            if (typeof errData.error === 'string') {
+              errorMsg = errData.error;
+            } else if (errData.error?.message) {
+              errorMsg = errData.error.message;
+            } else if (errData.message) {
+              errorMsg = errData.message;
+            }
+          } catch (_) {
+            if (raw) errorMsg += ` - ${raw}`;
+          }
+          throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+        const rawTranscriptionText = data?.text || JSON.stringify(data, null, 2);
+        const transcriptionText = formatTranscriptionText(rawTranscriptionText, data?.segments);
+        try {
+          timedTranscript = await buildTimedTranscript(data, rawTranscriptionText, selectedAudioFile);
+        } catch (timingError) {
+          console.warn('No se pudieron crear pistas temporizadas; se conservará la transcripción:', timingError);
+          timedTranscript = [];
+        }
+
+        transcriptionOutput.value = transcriptionText;
+        updateWordCount(transcriptionText);
+
+        copyBtn.disabled = false;
+        downloadBtn.disabled = false;
+        wordDownloadBtn.disabled = false;
+        updateIllustratedDownloadState();
+      } catch (err) {
+        console.error(err);
+        showAlert('Error al transcribir el audio: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // 6. Utilidades: Copiar, Descargar, Limpiar
+    function updateWordCount(text) {
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      wordCount.textContent = `${words} palabra${words !== 1 ? 's' : ''}`;
+    }
+
+    // Presenta el mismo formato de párrafos en el resultado, las copias y las descargas.
+    function formatTranscriptionText(text, segments = null) {
+      const validSegments = Array.isArray(segments) ? segments : [];
+      const sourceText = validSegments.length
+        ? validSegments.map(segment => String(segment?.text || '').trim()).filter(Boolean).join(' ')
+        : String(text || '');
+      if (!sourceText) return '';
+
+      const paragraphs = [];
+      let current = [];
+      const speakerCue = /^(?:Exactamente|Exacto|Así es|Tal cual|Claro|Completamente|Sí|Ah,? ya veo|Un marco de referencia|Es un excelente punto de partida|Tienes que ir al origen de todo|Un entrenamiento mental constante|Es una gran pregunta)\b/i;
+      const addSentence = sentence => {
+        const trimmed = sentence.trim();
+        if (!trimmed) return;
+        const beginsNewTurn = current.length > 0 && speakerCue.test(trimmed);
+        if (beginsNewTurn || current.length >= 3 || current.join(' ').length + trimmed.length + 1 > 450) {
+          paragraphs.push(current.join(' ').trim());
+          current = [];
+        }
+        let remaining = trimmed;
+        while (remaining.length > 450) {
+          let splitAt = remaining.lastIndexOf(' ', 450);
+          if (splitAt < 1) splitAt = 450;
+          paragraphs.push(remaining.slice(0, splitAt).trim());
+          remaining = remaining.slice(splitAt).trim();
+        }
+        if (remaining) current.push(remaining);
+      };
+
+      if (validSegments.length) {
+        let previous = null;
+        for (const segment of validSegments) {
+          const sentence = String(segment?.text || '').trim();
+          if (!sentence) continue;
+          const gap = Number(segment.start) - Number(previous?.end);
+          const speakerChanged = previous?.speaker_id != null && segment.speaker_id != null &&
+            previous.speaker_id !== segment.speaker_id;
+          if (current.length && ((Number.isFinite(gap) && gap >= 1.2) || speakerChanged)) {
+            paragraphs.push(current.join(' ').trim());
+            current = [];
+          }
+          addSentence(sentence);
+          previous = segment;
+        }
+      } else {
+        const sentences = sourceText.replace(/\s+/g, ' ').match(/[^.!?…]+(?:[.!?…]+["'»”)]*|$)/g) || [sourceText];
+        sentences.forEach(addSentence);
+      }
+
+      if (current.length) paragraphs.push(current.join(' ').trim());
+      return paragraphs.filter(Boolean).join('\n\n');
+    }
+
+    function getFormattedTranscriptionForExport() {
+      const formatted = formatTranscriptionText(transcriptionOutput.value);
+      transcriptionOutput.value = formatted;
+      updateWordCount(formatted);
+      updateIllustratedDownloadState();
+      return formatted;
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(getFormattedTranscriptionForExport());
+        copyBtn.textContent = '✅ ¡Copiado!';
+        setTimeout(() => copyBtn.textContent = '📋 Copiar', 2000);
+      } catch (e) {
+        alert('No se pudo copiar el texto');
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const text = getFormattedTranscriptionForExport();
+      if (!text) return;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `transcripcion_${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    /* function escapeHtml(text) {
+      return text.replace(/[&<>"]/'/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[character]));
+    } */
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatTextForWord(text) {
+      const normalizedText = text.replace(/\r\n?/g, '\n').trim();
+      const paragraphs = normalizedText.split(/\n\s*\n/);
+
+      return paragraphs.map((paragraph) => {
+        const oneLine = paragraph.replace(/\s*\n\s*/g, ' ').replace(/\s+/g, ' ').trim();
+        const escapedParagraph = escapeHtml(oneLine);
+        const sentencesAsParagraphs = escapedParagraph.replace(
+          /([.!?…]+["'»”]?)(?=\s)/g,
+          '$1</p><p>'
+        );
+        return `<p>${sentencesAsParagraphs}</p>`;
+      }).join('<p class="paragraph-gap">&nbsp;</p>');
+    }
+
+    wordDownloadBtn.addEventListener('click', () => {
+      const text = getFormattedTranscriptionForExport();
+      if (!text) return;
+
+      const formattedText = formatTextForWord(text);
+      const wordDocument = `<!DOCTYPE html>
+        <html lang="es">
+          <head>
+            <meta charset="UTF-8">
+            <title>Transcripción</title>
+            <style>
+              body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; }
+              .transcription { white-space: normal; }
+              .transcription p {
+                margin: 0 0 20pt;
+                mso-margin-bottom-alt: 20pt;
+              }
+              .transcription .paragraph-gap {
+                height: 20pt;
+                line-height: 20pt;
+                margin: 0;
+                mso-margin-top-alt: 0;
+                mso-margin-bottom-alt: 0;
+              }
+            </style>
+          </head>
+          <body><div class="transcription">${formattedText}</div></body>
+        </html>`;
+      const blob = new Blob([wordDocument], { type: 'application/msword' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `transcripcion_${new Date().toISOString().slice(0, 10)}.doc`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    illustratedDownloadBtn.addEventListener('click', async () => {
+      if (!selectedAudioFile || !transcriptionOutput.value.trim()) return;
+      const formattedTranscript = getFormattedTranscriptionForExport();
+      illustratedDownloadBtn.disabled = true;
+      illustratedDownloadBtn.textContent = '⏳ Preparando descarga...';
+      try {
+        // La transcripción obtenida se trata como el TXT que usa ilustrado.html.
+        const transcriptFile = new File([formattedTranscript], 'transcripcion.txt', { type: 'text/plain' });
+        const transcriptText = await transcriptFile.text();
+        const presenterA = presenterAInput.value.trim() || 'PRESENTADOR A';
+        const presenterB = presenterBInput.value.trim() || 'PRESENTADOR B';
+        const transcript = await parseTranscriptFile(transcriptText, selectedAudioFile, presenterA, presenterB);
+        if (!transcript.length) throw new Error('la transcripción no contiene texto válido');
+        const audioDataUrl = await fileToDataUrl(selectedAudioFile);
+        const title = podcastTitleInput.value.trim() || selectedAudioFile.name.replace(/\.[^/.]+$/, '');
+        const [leftLogo, rightLogo] = await Promise.all([
+          imageToDataUrl(brandLogoLeft),
+          imageToDataUrl(brandLogoRight)
+        ]);
+        const html = createIllustratedApp(audioDataUrl, transcript, title, leftLogo, rightLogo, presenterA, presenterB);
+        downloadBlob(html, `audio_ilustrado_${new Date().toISOString().slice(0, 10)}.html`, 'text/html;charset=utf-8');
+      } catch (error) {
+        showAlert('No se pudo generar el audio ilustrado: ' + error.message);
+      } finally {
+        illustratedDownloadBtn.textContent = '🎧 Generar y descargar audio ilustrado';
+        updateIllustratedDownloadState();
+      }
+    });
+
+    async function buildTimedTranscript(data, text, audioFile) {
+      if (data && Array.isArray(data.segments) && data.segments.length) {
+        return data.segments.filter(s => s.text && Number.isFinite(Number(s.start)))
+          .map(s => ({ time: Number(s.start), text: s.text.trim() }));
+      }
+      const duration = await getAudioDuration(audioFile);
+      const parts = text.match(/[^.!?…。]+[.!?…。]+|[^.!?…。]+$/g) || [text];
+      const total = parts.reduce((sum, part) => sum + part.trim().length, 0) || 1;
+      let elapsed = 0;
+      return parts.map(part => {
+        const clean = part.trim();
+        const item = { time: duration ? (elapsed / total) * duration : 0, text: clean };
+        elapsed += clean.length;
+        return item;
+      }).filter(item => item.text);
+    }
+
+    function getAudioDuration(file) {
+      return new Promise(resolve => {
+        const probe = document.createElement('audio');
+        const url = URL.createObjectURL(file);
+        probe.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(Number.isFinite(probe.duration) ? probe.duration : 0); };
+        probe.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+        probe.src = url;
+      });
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('no se pudo leer el audio'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function imageToDataUrl(image) {
+      return new Promise(resolve => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.naturalWidth;
+          canvas.height = image.naturalHeight;
+          canvas.getContext('2d').drawImage(image, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } catch (_) {
+          // Si el canvas no puede leer la imagen, el HTML conserva su ruta relativa.
+          resolve(image.src);
+        }
+      });
+    }
+
+    async function parseTranscriptFile(text, audioFile, presenterA, presenterB) {
+      const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      const timedLines = lines.map(line => {
+        const match = line.match(/^\[?\s*(\d+)(?::(\d{1,2}))?(?:[\.:](\d{1,3}))?\s*\]?\s*(?:\||;|,|\t|-)?\s*(.+)$/);
+        if (!match) return null;
+        const first = Number(match[1]);
+        const second = match[2] === undefined ? 0 : Number(match[2]);
+        const fraction = match[3] === undefined ? 0 : Number(`0.${match[3]}`);
+        const time = match[2] === undefined ? first + fraction : first * 60 + second + fraction;
+        return { time, text: replacePresenterNames(match[4].trim(), presenterA, presenterB) };
+      }).filter(Boolean);
+
+      if (timedLines.length === lines.length) return timedLines;
+      const duration = await getAudioDuration(audioFile);
+      const totalCharacters = lines.reduce((sum, line) => sum + line.length, 0) || 1;
+      let elapsedCharacters = 0;
+      return lines.map(line => {
+        const item = { time: (elapsedCharacters / totalCharacters) * duration, text: replacePresenterNames(line, presenterA, presenterB) };
+        elapsedCharacters += line.length;
+        return item;
+      });
+    }
+
+    function replacePresenterNames(text, presenterA, presenterB) {
+      return text.replace(/PRESENTADOR\s*A/gi, () => presenterA).replace(/PRESENTADOR\s*B/gi, () => presenterB);
+    }
+
+    function downloadBlob(content, filename, type) {
+      const url = URL.createObjectURL(new Blob([content], { type }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function createIllustratedApp(audioDataUrl, transcript, title, leftLogo, rightLogo, presenterA, presenterB) {
+      const safeTranscript = JSON.stringify(transcript).replace(/</g, '\\u003c');
+      const safeTitle = escapeHtml(title || 'Audio ilustrado');
+      const safeA = JSON.stringify(presenterA || 'PRESENTADOR A').replace(/</g, '\\u003c');
+      const safeB = JSON.stringify(presenterB || 'PRESENTADOR B').replace(/</g, '\\u003c');
+      return `<!doctype html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title><style>
+        body{font-family:system-ui,sans-serif;max-width:820px;margin:auto;padding:2rem 1rem;color:#172033;background:#f8fafc}.head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem}.head img{max-width:150px;max-height:88px}.head img:last-child{justify-self:end}h1{text-align:center;white-space:pre-line;font-size:clamp(1.25rem,3vw,2rem)}audio{width:100%;margin:1rem 0}#transcript{height:min(55vh,520px);overflow:auto;border:1px solid #cbd5e1;border-radius:12px;padding:.75rem 1rem;background:white}p{margin:.25rem 0;padding:.7rem;border-radius:8px}.active{background:#bbf7d0;color:#14532d}
+      </style></head><body><header class="head"><img src="${leftLogo}" alt="Logo"><h1>${safeTitle}</h1><img src="${rightLogo}" alt="Logo"></header><audio id="audio" controls src="${audioDataUrl}"></audio><main id="transcript" aria-live="polite"></main><script>
+        const audio=document.getElementById('audio'), box=document.getElementById('transcript'), items=${safeTranscript}, a=${safeA}, b=${safeB};
+        items.forEach((item,i)=>{const p=document.createElement('p');p.id='line-'+i;const text=String(item.text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const names=[a,b].filter(Boolean);p.innerHTML=names.some(n=>text.toLowerCase().startsWith(n.toLowerCase()+':'))?'<strong>'+text.slice(0,text.indexOf(':')+1)+'</strong>'+text.slice(text.indexOf(':')+1):text;box.appendChild(p)});
+        audio.addEventListener('timeupdate',()=>{let active=-1;items.forEach((item,i)=>{if(audio.currentTime>=item.time&&(i===items.length-1||audio.currentTime<items[i+1].time))active=i});items.forEach((_,i)=>document.getElementById('line-'+i).classList.toggle('active',i===active));if(active>=0)document.getElementById('line-'+active).scrollIntoView({behavior:'smooth',block:'center'})});
+      <\/script></body></html>`;
+    }
+
+    clearBtn.addEventListener('click', () => {
+      selectedAudioFile = null;
+      fileInput.value = '';
+      audioPlayer.src = '';
+      audioPreview.style.display = 'none';
+      transcriptionOutput.value = '';
+      wordCount.textContent = '0 palabras';
+      copyBtn.disabled = true;
+      downloadBtn.disabled = true;
+      wordDownloadBtn.disabled = true;
+      timedTranscript = [];
+      hideAlert();
+      updateTranscribeBtnState();
+      updateIllustratedDownloadState();
+    });
+
+    function showAlert(msg) {
+      alertBox.textContent = msg;
+      alertBox.style.display = 'block';
+    }
+
+    function hideAlert() {
+      alertBox.textContent = '';
+      alertBox.style.display = 'none';
+    }
+
+    function setLoading(isLoading) {
+      transcribeBtn.disabled = isLoading;
+      if (isLoading) {
+        btnSpinner.style.display = 'inline-block';
+        btnText.textContent = 'Procesando y transcribiendo audio...';
+      } else {
+        btnSpinner.style.display = 'none';
+        btnText.textContent = 'Generar el audio-texto';
+        updateTranscribeBtnState();
+      }
+    }
+  </script>
+</body>
+</html>
