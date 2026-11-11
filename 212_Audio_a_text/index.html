@@ -407,7 +407,7 @@
         <h1>Transcriptor de Audio</h1>
         <img class="brand-logo right" src="logo_escuela.png" alt="Logo de la escuela" />
       </div>
-      <p>Convierte voz a texto con la <strong>Red Descartes</strong> (gratis, sin API Key) o con <strong>Pollinations AI</strong></p>
+      <p>Convierte voz a texto con la <strong>Red Descartes</strong> (gratis, sin API Key), <strong>Pollinations AI</strong> o <strong>Groq</strong></p>
     </header>
 
     <!-- 1. Configuración de API Key y Modelo -->
@@ -422,18 +422,19 @@
           </optgroup>
           <optgroup label="Con API Key propia">
             <option value="pollinations">Pollinations AI</option>
+            <option value="groq">Groq</option>
           </optgroup>
         </select>
       </div>
 
       <div class="form-group" id="apiKeyGroup">
-        <label for="apiKey" id="apiKeyLabel">Pollinations API Key (Secret Key):</label>
+        <label for="apiKey" id="apiKeyLabel">API Key:</label>
         <div class="input-row">
-          <input type="password" id="apiKey" placeholder="sk_... o pk_..." autocomplete="off" />
+          <input type="password" id="apiKey" placeholder="Ingresa tu API Key" autocomplete="off" />
           <button type="button" class="btn btn-secondary" id="toggleKeyBtn">👁️</button>
         </div>
-        <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">
-          ¿No tienes una clave? Consíguela en <a href="https://enter.pollinations.ai" target="_blank" rel="noopener noreferrer" style="color: #818cf8;">enter.pollinations.ai</a>
+        <small id="apiKeyHelp" style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">
+          ¿No tienes una clave? Consíguela en <a id="apiKeyLink" href="" target="_blank" rel="noopener noreferrer" style="color: #818cf8;">aquí</a>
         </small>
       </div>
 
@@ -537,7 +538,7 @@
   </div>
 
   <footer class="site-footer">
-    Diseñado por <strong>Juan Guillermo Rivera Berrío</strong> con la <strong>Red Descartes</strong>, las API de <strong>Pollinations AI</strong> y tecnología <strong>Gemini 3.8 Flash</strong>
+    Diseñado por <strong>Juan Guillermo Rivera Berrío</strong> con la <strong>Red Descartes</strong>, las APIs de <strong>Pollinations AI</strong>, <strong>Groq</strong> y tecnología <strong>Gemini 3.8 Flash</strong>
   </footer>
 
   <script>
@@ -545,6 +546,7 @@
     const providerSelect = document.getElementById('providerSelect');
     const apiKeyGroup = document.getElementById('apiKeyGroup');
     const apiKeyLabel = document.getElementById('apiKeyLabel');
+    const apiKeyLink = document.getElementById('apiKeyLink');
     const freeNote = document.getElementById('freeNote');
     const apiKeyInput = document.getElementById('apiKey');
     const toggleKeyBtn = document.getElementById('toggleKeyBtn');
@@ -605,7 +607,8 @@
     // Red Descartes: backend propio (sin API Key) que reenvía a Pollinations.
     const PROVIDERS = {
       free: { name: 'Red Descartes', url: 'https://node.proyectodescartes.org/api/ia/transcribe', model: 'openai/whisper-large-v3', free: true },
-      pollinations: { name: 'Pollinations AI', url: 'https://gen.pollinations.ai/v1/audio/transcriptions', model: 'openai/whisper-large-v3', free: false }
+      pollinations: { name: 'Pollinations AI', url: 'https://gen.pollinations.ai/v1/audio/transcriptions', model: 'openai/whisper-large-v3', free: false },
+      groq: { name: 'Groq', url: 'https://api.groq.com/openai/v1/audio/transcriptions', model: 'whisper-large-v3-turbo', free: false }
     };
 
     // Valor / etiqueta amigable
@@ -618,7 +621,11 @@
     ];
     const MODEL_OPTIONS = {
       free: TRANSCRIBE_MODELS,
-      pollinations: [...TRANSCRIBE_MODELS, ['whisper-1', 'Whisper-1 (OpenAI)']]
+      pollinations: [...TRANSCRIBE_MODELS, ['whisper-1', 'Whisper-1 (OpenAI)']],
+      groq: [
+        ['whisper-large-v3-turbo', 'Whisper Large v3 Turbo (Recomendado)'],
+        ['whisper-large-v3', 'Whisper Large v3 (Mayor precisión)']
+      ]
     };
 
     // Tamaño máximo para Red Descartes (JSON base64 con límite de 50 MB en el servidor)
@@ -629,12 +636,31 @@
       const config = PROVIDERS[provider];
       const options = MODEL_OPTIONS[provider];
 
+      // Verificar que options esté definido antes de usar
+      if (!options) {
+        console.error(`No se encontraron modelos para proveedor: ${provider}`, MODEL_OPTIONS);
+        return;
+      }
+
       modelSelect.replaceChildren(...options.map(([value, label]) => new Option(label, value)));
       modelSelect.value = config.model;
 
       apiKeyGroup.style.display = config.free ? 'none' : '';
       freeNote.style.display = config.free ? '' : 'none';
       btnText.textContent = `Transcribir Audio con ${config.name}`;
+
+      // Actualizar label y link del API Key dinámicamente
+      if (provider === 'pollinations') {
+        apiKeyLabel.textContent = 'Pollinations API Key (Secret Key):';
+        apiKeyInput.placeholder = 'sk_... o pk_...';
+        apiKeyLink.href = 'https://enter.pollinations.ai';
+        apiKeyLink.textContent = 'enter.pollinations.ai';
+      } else if (provider === 'groq') {
+        apiKeyLabel.textContent = 'Groq API Key:';
+        apiKeyInput.placeholder = 'gsk_...';
+        apiKeyLink.href = 'https://console.groq.com/keys';
+        apiKeyLink.textContent = 'console.groq.com/keys';
+      }
 
       localStorage.setItem('preferred_transcriber_provider', provider);
       updateTranscribeBtnState();
@@ -649,13 +675,26 @@
       });
     }
 
-    // 1. Cargar API Key guardada en LocalStorage (por comodidad)
-    const savedKey = localStorage.getItem('pollinations_api_key');
-    if (savedKey) apiKeyInput.value = savedKey;
+    // 1. Cargar API Keys guardadas en LocalStorage (por proveedor)
+    const getApiKeyStorageKey = (provider) => `${provider}_api_key`;
+    
+    const loadApiKeyForProvider = (provider) => {
+      const key = localStorage.getItem(getApiKeyStorageKey(provider));
+      apiKeyInput.value = key || '';
+    };
 
     apiKeyInput.addEventListener('input', () => {
-      localStorage.setItem('pollinations_api_key', apiKeyInput.value.trim());
+      const provider = providerSelect.value;
+      if (!PROVIDERS[provider].free) {
+        localStorage.setItem(getApiKeyStorageKey(provider), apiKeyInput.value.trim());
+      }
       updateTranscribeBtnState();
+    });
+
+    providerSelect.addEventListener('change', () => {
+      const provider = providerSelect.value;
+      loadApiKeyForProvider(provider);
+      updateProvider();
     });
 
     toggleKeyBtn.addEventListener('click', () => {
@@ -770,7 +809,7 @@
 
     const savedProvider = localStorage.getItem('preferred_transcriber_provider');
     providerSelect.value = PROVIDERS[savedProvider] ? savedProvider : 'free';
-    providerSelect.addEventListener('change', updateProvider);
+    loadApiKeyForProvider(providerSelect.value);
     updateProvider();
 
     // 5. Llamada a la API (Red Descartes o Pollinations)
@@ -780,7 +819,7 @@
       const apiKey = apiKeyInput.value.trim();
 
       if (!config.free && !apiKey) {
-        showAlert('Por favor ingresa tu API Key de Pollinations.');
+        showAlert(`Por favor ingresa tu API Key de ${config.name}.`);
         return;
       }
 
@@ -826,7 +865,7 @@
             body: JSON.stringify(payload)
           });
         } else {
-          // Pollinations: multipart/form-data directo
+          // Pollinations y Groq: ambos usan multipart/form-data
           const formData = new FormData();
           formData.append('file', selectedAudioFile);
           formData.append('model', modelSelect.value);

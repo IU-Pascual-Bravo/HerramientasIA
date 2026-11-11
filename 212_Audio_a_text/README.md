@@ -32,8 +32,8 @@ La interfaz está diseñada para facilitar el acceso a personas adultas mayores:
 ## Requisitos
 
 - Navegador actualizado con JavaScript habilitado.
-- Conexión a Internet para comunicarse con Pollinations AI.
+- Conexión a Internet para comunicarse con Red Descartes o Pollinations AI.
 - Permiso del navegador para usar el micrófono cuando se elija la grabación.
-- Una clave válida de Pollinations AI.
+- Una clave válida de Pollinations AI si se elige ese proveedor; Red Descartes no requiere clave.
 
 La clave se utiliza desde el navegador para realizar la solicitud y no se guarda en este proyecto.
