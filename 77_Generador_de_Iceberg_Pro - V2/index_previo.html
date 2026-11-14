@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Generador de Iceberg Pro v2.4 (Temas Avanzados)</title>
+  <style>
+    /* --- CSS VARIABLES & BASE --- */
+    :root {
+        --bg-color-1: #0f0c29;
+        --bg-color-2: #302b63;
+        --accent-color: #24243e;
+        --accent-color-hover: #7e57c2;
+        --text-color: #ffffff;
+        --overlay-bg: rgba(0,0,0,0.7);
+        --entry-bg: rgba(255,255,255,0.08);
+        --entry-hover-bg: rgba(255,255,255,0.15);
+        --panel-bg: rgba(0,0,0,0.6);
+        --level-bg: rgba(30,30,50,0.8);
+        --border-color: rgba(255,255,255,0.1);
+    }
+
+    html { min-height: 100%; box-sizing: border-box; }
+    *, *:before, *:after { box-sizing: inherit; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      /* Background se inyecta via JS para asegurar actualización */
+      background: linear-gradient(135deg, var(--bg-color-1) 0%, var(--bg-color-2) 100%); 
+      background-attachment: fixed;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-color);
+      text-align: center;
+      min-height: 100vh;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      transition: color 0.5s ease;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      padding: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .title-row img {
+      height: 80%;
+      max-height: 56px;
+      width: auto;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      margin-bottom: 20px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      font-weight: 800;
+      line-height: 1.2;
+      padding: 0 10px;
+      letter-spacing: -1px;
+    }
+
+    /* --- INPUT AREA --- */
+    .input-area {
+      margin: 20px auto;
+      width: 95%;
+      max-width: 700px;
+      background: var(--entry-bg);
+      padding: 25px;
+      border-radius: 16px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border: 1px solid var(--border-color);
+      transition: border-color 0.5s ease;
+    }
+
+    .input-row { display: flex; gap: 15px; flex-wrap: wrap; }
+    .input-row > div { flex: 1; min-width: 200px; }
+
+    .input-group {
+        display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%;
+    }
+
+    .input-group label {
+        font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;
+    }
+
+    .input-area input[type="text"],
+     .input-area input[type="password"],
+    .input-area select {
+      width: 100%; padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px; font-size: 1rem;
+      background: rgba(0,0,0,0.4); color: var(--text-color);
+      transition: border 0.3s, background 0.3s;
+    }
+    
+    .input-area input:focus, .input-area select:focus {
+        outline: none; border-color: var(--accent-color);
+        background: rgba(0,0,0,0.6);
+    }
+    
+    option { background: #111; color: white; }
+     .key-row { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
+     .key-row input { flex: 1 1 220px; min-width: 180px; }
+     .small-btn { width: auto !important; padding: 10px 14px !important; margin: 0 !important; font-size: .85rem !important; }
+     .hidden { display: none !important; }
+
+    /* Buttons */
+    .input-area button {
+      background: var(--accent-color);
+      color: white; /* Siempre blanco para contraste en botones primarios */
+      border: none; padding: 15px 25px; border-radius: 8px;
+      cursor: pointer; font-size: 1.1rem; font-weight: bold;
+      transition: all 0.2s; margin-top: 5px; width: 100%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .input-area button:hover { 
+        filter: brightness(1.2); 
+        transform: translateY(-2px); 
+    }
+
+    /* Palette Button Specifics */
+    .input-area button.secondary-btn {
+        background: transparent;
+        font-size: 0.95rem;
+        padding: 12px;
+        border: 2px dashed var(--border-color);
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+    .input-area button.secondary-btn:hover { 
+        background: var(--entry-hover-bg); 
+        opacity: 1; 
+        border-color: var(--accent-color);
+        border-style: solid;
+    }
+
+    /* --- CHARTS & ENTRIES --- */
+    .iceberg-chart {
+      margin: 40px auto; width: 100%; max-width: 900px;
+      text-align: left; display: none; padding-bottom: 50px;
+    }
+
+    .level {
+      margin-bottom: 25px; padding: 20px;
+      border-radius: 12px; background: var(--level-bg);
+      border: 1px solid var(--border-color);
+      position: relative; overflow: visible;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    /* Barra lateral de nivel con color de acento */
+    .level::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+        background: var(--accent-color);
+        border-radius: 6px 0 0 6px;
+        filter: brightness(1.5); /* Hacerlo un poco más brillante */
+    }
+
+    .level-title {
+      font-size: clamp(1.2rem, 4vw, 1.5rem); margin: 0 0 15px 10px;
+      font-weight: 800; display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .level-desc-tag {
+        font-size: 0.75rem; opacity: 0.8; font-weight: normal; 
+        background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 20px;
+        border: 1px solid var(--border-color);
+    }
+
+    .entries {
+      list-style: none; padding: 0; margin: 0;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;
+    }
+
+    .entries li.entry-trigger {
+      background: var(--entry-bg); padding: 15px; border-radius: 8px;
+      cursor: pointer; transition: all 0.2s;
+      border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between;
+      font-weight: 500;
+    }
+    .entries li.entry-trigger:hover {
+      background: var(--entry-hover-bg); border-color: var(--accent-color);
+      transform: translateX(3px);
+    }
+    .entries li.entry-trigger::after { content: '+'; font-weight: bold; opacity: 0.6; }
+    .entries li.entry-trigger.open::after { content: '-'; }
+
+    /* --- PANEL CONTENT --- */
+    .panel-wrapper { grid-column: 1 / -1; padding: 0; margin: 0; }
+
+    .panel-content {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.6s cubic-bezier(0, 1, 0, 1);
+      background: rgba(0,0,0,0.2);
+      border-radius: 0 0 8px 8px; margin-top: -8px; margin-bottom: 12px;
+      border: 1px solid var(--border-color); border-top: none;
+    }
+    .panel-content.active { max-height: 100000px; padding: 20px; transition: max-height 0.8s ease-in-out; }
+
+    /* En pantallas anchas: imagen e introducción arriba; los bloques pedagógicos
+       posteriores ocupan todo el ancho para evitar recortes y mejorar la lectura. */
+    .content-layout { display: grid; grid-template-columns: minmax(260px, 450px) minmax(0, 1fr); gap: 20px; align-items: start; }
+    .image-section { grid-column: 1; width: 100%; max-width: 450px; grid-row: 1 / span 2; }
+    .learning-plan, .learning-block { text-align: left; background: rgba(0,0,0,.25); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
+     .learning-plan h2, .learning-block h4 { color: var(--accent-color); margin: 0 0 10px; }
+     .learning-plan ul, .learning-block ul, .learning-block ol { margin: 8px 0 12px; padding-left: 22px; }
+     .learning-block { margin-top: 16px; background: rgba(255,255,255,.04); }
+     .learning-block h4 { font-size: 1.05rem; }
+     .learning-block strong { color: var(--accent-color); }
+     .feedback { border-left: 3px solid var(--accent-color); padding-left: 12px; font-style: italic; opacity: .9; }
+     .metacognition { text-align: left; background: var(--entry-bg); border: 1px solid var(--accent-color); border-radius: 12px; padding: 20px; margin: 30px auto; max-width: 900px; }
+     .metacognition h2 { margin-top: 0; }
+     .app-footer { position: relative; z-index: 2; width: 100%; max-width: 1000px; margin: 24px auto 0; padding: 16px 20px; text-align: center; font-size: .85rem; line-height: 1.5; opacity: .82; border-top: 1px solid var(--border-color); }
+
+     .text-section { display: contents; text-align: left; line-height: 1.6; font-size: 0.95rem; }
+     .text-section > h3, .text-section > p:first-of-type { grid-column: 2; }
+     .learning-block { grid-column: 1 / -1; width: 100%; }
+
+    .panel-content img {
+      width: 100%; height: auto; border-radius: 8px;
+      cursor: zoom-in; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color);
+    }
+
+    h3 { 
+        color: var(--accent-color); filter: brightness(1.3);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0;
+    }
+    strong { color: var(--accent-color); filter: brightness(1.3); }
+
+    /* --- LOADING & MODAL & EXPORT --- */
+    .loading { display: none; margin: 30px auto; text-align: center; }
+    .loading-spinner {
+      border: 4px solid rgba(255,255,255,0.1); border-radius: 50%;
+      border-top: 4px solid var(--accent-color); width: 50px; height: 50px;
+      animation: spin 1s linear infinite; margin: 0 auto 15px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center;
+      padding: 20px; opacity: 0; transition: opacity 0.3s;
+    }
+    .modal.active { display: flex; opacity: 1; }
+    .modal img { max-width: 100%; max-height: 90vh; object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+    .modal-close { position: absolute; top: 15px; right: 20px; color: white; font-size: 40px; cursor: pointer; }
+
+    .export-btn { 
+        display: none; background: #2e7d32; color: white; border: none; padding: 15px 30px; 
+        border-radius: 50px; cursor: pointer; font-size: 1rem; margin: 30px auto; 
+        font-weight: bold; width: 80%; max-width: 300px;
+        box-shadow: 0 0 20px rgba(46, 125, 50, 0.4);
+    }
+    .export-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(46, 125, 50, 0.6); }
+
+    .controls-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 10px; }
+    .controls-box input { width: 100%; margin-bottom: 5px; }
+
+    /* --- MOBILE OPTIMIZATIONS --- */
+    @media (max-width: 600px) {
+        .container { padding: 10px; }
+        .level { padding: 15px 10px; }
+        .entries { grid-template-columns: 1fr; }
+        .panel-content.active { max-height: 100000px; padding: 14px 12px 28px; overflow: visible; }
+         .content-layout { display: flex; flex-direction: column; gap: 16px; align-items: stretch; }
+         .image-section { width: 100%; max-width: none; flex: none; }
+         .text-section { display: block; width: 100%; min-width: 0; }
+         .text-section > h3, .text-section > p:first-of-type, .learning-block { width: 100%; }
+         .learning-block { margin-top: 14px; margin-bottom: 14px; padding: 15px; overflow-wrap: anywhere; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title-row">
+      <img src="gifanimadoRedProyecto.gif" alt="Logo Red Proyecto">
+      <h1>Generador de Iceberg Pro</h1>
+    </div>
+    
+    <div class="input-area">
+      <div class="input-group">
+        <label for="themeInput">Tema Central</label>
+        <input type="text" id="themeInput" placeholder="Ej: Teoría de Internet Muerta, Biología Marina...">
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label for="providerSelect">🔗 Proveedor de IA</label>
+          <select id="providerSelect">
+            <option value="free">Red Descartes (gratis)</option>
+            <option value="pollinations" selected>Pollinations</option>
+            <option value="openrouter">OpenRouter</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="levelSelect">Profundidad</label>
+          <select id="levelSelect">
+            <option value="3">3 Niveles (Rápido)</option>
+            <option value="4">4 Niveles (Estándar)</option>
+            <option value="5" selected>5 Niveles (Completo)</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group" id="providerKeyField">
+        <label for="apiKeyInput" id="apiKeyLabel">🔑 API Key de Pollinations</label>
+        <div class="key-row">
+          <input type="password" id="apiKeyInput" placeholder="plln_sk_...">
+          <button type="button" id="validateKeyBtn" class="small-btn">✓ Validar</button>
+          <button type="button" id="clearKeyBtn" class="small-btn">🗑️ Limpiar</button>
+          <button type="button" id="getApiKeyBtn" class="small-btn">🔑 Obtener</button>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label for="styleSelect">Estilo Visual</label>
+          <select id="styleSelect"></select>
+        </div>
+        <div class="input-group">
+          <label for="textModelSelect" id="textModelLabel">🧠 Modelo de texto · Pollinations</label>
+          <select id="textModelSelect"></select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="modelSelect" id="imageModelLabel">🖌️ Modelo de imagen · Pollinations</label>
+        <select id="modelSelect"></select>
+      </div>
+      <button type="button" id="paletteBtn" class="secondary-btn">🎨 Cambiar Paleta de Colores (Sorpréndeme)</button>
+      <button id="generateBtn">🔮 Generar Iceberg</button>
+    </div>
+    
+    <div class="loading" id="loadingIndicator">
+      <div class="loading-spinner"></div>
+      <p id="loadingText">Iniciando análisis del tema...</p>
+      <div class="progress-text" id="progressText">0% completado</div>
+    </div>
+    
+    <div class="iceberg-chart" id="icebergChart"></div>
+    
+    <button class="export-btn" id="exportBtn">📥 Descargar Iceberg HTML</button>
+  </div>
+
+  <footer class="app-footer">Diseñado por Juan Guillermo Rivera Berrío con tecnología GPT-5.6 Luna y asistencia de DeepSeek Harness</footer>
+
+  <div class="modal" id="imageModal">
+    <span class="modal-close">&times;</span>
+    <img src="" alt="" id="modalImage">
+  </div>
+
+  <script>
+    // --- VARIABLES & SELECTORES ---
+    const themeInput = document.getElementById('themeInput');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const getApiKeyBtn = document.getElementById('getApiKeyBtn');
+     const providerSelect = document.getElementById('providerSelect');
+     const validateKeyBtn = document.getElementById('validateKeyBtn');
+     const clearKeyBtn = document.getElementById('clearKeyBtn');
+     const apiKeyLabel = document.getElementById('apiKeyLabel');
+     const textModelLabel = document.getElementById('textModelLabel');
+     const imageModelLabel = document.getElementById('imageModelLabel');
+    const styleSelect = document.getElementById('styleSelect');
+    const textModelSelect = document.getElementById('textModelSelect');
+    const modelSelect = document.getElementById('modelSelect');
+    const levelSelect = document.getElementById('levelSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const paletteBtn = document.getElementById('paletteBtn'); 
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const loadingText = document.getElementById('loadingText');
+    const progressText = document.getElementById('progressText');
+    const icebergChart = document.getElementById('icebergChart');
+    const exportBtn = document.getElementById('exportBtn');
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const closeBtn = document.querySelector('.modal-close');
+    
+    const levelNames = [ "Nivel 1: La Superficie", "Nivel 2: Aguas Poco Profundas", "Nivel 3: La Zona de Penumbra", "Nivel 4: El Abismo", "Nivel 5: El Vacío Insondable" ];
+    const difficultyDescriptions = [ "Cultura pop, memes, hechos oficiales.", "Datos curiosos, trivia técnica.", "Rumores, conspiraciones leves.", "Archivos perdidos, incidentes oscuros.", "Horror cósmico, metafísica." ];
+    const imageStyles = [ "Cinemático Fotorrealista", "Arte Conceptual Digital", "Horror Análogo (VHS)", "Ilustración Científica Vintage", "Cyberpunk Neón", "Pintura al Óleo Oscura", "Surrealismo Onírico", "Render 3D Hiperrealista", "Estilo Anime Dark Fantasy", "Pixel Art Retro", "Estilo Lovecraftiano" ];
+
+    const PROVIDERS = {
+      free: { name: 'Red Descartes', placeholder: '', keyRequired: false, images: [['zimage','zimage (Rápido)'],['flux','flux (Detallado)'],['gptimage','GPT image (Creativo)'],['klein','klein (Realista)'],['black-forest-labs/flux-3-image-klein','Flux 3 Image (Nuevo)'],['recraft/recraft-v4.1-flash','Recraft 4.1']], text: [['openai/gpt-5.4-nano','GPT-5.4 Nano'],['anthropic/claude-haiku-5.5','Claude Haiku 5.5'],['gemini-search','Gemini 2.5 (Search)'],['google/gemini-3.8-flash','Gemini-3.8 Flash (Search)'],['qwen/qwen3.8-flash','Qwen-3.8 Flash'],['llama','Llama-3.3 70B'],['xiaomi/mimo-v2.6-flash','MiMo-2.6 Flash'],['perplexity-fast','Perplexity Fast (Search)'],['gpt-5.4-mini','GPT-5.4 Mini'],['nova-fast','Nova Fast']], imageDefault: 'zimage', textDefault: 'openai/gpt-5.4-nano' },
+      pollinations: { name: 'Pollinations', placeholder: 'plln_sk_...', keyRequired: true, images: [['zimage','zimage (Rápido)'],['krea/krea-2-medium','Krea 2 Medium'],['black-forest-labs/flux.2-pro','Flux 2 Pro'],['x-ai/grok-imagine-image','Grok Imagine'],['openai/gpt-image-2.5-flare','GPT Image Flare'],['klein','Klein'],['gptimage','GPT Image']], text: [['openai','GPT-5.4 Nano'],['openai/gpt-5.6-luna','GPT-5.6 Luna'],['moonshotai/kimi-k2.6','Kimi K2.6'],['x-ai/grok-4.3','Grok 4.3'],['mistral-small-3.2','Mistral Small'],['gemini-fast','Gemini Flash']], imageDefault: 'zimage', textDefault: 'openai' },
+      openrouter: { name: 'OpenRouter', placeholder: 'sk-or-...', keyRequired: true, images: [['google/gemini-2.5-flash-image','Gemini 2.5 Flash Image'],['openai/gpt-5-image-mini','GPT Image mini'],['google/gemini-3.1-flash-image-preview','Gemini 3.1 Flash Image'],['black-forest-labs/flux.2-klein-4b','Klein'],['microsoft/mai-image-2.5','MAI Image'],['x-ai/grok-imagine-image-quality','Grok xAI'],['recraft/recraft-v4.1-vector','Recraft V4.1'],['bytedance-seed/seedream-4.5','Seedream 4.5'],['black-forest-labs/flux.2-flex','Flux 2 Flex']], text: [['deepseek/deepseek-chat-v3-0324','DeepSeek V3'],['google/gemini-2.5-flash','Gemini 2.5 Flash'],['openai/gpt-5-mini','GPT 5 Mini'],['moonshotai/kimi-k2.6','Kimi K2.6'],['mistralai/mistral-small-2603','Mistral Small'],['openrouter/free','Enrutador libre']], imageDefault: 'google/gemini-2.5-flash-image', textDefault: 'google/gemini-2.5-flash' }
+    };
+    function storageKey(provider) { return `${provider}_api_key`; }
+    function populateProviderModels(provider) {
+      const config = PROVIDERS[provider];
+      modelSelect.innerHTML = config.images.map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
+      textModelSelect.innerHTML = config.text.map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
+      modelSelect.value = config.imageDefault; textModelSelect.value = config.textDefault;
+      imageModelLabel.textContent = `🖌️ Modelo de imagen · ${config.name}`;
+      textModelLabel.textContent = `🧠 Modelo de texto · ${config.name}`;
+      apiKeyInput.value = localStorage.getItem(storageKey(provider)) || '';
+      apiKeyInput.placeholder = config.placeholder;
+      apiKeyLabel.textContent = `🔑 API Key de ${config.name} ${config.keyRequired ? '(obligatoria)' : '(no requerida)'}`;
+      validateKeyBtn.classList.toggle('hidden', !config.keyRequired); clearKeyBtn.classList.toggle('hidden', !config.keyRequired); getApiKeyBtn.classList.toggle('hidden', provider !== 'pollinations');
+    }
+    providerSelect.onchange = () => { localStorage.setItem('preferred_provider', providerSelect.value); populateProviderModels(providerSelect.value); };
+    apiKeyInput.oninput = () => { if (PROVIDERS[providerSelect.value].keyRequired) localStorage.setItem(storageKey(providerSelect.value), apiKeyInput.value.trim()); };
+    clearKeyBtn.onclick = () => { localStorage.removeItem(storageKey(providerSelect.value)); apiKeyInput.value = ''; alert(`API key de ${PROVIDERS[providerSelect.value].name} eliminada del navegador.`); };
+    validateKeyBtn.onclick = async () => {
+      const provider = providerSelect.value, key = apiKeyInput.value.trim(); if (!key) return alert('Introduce una API key.');
+      validateKeyBtn.disabled = true; validateKeyBtn.textContent = 'Validando...';
+      try { const url = provider === 'openrouter' ? 'https://openrouter.ai/api/v1/key' : 'https://gen.pollinations.ai/v1/models'; const headers = { Authorization: `Bearer ${key}` }; if (provider === 'openrouter') { headers['HTTP-Referer'] = location.origin; headers['X-Title'] = 'Generador de Iceberg Pro'; } const response = await fetch(url, { headers }); if (!response.ok) throw new Error(`HTTP ${response.status}`); localStorage.setItem(storageKey(provider), key); alert(`✓ API key de ${PROVIDERS[provider].name} válida.`); } catch (error) { alert(`✗ No se pudo validar la API key: ${error.message}`); } finally { validateKeyBtn.disabled = false; validateKeyBtn.textContent = '✓ Validar'; }
+    };
+
+    // --- MOTOR DE TEMAS AVANZADO (NUEVA LÓGICA) ---
+    function getRandomTheme() {
+        const themes = [
+            {
+                name: "Océano Profundo",
+                bg1: "#0f2027", bg2: "#203a43", 
+                accent: "#2c5364", text: "#e0f7fa"
+            },
+            {
+                name: "Vaporwave Neon",
+                bg1: "#2a0845", bg2: "#6441a5", 
+                accent: "#f538a0", text: "#ffffff" // Pink accent
+            },
+            {
+                name: "Matrix Terminal",
+                bg1: "#000000", bg2: "#0a1f0a", 
+                accent: "#00ff41", text: "#ccffcc"
+            },
+            {
+                name: "Horror Sangriento",
+                bg1: "#1a0505", bg2: "#380000", 
+                accent: "#8a0303", text: "#ffe6e6"
+            },
+            {
+                name: "Lovecraft Void",
+                bg1: "#0a0a0a", bg2: "#1c1c1c", 
+                accent: "#4b0082", text: "#dcdcdc" // Indigo accent
+            },
+            {
+                name: "Atardecer Dorado",
+                bg1: "#3e1e1e", bg2: "#68321a", 
+                accent: "#d4af37", text: "#fff8dc"
+            },
+            {
+                name: "Toxic Waste",
+                bg1: "#1a1a2e", bg2: "#16213e", 
+                accent: "#00ff9d", text: "#eafff5"
+            },
+            {
+                name: "Blueprint Azul",
+                bg1: "#001f3f", bg2: "#003366", 
+                accent: "#0074D9", text: "#ffffff"
+            }
+        ];
+        
+        return themes[Math.floor(Math.random() * themes.length)];
+    }
+
+    function applyPalette() {
+        const theme = getRandomTheme();
+        const root = document.documentElement;
+        
+        // Mostrar feedback en el botón
+        const originalText = paletteBtn.textContent;
+        paletteBtn.textContent = `🎨 Aplicado: ${theme.name}`;
+        setTimeout(() => paletteBtn.textContent = originalText, 1500);
+
+        // Definir variables
+        const props = {
+            '--bg-color-1': theme.bg1,
+            '--bg-color-2': theme.bg2,
+            '--accent-color': theme.accent,
+            '--accent-color-hover': theme.accent, // Simplificado
+            '--text-color': theme.text,
+            '--level-bg': `linear-gradient(90deg, ${theme.bg1}EE, ${theme.bg2}EE)`, // EE = alpha
+            '--border-color': `${theme.text}20`, // 20 = baja opacidad
+            '--entry-bg': `${theme.text}10`,
+            '--entry-hover-bg': `${theme.text}25`
+        };
+
+        // 1. Aplicar CSS Variables
+        for (const [key, value] of Object.entries(props)) {
+            root.style.setProperty(key, value);
+        }
+
+        // 2. Forzar repintado del body (Crucial)
+        document.body.style.background = `linear-gradient(135deg, ${theme.bg1} 0%, ${theme.bg2} 100%)`;
+        document.body.style.backgroundAttachment = 'fixed';
+    }
+
+    // --- GENERACIÓN IA ---
+    function populateStyles() {
+        imageStyles.forEach(style => {
+            const option = document.createElement('option');
+            option.value = style; option.textContent = style;
+            styleSelect.appendChild(option);
+        });
+    }
+
+    async function fetchText(prompt) {
+      const provider = providerSelect.value;
+      const textModel = textModelSelect.value;
+      const apiKey = apiKeyInput.value.trim();
+      try {
+        let response;
+        if (provider === 'free') {
+          response = await fetch('https://node.proyectodescartes.org/api/ia/text', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, system: 'Eres un asistente experto. Responde exactamente lo solicitado.', model: textModel, json: false })
+          });
+        } else {
+          const url = provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://gen.pollinations.ai/v1/chat/completions';
+          const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` };
+          if (provider === 'openrouter') { headers['HTTP-Referer'] = location.origin; headers['X-Title'] = 'Generador de Iceberg Pro'; }
+          response = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ model: textModel, messages: [{ role: 'user', content: prompt }], temperature: 0.3 }) });
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.text();
+        if (provider === 'free') {
+          try { const parsed = JSON.parse(payload); return parsed.text || parsed.response || parsed.content || payload; } catch { return payload; }
+        }
+        const parsed = JSON.parse(payload);
+        return parsed.choices?.[0]?.message?.content || parsed.choices?.[0]?.text || payload;
+      } catch (error) { console.error('Error generando texto:', error); throw error; }
+    }
+    
+    async function generateVisualPrompt(title, theme, style, levelIndex) {
+        const mood = levelIndex > 3 ? "ominous, abstract, dark" : "clear, detailed";
+        const prompt = `Image prompt for "${title}" related to "${theme}". Style: ${style}. Mood: ${mood}. NO TEXT. Under 20 words. Return ONLY prompt.`;
+        const result = await fetchText(prompt);
+        return result.replace(/"/g, '').trim();
+    }
+    
+    function generateImageUrl(visualPrompt, model) {
+      const seed = Math.floor(Math.random() * 99999);
+      if (providerSelect.value === 'free') return `https://node.proyectodescartes.org/api/ia/image?prompt=${encodeURIComponent(visualPrompt)}&model=${encodeURIComponent(model)}&seed=${seed}&width=600&height=800`;
+      const apiKey = apiKeyInput.value.trim();
+      return `https://enter.pollinations.ai/api/generate/image/${encodeURIComponent(visualPrompt)}?key=${encodeURIComponent(apiKey)}&nologo=true&seed=${seed}&model=${encodeURIComponent(model)}&width=600&height=800`;
+    }
+    
+    async function generateImageSource(prompt, model) {
+      if (providerSelect.value !== 'free') return generateImageUrl(prompt, model);
+      const response = await fetch('https://node.proyectodescartes.org/api/ia/image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, model, seed: Math.floor(Math.random() * 99999), width: 600, height: 800 }) });
+      if (!response.ok) throw new Error(`Error de imagen Red Descartes: HTTP ${response.status}`);
+      const blob = await response.blob();
+      return await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
+    }
+
+    async function generateLevelTitlesBatch(theme, levelIndex, count) {
+      const desc = difficultyDescriptions[levelIndex];
+      const prompt = `Lista de ${count} títulos cortos y únicos para un iceberg sobre "${theme}". Nivel: ${levelNames[levelIndex]} (${desc}). Separados por "||". Ejemplo: A || B || C.`;
+      const rawText = await fetchText(prompt);
+      let titles = rawText.split('||').map(t => t.trim().replace(/^\d+\.\s*/, '').replace(/^- /, ''));
+      if (titles.length < count) titles = rawText.split('\n').filter(t => t.trim().length > 0).slice(0, count);
+      return titles.slice(0, count);
+    }
+    
+    function safeText(value) {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+        if (Array.isArray(value)) return value.map(safeText).filter(Boolean).join(', ');
+        if (typeof value === 'object') return Object.values(value).map(safeText).filter(Boolean).join(' · ');
+        return String(value);
+    }
+
+    function escapeHtml(value) {
+        return safeText(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+    }
+
+    function asList(value) {
+        if (Array.isArray(value)) return value.filter(item => item !== null && item !== undefined);
+        if (value && typeof value === 'object') return Object.values(value);
+        return value ? [value] : [];
+    }
+
+    function renderConcept(item) {
+        if (!item || typeof item !== 'object') return `<li>${escapeHtml(item)}</li>`;
+        const term = item.term ?? item.concept ?? item.name ?? item.key ?? '';
+        const meaning = item.meaning ?? item.definition ?? item.explanation ?? item.description ?? '';
+        const relations = item.relations ?? item.relation ?? item.relationship ?? item.connections ?? '';
+        if (!term && !meaning && !relations) return `<li>${escapeHtml(item)}</li>`;
+        return `<li><strong>${escapeHtml(term)}</strong>${meaning ? `: ${escapeHtml(meaning)}` : ''}${relations ? ` <em>Relación: ${escapeHtml(relations)}</em>` : ''}</li>`;
+    }
+
+    async function generateLearningPlan(theme) {
+        const prompt = `Diseña una experiencia de aprendizaje sobre "${theme}". Devuelve SOLO JSON válido, sin markdown, con esta estructura exacta:
+{"objectives":["3 a 5 resultados con verbos observables: identificar, explicar, comparar, interpretar, argumentar, evaluar o relacionar"],"priorKnowledge":["3 preguntas iniciales: qué sabe, qué cree saber y qué quiere descubrir"],"metacognition":["4 preguntas finales sobre cambios en ideas, dificultades, estrategias y qué investigar" ]}.
+Los objetivos deben ser concretos y adecuados para un iceberg histórico o conceptual.`;
+        try { return JSON.parse((await fetchText(prompt)).replace(/^```json\s*|```$/g, '').trim()); }
+        catch { return { objectives: [`Explicar los conceptos fundamentales de ${theme}`, `Comparar distintas interpretaciones sobre ${theme}`, `Evaluar evidencias y construir una explicación argumentada`], priorKnowledge: [`¿Qué sabes ya sobre ${theme}?`, `¿Qué crees saber y qué dudas tienes?`, `¿Qué te gustaría descubrir?`], metacognition: [`¿Qué cambió en tus ideas iniciales?`, `¿Qué dificultad encontraste y cómo la resolviste?`, `¿Qué estrategia te ayudó más a aprender?`, `¿Qué necesitas investigar después?`] }; }
+    }
+
+    async function generateEntryContent(title, theme, levelIndex) {
+        const prompt = `Convierte la entrada "${title}" del tema "${theme}" en una pequeña experiencia de aprendizaje. El nivel ${levelIndex + 1} debe avanzar cognitivamente desde comprensión hacia análisis, interpretación y evaluación. Devuelve SOLO JSON válido, sin markdown, con esta estructura exacta:
+{"explanation":"explicación clara", "keyConcepts":[{"term":"concepto", "meaning":"significado", "relations":"relación causal o conceptual con otros conceptos del iceberg"}], "evidenceQuestion":"pregunta para distinguir hecho, interpretación, hipótesis, leyenda o debate y valorar las limitaciones de la evidencia", "socraticQuestions":["pregunta de comprensión","pregunta de profundización","pregunta que cuestione un supuesto","pregunta para buscar evidencias","pregunta para formular una conclusión"], "activity":"actividad breve: resolver un problema, interpretar una imagen, comparar explicaciones, construir un mapa conceptual o analizar un documento", "transfer":"relación con una situación actual, otro contexto histórico o un problema real", "checkQuestion":"pregunta de comprobación o aplicación", "feedback":"retroalimentación que explique qué debe incluir una respuesta adecuada y cuándo necesita revisión"}.
+Usa lenguaje educativo, no inventes certezas y señala cuando algo es discutido.`;
+        try { return JSON.parse((await fetchText(prompt)).replace(/^```json\s*|```$/g, '').trim()); }
+        catch { return { explanation: `Esta entrada ayuda a comprender ${title} dentro de ${theme}.`, keyConcepts: [{ term: title, meaning: 'Concepto central de la entrada.', relations: 'Se relaciona con las demás ideas del nivel y del tema.' }], evidenceQuestion: '¿Qué evidencia permitiría confirmar esta explicación y cuáles son sus limitaciones?', socraticQuestions: ['¿Qué significa esta idea?', '¿Por qué pudo ocurrir?', '¿Qué supuesto estamos dando por cierto?', '¿Qué fuentes o evidencias necesitamos?', '¿Qué conclusión podemos defender?'], activity: 'Construye un mapa conceptual con la entrada y dos conceptos relacionados.', transfer: 'Relaciona esta idea con un problema actual o con otro contexto histórico.', checkQuestion: 'Explica con tus palabras la idea principal y aplícala a un ejemplo.', feedback: 'Una respuesta adecuada usa conceptos, relaciones y evidencias; si falta alguno, revisa la explicación.' }; }
+    }
+
+    // --- DOM LOGIC ---
+    function createLevelStructure(levelIndex, title) {
+        const div = document.createElement('div');
+        div.className = 'level';
+        div.style.animation = `fadeIn 0.5s ease forwards ${levelIndex * 0.2}s`;
+        div.innerHTML = `<h2 class="level-title">${title} <span class="level-desc-tag">Nivel ${levelIndex + 1}</span></h2>`;
+        const ul = document.createElement('ul');
+        ul.className = 'entries';
+        div.appendChild(ul);
+        return { container: div, list: ul };
+    }
+
+    function createEntry(title, content, visualPrompt, imageUrl, theme) {
+        const li = document.createElement('li');
+        li.className = 'entry-trigger';
+        li.textContent = title;
+        
+        const panelWrapper = document.createElement('li');
+        panelWrapper.className = 'panel-wrapper';
+
+        const panel = document.createElement('div');
+        panel.className = 'panel-content';
+        
+        const layout = document.createElement('div');
+        layout.className = 'content-layout';
+        
+        const imgSection = document.createElement('div');
+        imgSection.className = 'image-section';
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = title;
+        
+        const controls = document.createElement('div');
+        controls.className = 'controls-box';
+        controls.innerHTML = `<input value="${visualPrompt}"><button>🔄 Regenerar</button>`;
+        controls.querySelector('button').onclick = (e) => {
+            e.stopPropagation();
+            img.style.opacity = 0.5;
+            generateImageSource(controls.querySelector('input').value, modelSelect.value).then(url => { img.src = url; }).catch(() => { img.style.opacity = 1; });
+            img.onload = () => img.style.opacity = 1;
+        };
+        imgSection.append(img, controls);
+
+        const textSection = document.createElement('div');
+        textSection.className = 'text-section';
+        // Formato seguro de HTML
+        const concepts = asList(content.keyConcepts).map(renderConcept).join('');
+        const socratic = asList(content.socraticQuestions).map(item => `<li>${escapeHtml(item)}</li>`).join('');
+        textSection.innerHTML = `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(content.explanation)}</p>
+          <div class="learning-block"><h4>🧩 Conceptos clave y relaciones</h4><ul>${concepts}</ul></div>
+          <div class="learning-block"><h4>🔎 Pensamiento crítico y evidencias</h4><p>${escapeHtml(content.evidenceQuestion)}</p></div>
+          <div class="learning-block"><h4>💬 Preguntas socráticas</h4><ol>${socratic}</ol></div>
+          <div class="learning-block"><h4>🛠️ Actividad de aprendizaje</h4><p>${escapeHtml(content.activity)}</p></div>
+          <div class="learning-block"><h4>🌍 Transferencia</h4><p>${escapeHtml(content.transfer)}</p></div>
+          <div class="learning-block"><h4>✅ Evaluación formativa</h4><p><strong>${escapeHtml(content.checkQuestion)}</strong></p><p class="feedback">${escapeHtml(content.feedback)}</p></div>`;
+
+        layout.append(imgSection, textSection);
+        panel.appendChild(layout);
+        panelWrapper.appendChild(panel);
+
+        li.onclick = () => { li.classList.toggle('open'); panel.classList.toggle('active'); };
+        img.onclick = (e) => { e.stopPropagation(); modal.classList.add('active'); modalImg.src = img.src; };
+
+        return { trigger: li, content: panelWrapper };
+    }
+
+    async function renderLearningPlan(plan) {
+         const planBox = document.createElement('section'); planBox.className = 'learning-plan';
+         planBox.innerHTML = `<h2>🎯 Objetivos de aprendizaje</h2><ul>${asList(plan.objectives).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul><h2>🧠 Activación de conocimientos previos</h2><ol>${asList(plan.priorKnowledge).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ol>`;
+         icebergChart.appendChild(planBox);
+    }
+
+    function renderMetacognition(plan) {
+         const box = document.createElement('section'); box.className = 'metacognition';
+         box.innerHTML = `<h2>🪞 Cierre metacognitivo</h2><p>Reflexiona sobre tu recorrido de aprendizaje:</p><ol>${asList(plan.metacognition).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ol>`;
+         icebergChart.appendChild(box);
+    }
+
+    async function generateIceberg() {
+        const theme = themeInput.value.trim();
+        if (!theme) return alert("¡Necesitas un tema!");
+        
+        icebergChart.innerHTML = ''; icebergChart.style.display = 'none';
+        loadingIndicator.style.display = 'block'; exportBtn.style.display = 'none';
+        generateBtn.disabled = true;
+        
+        const levels = parseInt(levelSelect.value);
+        
+        try {
+            const learningPlan = await generateLearningPlan(theme);
+             await renderLearningPlan(learningPlan);
+             for (let i = 0; i < levels; i++) {
+                progressText.textContent = `${Math.round((i/levels)*100)}% - Nivel ${i+1}...`;
+                const { container, list } = createLevelStructure(i, levelNames[i]);
+                icebergChart.appendChild(container); icebergChart.style.display = 'block';
+
+                const titles = await generateLevelTitlesBatch(theme, i, 3);
+                const entries = await Promise.all(titles.map(async title => {
+                    const [content, visual] = await Promise.all([
+                        generateEntryContent(title, theme, i),
+                        generateVisualPrompt(title, theme, styleSelect.value, i)
+                    ]);
+                    const imageUrl = await generateImageSource(visual, modelSelect.value);
+                    return createEntry(title, content, visual, imageUrl, theme);
+                }));
+                entries.forEach(item => { list.appendChild(item.trigger); list.appendChild(item.content); });
+            }
+            renderMetacognition(learningPlan);
+             loadingIndicator.style.display = 'none'; exportBtn.style.display = 'block';
+        } catch (e) { alert("Error de IA."); console.error(e); loadingIndicator.style.display = 'none'; } 
+        finally { generateBtn.disabled = false; }
+    }
+
+    async function toDataURL(url) {
+        try {
+            const res = await fetch(url);
+            const blob = await res.blob();
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        } catch { return ''; }
+    }
+
+    exportBtn.onclick = async () => {
+        exportBtn.textContent = "Procesando..."; exportBtn.disabled = true;
+        const clone = document.documentElement.cloneNode(true);
+        
+        // Limpieza de UI
+        ['.input-area', '.loading', '#exportBtn'].forEach(s => clone.querySelector(s)?.remove());
+        clone.querySelectorAll('script').forEach(s => s.remove());
+        clone.querySelectorAll('.controls-box').forEach(el => el.remove());
+
+        // Base64 Imágenes
+        const imgs = clone.querySelectorAll('img');
+        for (const img of imgs) if(img.src.startsWith('http')) img.src = await toDataURL(img.src);
+
+        // Script para el archivo descargado (Interacción)
+        const script = document.createElement('script');
+        script.textContent = `
+            document.querySelectorAll('.entry-trigger').forEach(li => {
+                li.onclick = () => {
+                    li.classList.toggle('open');
+                    li.nextElementSibling.querySelector('.panel-content').classList.toggle('active');
+                }
+            });
+            const modal = document.querySelector('.modal');
+            const modalImg = document.getElementById('modalImage');
+            document.querySelector('.modal-close').onclick = () => modal.classList.remove('active');
+            modal.onclick = (e) => { if(e.target === modal || e.target === modalImg) modal.classList.remove('active'); };
+            document.querySelectorAll('.panel-content img').forEach(img => {
+                img.onclick = (e) => { e.stopPropagation(); modal.classList.add('active'); modalImg.src = img.src; }
+            });
+        `;
+        clone.querySelector('body').appendChild(script);
+
+        const blob = new Blob([`<!DOCTYPE html>${clone.outerHTML}`], {type: 'text/html'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Iceberg_${themeInput.value.replace(/\s/g,'_')}.html`;
+        link.click();
+        exportBtn.textContent = "📥 Descargar Iceberg HTML"; exportBtn.disabled = false;
+    };
+
+    // Events
+    generateBtn.onclick = generateIceberg;
+    paletteBtn.onclick = applyPalette;
+    
+    // BYOP Flow
+    getApiKeyBtn.onclick = () => {
+        const redirectUrl = window.location.href.split('#')[0];
+        window.location.href = `https://enter.pollinations.ai/authorize?redirect_url=${encodeURIComponent(redirectUrl)}`;
+    };
+
+    // La API key se guarda por proveedor en el controlador definido arriba.
+
+    closeBtn.onclick = () => modal.classList.remove('active');
+    modal.onclick = (e) => { if(e.target===modal || e.target===modalImg) modal.classList.remove('active'); };
+
+    // DOMContentLoaded logic for BYOP
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Load from localStorage
+        const storedKey = localStorage.getItem(storageKey(providerSelect.value));
+        if (storedKey) apiKeyInput.value = storedKey;
+
+        // 2. Capture from URL hash
+        const hashParams = new URLSearchParams(window.location.hash.slice(1));
+        const apiKey = hashParams.get('api_key');
+        if (apiKey) {
+            apiKeyInput.value = apiKey;
+            localStorage.setItem(storageKey(providerSelect.value), apiKey);
+            window.history.replaceState(null, null, window.location.pathname + window.location.search);
+            alert("¡API Key vinculada con éxito!");
+        }
+    });
+
+    // Init
+    populateStyles();
+     const preferredProvider = localStorage.getItem('preferred_provider');
+     if (preferredProvider && PROVIDERS[preferredProvider]) providerSelect.value = preferredProvider;
+     populateProviderModels(providerSelect.value);
+    document.head.appendChild(document.createElement("style")).innerText = `@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`;
+  </script>
+</body>
+</html>

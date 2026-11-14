@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Gramatical Interactivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style id="main-styles">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #050505;
+            --bg-secondary: #0f0f0f;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --border-color: #2a2a2a;
+            --highlight-text-color: #ef4444;
+            --correct-color: #22c55e;
+            --incorrect-color: #ef4444;
+        }
+        
+        body.light-mode {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #f3f4f6;
+            --bg-tertiary: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #d1d5db;
+            --highlight-text-color: #dc2626;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .header, .chat-messages, .chat-input-container, .settings-container select, .chat-input, .ai-message .message-content {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .header {
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .ai-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem 1rem 0 0;
+            padding: 1.5rem;
+            overflow-y: auto;
+            min-height: 400px;
+            max-height: 70vh;
+        }
+
+        .message { margin-bottom: 1rem; }
+        .message-content { padding: 0.75rem 1rem; border-radius: 0.5rem; width: 100%; }
+        .ai-message .message-content { background: var(--bg-tertiary); border: 1px solid var(--border-color); }
+        .user-message { display: flex; justify-content: flex-end; }
+        .user-message .message-content { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; max-width: 80%; }
+
+        .settings-container { display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin: 0 auto 1rem auto; color: var(--text-secondary); font-size: 0.9rem; flex-wrap: wrap; }
+        .settings-group { display: flex; align-items: center; gap: 0.5rem; }
+        .settings-container select { padding: 0.5rem; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 0.375rem; color: var(--text-primary); font-family: inherit; font-size: 0.9rem; }
+        #colorPaletteBtn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; border: none; cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.9rem; transition: all 0.3s ease; }
+        #colorPaletteBtn:hover { transform: translateY(-1px); }
+        #videoToggle { accent-color: var(--accent-primary); cursor: pointer; }
+        .settings-container label { cursor: pointer; }
+
+        .chat-input-container { display: flex; gap: 0.5rem; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 1rem 1rem; }
+        .chat-input { flex: 1; padding: 0.75rem; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 0.5rem; color: var(--text-primary); font-family: inherit; }
+        .chat-input:focus { outline: none; border-color: var(--accent-primary); }
+        .send-btn { padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+        .send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
+
+        .message { display: flex; gap: 0.75rem; align-items: flex-start; }
+        .user-message { flex-direction: row-reverse; }
+        .message-avatar { flex-shrink: 0; width: 40px; height: 40px; }
+        .message-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 2px solid var(--border-color); }
+
+        .video-display-container { margin-bottom: 1.5rem; }
+        .video-display-container video { width: 100%; border-radius: 0.5rem; border: 1px solid var(--border-color); background-color: #000; }
+        .rich-text-content { line-height: 1.7; }
+        .generated-paragraph { margin: 0.75rem 0 1.5rem 0; padding: 1rem; border-left: 3px solid var(--accent-primary); background: var(--bg-primary); text-align: justify; border-radius: 0 0.5rem 0.5rem 0; }
+        
+        .game-container { margin-top: 1.5rem; border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; }
+        .game-instruction { text-align: center; font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent-secondary); }
+        .word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; }
+        .word-button { padding: 1rem; font-size: 1.1rem; font-weight: 500; border: 1px solid var(--border-color); border-radius: 0.375rem; background-color: var(--bg-tertiary); color: var(--text-primary); cursor: pointer; transition: all 0.2s ease; }
+        .word-button:hover { border-color: var(--accent-primary); }
+        .word-button.selected { background-color: var(--accent-primary); color: white; border-color: var(--accent-secondary); }
+        
+        .game-container.graded .word-button.correct.selected { background-color: var(--correct-color); border-color: var(--correct-color); color: white; }
+        .game-container.graded .word-button.incorrect.selected { background-color: var(--incorrect-color); border-color: var(--incorrect-color); color: white; }
+        .game-container.graded .word-button.correct:not(.selected) { border: 2px solid var(--correct-color); background-color: transparent; }
+        .game-container.graded .word-button { cursor: default; }
+
+        .game-actions { margin-top: 1rem; text-align: center; }
+        .game-btn { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+        .verify-btn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; }
+        .next-btn { background-color: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
+
+        .game-result { margin-top: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: var(--bg-primary); font-size: 1rem; text-align: center; font-weight: 600; }
+        .final-score-container { margin-top: 1.5rem; padding: 1.5rem; border-radius: 0.5rem; background-color: var(--bg-tertiary); border: 1px solid var(--accent-primary); text-align: center; font-size: 1.2rem; font-weight: 600; }
+        
+        .analysis-actions { margin-top: 1.5rem; text-align: center; }
+        .download-btn { padding: 0.75rem 1.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 0.5rem; cursor: pointer; font-weight: 500; }
+        .download-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); border-color: var(--accent-primary); }
+
+        .site-footer { padding: 1.5rem 1rem; text-align: center; font-size: 0.875rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 2rem; }
+        
+        /* Loading spinner for avatar */
+        .avatar-loading { opacity: 0.5; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 0.8; } 100% { opacity: 0.5; } }
+    </style>
+</head>
+
+<body id="page-body">
+    <div class="header"> <h1 class="ai-title" id="mainTitle">Análisis Gramatical Interactivo</h1> </div>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">
+                <div class="message-avatar">
+                    <img src="" alt="Profesor de Gramática" id="aiAvatar">
+                </div>
+                <div class="message-content" id="initialGreeting"> ¡Hola! Soy tu asistente gramatical. Dame un tema, elige una dificultad y crearé un párrafo con un juego interactivo para poner a prueba tu análisis. </div>
+            </div>
+        </div>
+        <div class="settings-container">
+            <div class="settings-group">
+                <label for="languageSelector" id="languageLabel">Idioma:</label>
+                <select id="languageSelector">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label for="modelSelector" id="modelLabel">Modelo:</label>
+                <select id="modelSelector">
+                    <option value="openai" selected>GPT 5 Mini</option>
+                    <option value="mistral">Mistral 3.2</option>
+                    <option value="deepseek">Deepseek V3.2</option>
+                    <option value="perplexity-fast">Perplexity Sonar</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label for="difficultySelector" id="difficultyLabel">Dificultad:</label>
+                <select id="difficultySelector">
+                    <option value="long" selected>Párrafo Largo</option>
+                    <option value="short">Párrafo Corto</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <input type="checkbox" id="videoToggle" checked>
+                <label for="videoToggle" id="videoToggleLabel">Videos</label>
+            </div>
+            <button id="colorPaletteBtn">Paleta</button>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Escribe un tema para generar un párrafo..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" class="send-btn" id="sendButton">Enviar</button>
+        </div>
+    </div>
+
+    <footer class="site-footer"> <p id="footerText">Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 2.5 Pro y las API de Pollinations.</p> </footer>
+
+    <script>
+        const PEXELS_API_KEY = 'Je4BfGJWALcyJgFa4scezneUkrUBiq8XklJ1q3jOXuy6zV3uOCySUbkU';
+        const DEFAULT_VIDEO_URL = 'https://videos.pexels.com/video-files/7034147/7034147-sd_640_360_25fps.mp4';
+        const BACKEND_URL_TEXT = 'https://node.proyectodescartes.org/api/ia/text';
+        const BACKEND_URL_IMAGE = 'https://node.proyectodescartes.org/api/ia/image';
+        
+        const TRANSLATIONS = {
+            es: {
+                title: "Análisis Gramatical Interactivo",
+                greeting: "¡Hola! Soy tu asistente gramatical. Dame un tema, elige una dificultad y crearé un párrafo con un juego interactivo para poner a prueba tu análisis.",
+                placeholder: "Escribe un tema para generar un párrafo...",
+                sendBtn: "Enviar", videoToggleLabel: "Videos", colorPaletteBtn: "Paleta", languageLabel: "Idioma:", modelLabel: "Modelo:", difficultyLabel: "Dificultad:",
+                longParagraph: "Párrafo Largo", shortParagraph: "Párrafo Corto",
+                footer: "Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 2.5 Pro y las API de Pollinations.", aiName: "Profesor de Gramática",
+                instruction: { verbs: "Haz clic sobre los verbos", nouns: "Haz clic sobre los sustantivos", adjectives: "Haz clic sobre los adjetivos", prepositions: "Haz clic sobre las preposiciones" },
+                verifyBtn: "Verificar", nextBtn: "Siguiente", score: "Puntuación", finalScore: "Puntuación Final Promedio", downloadBtn: "Descargar Ejercicio",
+                error: "Lo siento, ocurrió un error. La respuesta de la IA podría no ser válida.",
+                behavior: `Tu tarea es actuar como un experto gramatical y etiquetar un párrafo.
+**CRITICAL RULES (MUST FOLLOW):**
+1.  **NO INTRODUCTIONS:** Tu respuesta DEBE ser un objeto JSON válido y nada más.
+2.  **JSON STRUCTURE:** El JSON debe tener una única clave: "tagged_paragraph".
+3.  **PARAGRAPH CONTENT:** {PARAGRAPH_LENGTH_INSTRUCTION}
+4.  **TAGS:** Usa solo estas etiquetas: \`<v>\` para verbos, \`<n>\` para sustantivos, \`<a>\` para adjetivos, \`<p>\` para preposiciones.
+**REGLAS DE ETIQUETADO DE NIVEL EXPERTO (OBLIGATORIAS):**
+1.  **Verbos (\`<v>\`):** Palabras de acción o estado (ej: correr, es, fue, pensando, han sido). Identifica TODAS las formas.
+2.  **Sustantivos (\`<n>\`):** Nombres de cosas, lugares o ideas (ej: gato, casa, inteligencia).
+3.  **Adjetivos (\`<a>\`):** Palabras que describen sustantivos (ej: rojo, grande, feliz).
+4.  **Preposiciones (\`<p>\`):** SOLO palabras de esta lista: a, ante, bajo, con, contra, de, desde, durante, en, entre, hacia, hasta, mediante, para, por, según, sin, so, sobre, tras.
+5.  **EXCLUSIÓN ESTRICTA:** Es absolutamente prohibido etiquetar las siguientes palabras:
+    - **Artículos:** el, la, los, las, un, una.
+    - **Conjunciones:** y, e, ni, que, pero, o.
+    - **Pronombres:** él, ella, ellos, le, lo, mi, su.
+    - **Adverbios:** muy, no, también, además.
+    Cualquier palabra que no encaje en las 4 categorías principales DEBE quedar sin etiqueta. Si tienes dudas, NO etiquetes.
+**REVISIÓN FINAL OBLIGATORIA:** Antes de responder, revisa tu párrafo etiquetado para asegurar que ninguna palabra de la lista de EXCLUSIÓN ESTRICTA ha sido etiquetada por error.
+**Ejemplo de formato de respuesta PERFECTO:**
+{
+  "tagged_paragraph": "El <a>veloz</a> <n>zorro</n> <a>marrón</a> <v>salta</v> <p>sobre</p> el <a>perezoso</a> <n>perro</n>, <v>corriendo</v> <p>desde</p> el <n>bosque</n> <p>hacia</p> la <n>pradera</n> <p>sin</p> <v>detenerse</v>."
+}`
+            },
+            en: {
+                title: "Interactive Grammar Analysis", greeting: "Hello! I'm your grammar assistant. Give me a topic, choose a difficulty, and I'll create a paragraph with an interactive game to test your analysis.",
+                placeholder: "Write a topic to generate a paragraph...", sendBtn: "Send", videoToggleLabel: "Videos", colorPaletteBtn: "Palette", languageLabel: "Language:", modelLabel: "Model:", difficultyLabel: "Difficulty:",
+                longParagraph: "Long Paragraph", shortParagraph: "Short Paragraph",
+                footer: "Designed by Juan Guillermo Rivera Berrío with Gemini 2.5 Pro technology and Pollinations APIs.", aiName: "Grammar Professor",
+                instruction: { verbs: "Click on the verbs", nouns: "Click on the nouns", adjectives: "Click on the adjectives", prepositions: "Click on the prepositions" },
+                verifyBtn: "Verify", nextBtn: "Next", score: "Score", finalScore: "Final Average Score", downloadBtn: "Download Exercise",
+                error: "Sorry, an error occurred. The AI's response might be invalid.",
+                behavior: `Your task is to act as a grammar expert and tag a paragraph.
+**CRITICAL RULES (MUST FOLLOW):**
+1.  **NO INTRODUCTIONS:** Your response MUST be a valid JSON object and nothing else.
+2.  **JSON STRUCTURE:** The JSON must have a single key: "tagged_paragraph".
+3.  **PARAGRAPH CONTENT:** {PARAGRAPH_LENGTH_INSTRUCTION}
+4.  **TAGS:** Use only these tags: \`<v>\` for verbs, \`<n>\` for nouns, \`<a>\` for adjectives, \`<p>\` for prepositions.
+**EXPERT-LEVEL TAGGING RULES (MANDATORY):**
+1.  **Verbs (\`<v>\`):** Action or state words (e.g., run, is, was, thinking, have been). Identify ALL forms.
+2.  **Nouns (\`<n>\`):** Names of things, places, or ideas (e.g., cat, house, intelligence).
+3.  **Adjectives (\`<a>\`):** Words that describe nouns (e.g., red, big, happy).
+4.  **Prepositions (\`<p>\`):** Words like: on, in, at, for, to, from, over, under, with, without, through.
+5.  **STRICT EXCLUSION:** It is absolutely forbidden to tag the following words:
+    - **Articles:** a, an, the.
+    - **Conjunctions:** and, but, or, so, that.
+    - **Pronouns:** he, she, it, they, me, him, her, my, your.
+    - **Adverbs:** very, not, also, too, quickly.
+    Any word that does not fit into the 4 main categories MUST be left untagged. When in doubt, DO NOT tag.
+**MANDATORY FINAL REVIEW:** Before responding, double-check your tagged paragraph to ensure that no word from the STRICT EXCLUSION list has been mistakenly tagged.
+**Example of a PERFECT response format:**
+{
+  "tagged_paragraph": "The <a>quick</a> <a>brown</a> <n>fox</n> <v>jumps</v> <p>over</p> the <a>lazy</a> <n>dog</n>, <v>running</v> <p>from</p> the <n>forest</n> <p>towards</p> the <n>meadow</n> <p>without</p> <v>stopping</v>."
+}`
+            },
+        };
+
+        const PALETTES = [ { name: 'Indigo', accentPrimary: '#6366f1', accentSecondary: '#8b5cf6' }, { name: 'Emerald', accentPrimary: '#10b981', accentSecondary: '#34d399' }, { name: 'Rose', accentPrimary: '#f43f5e', accentSecondary: '#ec4899' }, { name: 'Amber', accentPrimary: '#f59e0b', accentSecondary: '#fbbf24' }, { name: 'Sky', accentPrimary: '#38bdf8', accentSecondary: '#0ea5e9' }, { name: 'Violet', accentPrimary: '#a78bfa', accentSecondary: '#c084fc' }, { name: 'Teal', accentPrimary: '#14b8a6', accentSecondary: '#2dd4bf' }, { name: 'Crimson', accentPrimary: '#dc2626', accentSecondary: '#ef4444' }, { name: 'Light Mode', theme: 'light', accentPrimary: '#4f46e5', accentSecondary: '#7c3aed' }];
+        let currentPaletteIndex = 0;
+        let currentLanguage = 'es';
+        const AI_CONFIG = { get name() { return TRANSLATIONS[currentLanguage].aiName; } };
+        let gameCounter = 0;
+        let gameData = {};
+        
+        // Caches for avatars to avoid re-generating them constantly
+        const avatarCache = {};
+
+        function changeColorPalette() {
+            const body = document.getElementById('page-body');
+            currentPaletteIndex = (currentPaletteIndex + 1) % PALETTES.length;
+            const newPalette = PALETTES[currentPaletteIndex];
+            body.classList.toggle('light-mode', newPalette.theme === 'light');
+            document.documentElement.style.setProperty('--accent-primary', newPalette.accentPrimary);
+            document.documentElement.style.setProperty('--accent-secondary', newPalette.accentSecondary);
+        }
+
+        document.getElementById('colorPaletteBtn').addEventListener('click', changeColorPalette);
+
+        // Function to fetch image from backend
+        async function fetchImageFromBackend(prompt, seed = null) {
+            try {
+                const response = await fetch(BACKEND_URL_IMAGE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        model: 'flux', // Standard model used in backend
+                        seed: seed || Math.floor(Math.random() * 1000),
+                        width: 128, // Avatar size optimization
+                        height: 128
+                    })
+                });
+
+                if (!response.ok) throw new Error('Image generation failed');
+                
+                const blob = await response.blob();
+                return URL.createObjectURL(blob);
+            } catch (error) {
+                console.error("Error fetching image:", error);
+                // Fallback placeholder
+                return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23cccccc'/%3E%3C/svg%3E";
+            }
+        }
+
+        async function updateLanguage() {
+            currentLanguage = document.getElementById('languageSelector').value;
+            const t = TRANSLATIONS[currentLanguage];
+            Object.keys(t).forEach(key => {
+                const el = document.getElementById(key + 'Label') || document.getElementById(key + 'Text') || document.getElementById(key);
+                if (el) {
+                    if (el.tagName === 'INPUT') el.placeholder = t[key];
+                    else el.textContent = t[key];
+                }
+            });
+            const difficultySelector = document.getElementById('difficultySelector');
+            difficultySelector.options[0].textContent = t.longParagraph;
+            difficultySelector.options[1].textContent = t.shortParagraph;
+            document.getElementById('aiAvatar').alt = t.aiName;
+            
+            // Async load of AI Avatar
+            const avatarImg = document.getElementById('aiAvatar');
+            const aiName = t.aiName;
+            
+            if (avatarCache[aiName]) {
+                avatarImg.src = avatarCache[aiName];
+            } else {
+                avatarImg.classList.add('avatar-loading');
+                const imgUrl = await fetchImageFromBackend(`${aiName}, photographic, portrait`, aiName.length);
+                avatarCache[aiName] = imgUrl;
+                avatarImg.src = imgUrl;
+                avatarImg.classList.remove('avatar-loading');
+            }
+
+            document.getElementById('initialGreeting').textContent = t.greeting;
+            document.getElementById('sendButton').textContent = t.sendBtn;
+        }
+
+        document.getElementById('languageSelector').addEventListener('change', updateLanguage);
+
+        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
+
+        async function fetchPexelsVideo(query) {
+             if (!query) return null;
+             try {
+                 const response = await fetch(`https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`, { headers: { Authorization: PEXELS_API_KEY } });
+                 if (!response.ok) return null;
+                 const data = await response.json();
+                 if (data.videos && data.videos.length > 0) {
+                     const videoFile = data.videos[0].video_files.find(f => f.quality === 'hd') || data.videos[0].video_files[0];
+                     return videoFile.link;
+                 }
+                 return null;
+             } catch (error) { console.error('Pexels API Error:', error); return null; }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Get User Avatar URL (cache if possible)
+            let userAvatarUrl = avatarCache['user_student'];
+            if (!userAvatarUrl) {
+                userAvatarUrl = await fetchImageFromBackend("student, photographic, portrait", 888);
+                avatarCache['user_student'] = userAvatarUrl;
+            }
+
+            addMessage(message, 'user', { avatarUrl: userAvatarUrl });
+            input.value = '';
+            input.disabled = true;
+            document.querySelector('.send-btn').disabled = true;
+
+            const activateVideo = document.getElementById('videoToggle').checked;
+            const videoPromise = activateVideo ? fetchPexelsVideo(message) : Promise.resolve(null);
+            
+            try {
+                const [videoUrlResult, aiResponseJson] = await Promise.all([ videoPromise, generateAIResponse(message) ]);
+                const finalVideoUrl = activateVideo ? (videoUrlResult || DEFAULT_VIDEO_URL) : null;
+                
+                // Ensure AI avatar is ready
+                const aiAvatarUrl = document.getElementById('aiAvatar').src;
+                
+                addMessage(aiResponseJson, 'ai', { userPrompt: message, videoUrl: finalVideoUrl, avatarUrl: aiAvatarUrl });
+            } catch (error) {
+                console.error("Error processing AI response:", error);
+                const aiAvatarUrl = document.getElementById('aiAvatar').src;
+                addMessage({ error: error.message }, 'ai', { userPrompt: message, avatarUrl: aiAvatarUrl });
+            } finally {
+                input.disabled = false;
+                document.querySelector('.send-btn').disabled = false;
+            }
+        }
+        
+        function processTaggedText(taggedText) {
+            const analysis = {
+                verbs: [...new Set((taggedText.match(/<v>(.*?)<\/v>/g) || []).map(t => t.replace(/<\/?v>/g, '')))],
+                nouns: [...new Set((taggedText.match(/<n>(.*?)<\/n>/g) || []).map(t => t.replace(/<\/?n>/g, '')))],
+                adjectives: [...new Set((taggedText.match(/<a>(.*?)<\/a>/g) || []).map(t => t.replace(/<\/?a>/g, '')))],
+                prepositions: [...new Set((taggedText.match(/<p>(.*?)<\/p>/g) || []).map(t => t.replace(/<\/?p>/g, '')))]
+            };
+            const cleanParagraph = taggedText.replace(/<[a-z]>/g, '').replace(/<\/[a-z]>/g, '');
+            return { cleanParagraph, analysis, taggedText };
+        }
+
+        function createGameWords(analysis) {
+            const difficulty = document.getElementById('difficultySelector').value;
+            const wordCount = difficulty === 'short' ? 6 : 12;
+            const allWords = [...analysis.verbs, ...analysis.nouns, ...analysis.adjectives, ...analysis.prepositions];
+            const uniqueWords = [...new Set(allWords)];
+            
+            return uniqueWords.sort(() => 0.5 - Math.random()).slice(0, wordCount);
+        }
+
+        function renderAIResponse(data, userPrompt, staticId = null) {
+            if (data.error || !data.tagged_paragraph) { return `<p><em>${TRANSLATIONS[currentLanguage].error}</em></p>`; }
+            
+            const id = staticId || ++gameCounter;
+            const processedData = processTaggedText(data.tagged_paragraph);
+
+            if (!staticId) {
+                gameData[id] = { prompt: userPrompt, ...processedData, scores: {}, currentStage: 0, gameWords: createGameWords(processedData.analysis) };
+            }
+            
+            const gameHtml = createGameStageHtml(id, staticId ? gameData[id] : null);
+
+            return `<div class="interactive-exercise" id="exercise-container-${id}">
+                        <div class="generated-paragraph">${processedData.cleanParagraph}</div>
+                        ${gameHtml}
+                        <div class="analysis-actions">
+                            <button class="download-btn">${TRANSLATIONS[currentLanguage].downloadBtn}</button>
+                        </div>
+                    </div>`;
+        }
+        
+        function createGameStageHtml(id, staticData = null) {
+            const data = staticData || gameData[id];
+            const t = TRANSLATIONS[currentLanguage];
+            const currentStageIndex = data.currentStage;
+            const stages = ['verbs', 'nouns', 'adjectives', 'prepositions'];
+            
+            if (currentStageIndex >= stages.length) {
+                const scores = Object.values(data.scores);
+                const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+                return `<div class="final-score-container">${t.finalScore}: ${average.toFixed(0)}%</div>`;
+            }
+
+            const currentCategory = stages[currentStageIndex];
+            const words = data.gameWords;
+            const wordGridHtml = words.map(word => `<button class="word-button" data-word="${word}">${word}</button>`).join('');
+
+            return `<div class="game-container" id="game-container-${id}">
+                        <div class="game-instruction">${t.instruction[currentCategory]}</div>
+                        <div class="word-grid">${wordGridHtml}</div>
+                        <div class="game-actions">
+                            <button class="game-btn verify-btn" onclick="verifyStage(${id})">${t.verifyBtn}</button>
+                        </div>
+                        <div class="game-result" style="display: none;"></div>
+                    </div>`;
+        }
+
+        document.getElementById('chatMessages').addEventListener('click', e => {
+            if (e.target.classList.contains('word-button') && !e.target.closest('.game-container.graded')) {
+                e.target.classList.toggle('selected');
+            } else if (e.target.classList.contains('download-btn')) {
+                 const exerciseContainer = e.target.closest('.interactive-exercise');
+                 if (exerciseContainer) {
+                    const id = parseInt(exerciseContainer.id.split('-').pop(), 10);
+                    downloadExercise(e.target, id);
+                 }
+            }
+        });
+
+        function addMessage(message, sender, options = {}) {
+            const { userPrompt, videoUrl, avatarUrl } = options;
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            let videoHtml = '';
+            if (sender === 'ai' && videoUrl) { videoHtml = `<div class="video-display-container"><video src="${videoUrl}" loop muted autoplay playsinline title="Video de stock sobre ${userPrompt}"></video></div>`; }
+            
+            const messageContent = sender === 'ai' ? renderAIResponse(message, userPrompt) : message;
+            
+            // Use the passed avatarUrl (which is a blob URL from the backend)
+            const finalAvatarUrl = avatarUrl || (sender === 'user' ? 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%236366f1"/%3E%3C/svg%3E' : '');
+
+            if (sender === 'user') {
+                messageDiv.innerHTML = `<div class="message-avatar"><img src="${finalAvatarUrl}" alt="Usuario"></div><div class="message-content">${messageContent}</div>`;
+            } else {
+                messageDiv.innerHTML = `<div class="message-avatar"><img src="${finalAvatarUrl}" alt="${AI_CONFIG.name}"></div><div class="message-content rich-text-content">${videoHtml}${messageContent}</div>`;
+            }
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function verifyStage(id) {
+            const container = document.getElementById(`game-container-${id}`);
+            if (!container) return;
+            container.classList.add('graded');
+            
+            const currentStageIndex = gameData[id].currentStage;
+            const stages = ['verbs', 'nouns', 'adjectives', 'prepositions'];
+            const currentCategory = stages[currentStageIndex];
+            const correctWordsForCategory = gameData[id].analysis[currentCategory];
+
+            let correctSelections = 0;
+            let totalCorrectInGrid = 0;
+            let incorrectSelections = 0;
+
+            container.querySelectorAll('.word-button').forEach(button => {
+                const word = button.dataset.word;
+                const isSelected = button.classList.contains('selected');
+                const isCorrectType = correctWordsForCategory.includes(word);
+
+                if (isCorrectType) {
+                    totalCorrectInGrid++;
+                    if (isSelected) {
+                        correctSelections++;
+                        button.classList.add('correct');
+                    } else {
+                        button.classList.add('correct');
+                    }
+                } else {
+                    if (isSelected) {
+                        incorrectSelections++;
+                        button.classList.add('incorrect');
+                    }
+                }
+            });
+
+            const score = totalCorrectInGrid > 0 ? (correctSelections / totalCorrectInGrid) * 100 : (incorrectSelections > 0 ? 0 : 100);
+            const finalScore = Math.max(0, score);
+            gameData[id].scores[currentCategory] = finalScore;
+            
+            const t = TRANSLATIONS[currentLanguage];
+            container.querySelector('.game-result').innerHTML = `${t.score}: ${finalScore.toFixed(0)}%`;
+            container.querySelector('.game-result').style.display = 'block';
+
+            const actionsDiv = container.querySelector('.game-actions');
+            actionsDiv.innerHTML = `<button class="game-btn next-btn" onclick="nextStage(${id})">${t.nextBtn}</button>`;
+        }
+
+        function nextStage(id) {
+            gameData[id].currentStage++;
+            const newStageHtml = createGameStageHtml(id);
+            const container = document.getElementById(`game-container-${id}`);
+            if (container) {
+                container.outerHTML = newStageHtml;
+            } else {
+                 const exerciseContainer = document.getElementById(`exercise-container-${id}`);
+                 const finalScoreContainer = exerciseContainer.querySelector('.final-score-container');
+                 if(finalScoreContainer) finalScoreContainer.outerHTML = newStageHtml;
+            }
+        }
+        
+        function downloadExercise(buttonElement, id) {
+            const data = gameData[id];
+            if (!data) return;
+
+            const messageContentDiv = buttonElement.closest('.rich-text-content');
+            const videoContainer = messageContentDiv ? messageContentDiv.querySelector('.video-display-container') : null;
+            const videoHtml = videoContainer ? videoContainer.outerHTML : '';
+
+            const t = TRANSLATIONS[currentLanguage];
+            const styles = document.getElementById('main-styles').innerHTML;
+            const rootStyles = getComputedStyle(document.documentElement);
+            const colorOverrideStyle = `<style>:root { --accent-primary: ${rootStyles.getPropertyValue('--accent-primary').trim()}; --accent-secondary: ${rootStyles.getPropertyValue('--accent-secondary').trim()}; }</style>`;
+            const bodyClass = document.getElementById('page-body').className;
+            const downloadId = 1;
+
+            const staticDataForRender = { ...data, currentStage: 0, scores: {} };
+            const gameHtml = createGameStageHtml(downloadId, staticDataForRender);
+
+            const finalHtml = `<div class="interactive-exercise" id="exercise-container-${downloadId}">
+                                <div class="generated-paragraph">${data.cleanParagraph}</div>
+                                ${gameHtml}
+                                <div class="analysis-actions">
+                                    <button class="download-btn" style="display:none;">${t.downloadBtn}</button>
+                                </div>
+                            </div>`;
+
+            const fileContent = `<!DOCTYPE html><html lang="${currentLanguage}"><head><meta charset="UTF-8"><title>${t.title} - ${data.prompt}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"><style>${styles}</style>${colorOverrideStyle}</head><body class="${bodyClass}">
+            <div class="header"><h1 class="ai-title">${t.title}: ${data.prompt}</h1></div>
+            <div class="chat-container"><div class="message ai-message"><div class="message-content rich-text-content">${videoHtml}${finalHtml}</div></div></div>
+            <footer class="site-footer"><p>${t.footer}</p></footer>
+            <script>
+                const t = ${JSON.stringify(t)};
+                let gameData = { ${downloadId}: ${JSON.stringify(staticDataForRender)} };
+                document.body.addEventListener('click', e => { if (e.target.classList.contains('word-button') && !e.target.closest('.game-container.graded')) e.target.classList.toggle('selected'); });
+                function createGameStageHtml(id) {
+                    const data = gameData[id]; const currentStageIndex = data.currentStage; const stages = ['verbs', 'nouns', 'adjectives', 'prepositions'];
+                    if (currentStageIndex >= stages.length) {
+                        const scores = Object.values(data.scores); const average = scores.reduce((s, c) => s + c, 0) / scores.length;
+                        return \`<div class="final-score-container">\${t.finalScore}: \${average.toFixed(0)}%</div>\`;
+                    }
+                    const currentCategory = stages[currentStageIndex]; const words = data.gameWords;
+                    const wordGridHtml = words.map(word => \`<button class="word-button" data-word="\${word}">\${word}</button>\`).join('');
+                    return \`<div class="game-container" id="game-container-\${id}">
+                                <div class="game-instruction">\${t.instruction[currentCategory]}</div><div class="word-grid">\${wordGridHtml}</div>
+                                <div class="game-actions"><button class="game-btn verify-btn" onclick="verifyStage(\${id})">\${t.verifyBtn}</button></div>
+                                <div class="game-result" style="display: none;"></div></div>\`;
+                }
+                function verifyStage(id) {
+                    const container = document.getElementById('game-container-' + id); if (!container) return; container.classList.add('graded');
+                    const data = gameData[id]; const currentStageIndex = data.currentStage; const stages = ['verbs', 'nouns', 'adjectives', 'prepositions']; const currentCategory = stages[currentStageIndex];
+                    const correctWordsForCategory = data.analysis[currentCategory]; let correctSelections = 0, totalCorrectInGrid = 0, incorrectSelections = 0;
+                    container.querySelectorAll('.word-button').forEach(button => {
+                        const word = button.dataset.word; const isSelected = button.classList.contains('selected'); const isCorrectType = correctWordsForCategory.includes(word);
+                        if(isCorrectType) totalCorrectInGrid++;
+                        if (isSelected && isCorrectType) { correctSelections++; button.classList.add('correct'); }
+                        else if (isSelected && !isCorrectType) { incorrectSelections++; button.classList.add('incorrect'); }
+                        else if (!isSelected && isCorrectType) { button.classList.add('correct'); }
+                    });
+                    const score = totalCorrectInGrid > 0 ? (correctSelections / totalCorrectInGrid) * 100 : (incorrectSelections > 0 ? 0 : 100);
+                    const finalScore = Math.max(0, score); data.scores[currentCategory] = finalScore;
+                    container.querySelector('.game-result').innerHTML = \`\${t.score}: \${finalScore.toFixed(0)}%\`; container.querySelector('.game-result').style.display = 'block';
+                    container.querySelector('.game-actions').innerHTML = \`<button class="game-btn next-btn" onclick="nextStage(\${id})">\${t.nextBtn}</button>\`;
+                }
+                function nextStage(id) {
+                    gameData[id].currentStage++; const newStageHtml = createGameStageHtml(id); const container = document.getElementById('game-container-' + id);
+                    if (container) { container.outerHTML = newStageHtml; }
+                    else { const exerciseContainer = document.getElementById(\`exercise-container-\${id}\`); const finalScoreContainer = exerciseContainer.querySelector('.final-score-container'); if(finalScoreContainer) finalScoreContainer.outerHTML = newStageHtml; }
+                }
+            <\/script></body></html>`;
+            const blob = new Blob([fileContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `analisis-gramatical-${data.prompt.replace(/\s+/g, '-')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+        async function generateAIResponse(userMessage) {
+            const difficulty = document.getElementById('difficultySelector').value;
+            let lengthInstruction = difficulty === 'short'
+                ? 'El párrafo debe ser corto, de entre 40 y 50 palabras.'
+                : 'El párrafo debe ser largo, de al menos 100 palabras, y rico gramaticalmente.';
+            
+            let behaviorTemplate = TRANSLATIONS[currentLanguage].behavior.replace('{PARAGRAPH_LENGTH_INSTRUCTION}', lengthInstruction);
+            const selectedModel = document.getElementById('modelSelector').value;
+            let aiResponseText = ''; 
+            try {
+                const fullPrompt = `${behaviorTemplate}\n\nUser topic: ${userMessage}`;
+                
+                // Using Backend POST request instead of GET with key
+                const response = await fetch(BACKEND_URL_TEXT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: fullPrompt,
+                        model: selectedModel
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                aiResponseText = await response.text();
+
+                const startIndex = aiResponseText.indexOf('{');
+                if (startIndex === -1) throw new Error("AI response did not contain a JSON object.");
+                
+                let braceCount = 1;
+                let endIndex = -1;
+                for (let i = startIndex + 1; i < aiResponseText.length; i++) {
+                    if (aiResponseText[i] === '{') braceCount++;
+                    else if (aiResponseText[i] === '}') braceCount--;
+                    if (braceCount === 0) { endIndex = i; break; }
+                }
+
+                if (endIndex === -1) throw new Error("AI response contained an incomplete JSON object.");
+                
+                const jsonString = aiResponseText.substring(startIndex, endIndex + 1);
+                return JSON.parse(jsonString);
+            } catch (error) {
+                console.error('Error al generar o parsear respuesta de IA:', error);
+                console.error('Problematic AI Response Text:', aiResponseText); 
+                throw error;
+            }
+        }
+        
+        // Initialize language
+        updateLanguage();
+    </script>
+</body>
+
+</html>

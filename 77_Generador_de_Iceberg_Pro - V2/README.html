@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>README · Generador de Iceberg Pro</title>
+<style>
+:root { --bg:#fff; --fg:#1f2430; --muted:#5b6475; --line:#e2e6ee; --accent:#5b3fc4; --code:#f3f0fc; }
+@media (prefers-color-scheme: dark) { :root { --bg:#14131f; --fg:#e8e8f2; --muted:#a3a6bd; --line:#2d2c44; --accent:#a78bfa; --code:#221f38; } }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.65 'Segoe UI',Tahoma,Verdana,sans-serif; }
+main { max-width:820px; margin:0 auto; padding:32px 20px 60px; }
+h1 { font-size:2rem; margin-top:0; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+h2 { margin-top:2rem; color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:6px; }
+code { background:var(--code); padding:2px 6px; border-radius:5px; font-size:.9em; }
+a { color:var(--accent); }
+li { margin:4px 0; }
+.table-wrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; }
+th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:var(--code); }
+</style>
+</head>
+<body><main>
+<h1>Generador de Iceberg Pro</h1>
+<p>Aplicación web de un solo archivo (<code>index.html</code>) que genera, con IA, un <strong>iceberg de aprendizaje</strong> sobre cualquier tema: niveles de profundidad creciente, imágenes ilustrativas, actividades de pensamiento crítico y <strong>cuestionarios de selección múltiple</strong> con retroalimentación inmediata.</p>
+<h2>Características</h2>
+<ul>
+<li><strong>Iceberg por niveles:</strong> de 3 entradas por nivel, desde lo más conocido hasta lo más profundo del tema.</li>
+<li><strong>Experiencia de aprendizaje completa</strong> en cada entrada:</li>
+<li>Explicación y conceptos clave con sus relaciones.</li>
+<li>Pensamiento crítico y evidencias.</li>
+<li>Preguntas socráticas.</li>
+<li>Actividad de aprendizaje y transferencia.</li>
+<li>Evaluación formativa: pregunta de comprobación y <strong>2 preguntas de selección múltiple</strong>.</li>
+<li><strong>Plan de aprendizaje:</strong> objetivos, activación de conocimientos previos y cierre metacognitivo.</li>
+<li><strong>Cuestionario final</strong> que evalúa todos los niveles del iceberg.</li>
+<li><strong>Panel de resultados</strong> al final: puntaje por nivel, del cuestionario final y total en porcentaje.</li>
+<li><strong>Imágenes con IA</strong> en distintos estilos, regenerables por entrada, con paleta de colores intercambiable.</li>
+<li><strong>Descarga del iceberg</strong> como HTML independiente.</li>
+</ul>
+<h2>Requisitos</h2>
+<ul>
+<li>Un navegador moderno (Chrome, Edge, Firefox, Safari).</li>
+<li>Conexión a internet.</li>
+<li>Un proveedor de IA, a elegir en la app:</li>
+<li><strong>Red Descartes (gratuito):</strong> no requiere llave.</li>
+<li><strong>Pollinations:</strong> requiere API Key (botón <strong>🔑 Obtener</strong> o pegarla manualmente).</li>
+<li><strong>OpenRouter:</strong> requiere API Key.</li>
+</ul>
+<h2>Uso</h2>
+<ol>
+<li>Abre <code>index.html</code> en el navegador (o publícalo en tu servidor).</li>
+<li>Escribe el <strong>tema</strong> (por ejemplo, <em>Biología marina</em>).</li>
+<li>Elige proveedor, número de niveles, estilo visual y modelos de texto e imagen.</li>
+<li>Si el proveedor lo requiere, ingresa o valida tu API Key.</li>
+<li>Pulsa <strong>🔮 Generar Iceberg</strong> y espera a que se generen los niveles y el cuestionario final.</li>
+<li>Explora cada entrada y responde los cuestionarios:
+   - La opción <strong>correcta</strong> se marca en <strong>verde</strong>.
+   - Si eliges una incorrecta, se marca en <strong>rojo</strong> y la correcta se muestra en verde, con una explicación.
+   - Cada pregunta se responde una sola vez.</li>
+<li>Revisa el panel <strong>📊 Resultados</strong> al final.</li>
+</ol>
+<h2>Descarga del iceberg</h2>
+<p>El botón <strong>📥 Descargar Iceberg HTML</strong> genera un archivo independiente:</p>
+<ul>
+<li>El <strong>título</strong> de la página y el encabezado son el <strong>tema</strong> del iceberg.</li>
+<li>Las imágenes se incrustan en el archivo (funciona sin conexión).</li>
+<li>Los <strong>cuestionarios se reinician</strong>: no conserva las respuestas dadas en la app.</li>
+<li>Mantiene la interacción: paneles desplegables, ampliación de imágenes, cuestionarios y resultados.</li>
+<li>No incluye el panel de configuración ni las llaves de API.</li>
+</ul>
+<h2>Notas técnicas</h2>
+<ul>
+<li>Todo el código (HTML, CSS y JavaScript) está en un único archivo, sin dependencias.</li>
+<li>La API Key se guarda en el <code>localStorage</code> del navegador, por proveedor, y nunca se incluye en el archivo descargado.</li>
+<li>Las preguntas se piden a la IA en formato JSON; el orden de las opciones se mezcla en cada generación.</li>
+<li><strong>Opciones equilibradas:</strong> el prompt exige opciones de longitud similar y la app detecta cuando la respuesta correcta es claramente la más larga; en ese caso pide a la IA reescribir los distractores para igualar su extensión y nivel de detalle, evitando que se pueda acertar solo por la longitud.</li>
+<li>Si la IA no devuelve un cuestionario válido para una entrada, esa entrada se muestra sin preguntas de selección múltiple y el resto continúa. Si falla el cuestionario final, se arma con preguntas de las entradas.</li>
+<li>Endpoints usados: <code>node.proyectodescartes.org</code> (Red Descartes), <code>gen.pollinations.ai</code> y <code>enter.pollinations.ai</code> (Pollinations) y <code>openrouter.ai</code> (OpenRouter).</li>
+</ul>
+<h2>Solución de problemas</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Problema</th>
+<th>Posible causa y solución</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>«Error de IA» al generar</td>
+<td>Llave inválida o modelo no disponible: valida la llave o cambia de modelo.</td>
+</tr>
+<tr>
+<td>Imágenes que no cargan</td>
+<td>Límite o caída del proveedor: usa <strong>🔄 Regenerar</strong> o cambia el modelo de imagen.</td>
+</tr>
+<tr>
+<td>Una entrada sin cuestionario</td>
+<td>La IA no devolvió el formato esperado: vuelve a generar el iceberg.</td>
+</tr>
+<tr>
+<td>Los colores del cuestionario no cambian</td>
+<td>Recarga la página con <code>Ctrl + F5</code> para limpiar la caché.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>Créditos</h2>
+<p>Desarrollado para contextos educativos en español, en el ecosistema de la Red Descartes.</p>
+</main></body>
+</html>
