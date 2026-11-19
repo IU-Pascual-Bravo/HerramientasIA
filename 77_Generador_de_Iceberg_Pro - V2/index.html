@@ -1,0 +1,2373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Iceberg Pro v2.5 (Documento académico)</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+  <style>
+    /* --- CSS VARIABLES & BASE --- */
+    :root {
+        --bg-color-1: #0f0c29;
+        --bg-color-2: #302b63;
+        --accent-color: #24243e;
+        --accent-color-hover: #7e57c2;
+        --text-color: #ffffff;
+        --overlay-bg: rgba(0,0,0,0.7);
+        --entry-bg: rgba(255,255,255,0.08);
+        --entry-hover-bg: rgba(255,255,255,0.15);
+         --panel-bg: rgba(0,0,0,0.6);
+         --level-bg: rgba(30,30,50,0.8);
+         --border-color: rgba(255,255,255,0.1);
+         --heading-color: #f8fafc;
+         --body-color: #eef2ff;
+    }
+
+    html { min-height: 100%; box-sizing: border-box; }
+    *, *:before, *:after { box-sizing: inherit; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: linear-gradient(135deg, rgba(15,12,41,0.45) 0%, rgba(48,43,99,0.45) 100%), url('fondo.jpg');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--body-color);
+      text-align: center;
+      min-height: 100vh;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      transition: color 0.5s ease;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      padding: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .role-banner { max-width: 900px; margin: 0 auto 14px; padding: 11px 15px; border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); border-radius: 9px; background: rgba(0,0,0,.24); color: var(--body-color); font-size: .86rem; line-height: 1.5; text-align: left; }
+    .role-banner strong { color: var(--heading-color); }
+
+    .title-row {
+      display: grid;
+      grid-template-columns: minmax(100px, 1fr) auto minmax(100px, 1fr);
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .title-row img {
+      height: 50.4px;
+      max-width: 100%;
+      width: auto;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+
+    .title-row img:last-child { justify-self: end; }
+
+     h1 {
+      font-size: clamp(1.45rem, 4vw, 2.2rem);
+      margin: 0;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      font-weight: 800;
+      line-height: 1.2;
+      padding: 0 10px;
+       letter-spacing: -1px;
+       color: var(--heading-color);
+    }
+
+    /* --- INPUT AREA --- */
+    .input-area {
+      margin: 20px auto;
+      width: 95%;
+      max-width: 700px;
+      background: var(--entry-bg);
+      padding: 25px;
+      border-radius: 16px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border: 1px solid var(--border-color);
+      transition: border-color 0.5s ease;
+    }
+
+    .input-row { display: flex; gap: 15px; flex-wrap: wrap; }
+    .input-row > div { flex: 1; min-width: 200px; }
+
+    .input-group {
+        display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%;
+    }
+
+     .input-group label {
+         font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--heading-color); opacity: 0.95;
+    }
+
+    .input-area input[type="text"],
+     .input-area input[type="password"],
+    .input-area select {
+      width: 100%; padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px; font-size: 1rem;
+      background: rgba(0,0,0,0.4); color: var(--text-color);
+      transition: border 0.3s, background 0.3s;
+    }
+    
+    .input-area input:focus, .input-area select:focus {
+        outline: none; border-color: var(--accent-color);
+        background: rgba(0,0,0,0.6);
+    }
+    
+    option { background: #111; color: white; }
+     .key-row { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
+     .key-row input { flex: 1 1 220px; min-width: 180px; }
+     .small-btn { width: auto !important; padding: 10px 14px !important; margin: 0 !important; font-size: .85rem !important; }
+     .hidden { display: none !important; }
+
+    /* Buttons */
+    .input-area button {
+      background: var(--accent-color);
+      color: white; /* Siempre blanco para contraste en botones primarios */
+      border: none; padding: 15px 25px; border-radius: 8px;
+      cursor: pointer; font-size: 1.1rem; font-weight: bold;
+      transition: all 0.2s; margin-top: 5px; width: 100%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .input-area button:hover { 
+        filter: brightness(1.2); 
+        transform: translateY(-2px); 
+    }
+
+    /* Palette Button Specifics */
+    .input-area button.secondary-btn {
+        background: transparent;
+        font-size: 0.95rem;
+        padding: 12px;
+        border: 2px dashed var(--border-color);
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+    .input-area button.secondary-btn:hover { 
+        background: var(--entry-hover-bg); 
+        opacity: 1; 
+        border-color: var(--accent-color);
+        border-style: solid;
+    }
+
+    /* --- CHARTS & ENTRIES --- */
+    .iceberg-chart {
+      margin: 40px auto; width: 100%; max-width: 900px;
+      text-align: left; display: none; padding-bottom: 50px;
+    }
+
+    .level {
+      margin-bottom: 25px; padding: 20px;
+      border-radius: 12px; background: var(--level-bg);
+      border: 1px solid var(--border-color);
+      position: relative; overflow: visible;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    /* Barra lateral de nivel con color de acento */
+    .level::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+        background: var(--accent-color);
+        border-radius: 6px 0 0 6px;
+        filter: brightness(1.5); /* Hacerlo un poco más brillante */
+    }
+
+    .level-title {
+      font-size: clamp(1.2rem, 4vw, 1.5rem); margin: 0 0 15px 10px;
+      font-weight: 800; display: flex; justify-content: space-between; align-items: center;
+       flex-wrap: wrap; gap: 10px;
+       color: var(--heading-color); text-shadow: 0 1px 3px rgba(0,0,0,.65);
+    }
+    .level-desc-tag {
+        font-size: 0.92rem; opacity: 1; font-weight: 700; color: var(--heading-color);
+        background: rgba(0,0,0,0.42); padding: 7px 13px; border-radius: 999px;
+        border: 1px solid var(--accent-color); letter-spacing: .01em;
+    }
+    .math-error { display: inline-flex; vertical-align: middle; }
+    .math-error-badge { display: inline-block; background: #fff7ed; color: #8a4b08; border: 1px solid #d97706; border-radius: 4px; padding: 0 5px; font-size: .82em; font-family: system-ui, sans-serif; font-weight: 700; }
+
+    .entries {
+      list-style: none; padding: 0; margin: 0;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;
+    }
+
+    .entries li.entry-trigger {
+      background: var(--entry-bg); padding: 15px; border-radius: 8px;
+      cursor: pointer; transition: all 0.2s;
+      border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between;
+      font-weight: 500;
+    }
+    .entries li.entry-trigger:hover {
+      background: var(--entry-hover-bg); border-color: var(--accent-color);
+      transform: translateX(3px);
+    }
+    .entries li.entry-trigger::after { content: '+'; font-weight: bold; opacity: 0.6; }
+    .entries li.entry-trigger.open::after { content: '-'; }
+
+    /* --- PANEL CONTENT --- */
+    .panel-wrapper { grid-column: 1 / -1; padding: 0; margin: 0; }
+
+    .panel-content {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.6s cubic-bezier(0, 1, 0, 1);
+      background: rgba(0,0,0,0.2);
+      border-radius: 0 0 8px 8px; margin-top: -8px; margin-bottom: 12px;
+      border: 1px solid var(--border-color); border-top: none;
+    }
+    .panel-content.active { max-height: 100000px; padding: 20px; transition: max-height 0.8s ease-in-out; }
+
+    /* En pantallas anchas: imagen e introducción arriba; los bloques pedagógicos
+       posteriores ocupan todo el ancho para evitar recortes y mejorar la lectura. */
+    .content-layout { display: grid; grid-template-columns: minmax(260px, 450px) minmax(0, 1fr); gap: 20px; align-items: start; }
+    .image-section { grid-column: 1; width: 100%; max-width: 450px; grid-row: 1 / span 2; }
+    .learning-plan, .learning-block { text-align: left; background: rgba(0,0,0,.25); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
+     .learning-plan h2, .learning-block h4 { color: var(--heading-color); text-shadow: 0 1px 3px rgba(0,0,0,.65); margin: 0 0 10px; }
+     .learning-plan ul, .learning-block ul, .learning-block ol { margin: 8px 0 12px; padding-left: 22px; }
+     .learning-block { margin-top: 16px; background: rgba(255,255,255,.04); }
+     .learning-block h4 { font-size: 1.05rem; }
+      .learning-block strong { color: var(--heading-color); }
+     .feedback { border-left: 3px solid var(--accent-color); padding-left: 12px; font-style: italic; opacity: .9; }
+     .metacognition { text-align: left; background: var(--entry-bg); border: 1px solid var(--accent-color); border-radius: 12px; padding: 20px; margin: 30px auto; max-width: 900px; }
+     .metacognition h2 { margin-top: 0; }
+     .app-footer { position: relative; z-index: 2; width: 100%; max-width: 1000px; margin: 24px auto 0; padding: 16px 20px; text-align: center; font-size: .85rem; line-height: 1.5; opacity: .82; border-top: 1px solid var(--border-color); }
+     .score-dock { position: fixed; right: 18px; bottom: 18px; z-index: 60; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 999px; background: rgba(15,23,42,.94); color: #f8fafc; border: 1px solid rgba(255,255,255,.25); box-shadow: 0 8px 30px rgba(0,0,0,.35); font-size: .9rem; }
+     .score-dock[hidden] { display: none !important; }
+     .score-dock strong { color: #fbbf24; font-size: 1rem; }
+     .score-dock button { border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.12); color: #fff; border-radius: 999px; padding: 7px 12px; cursor: pointer; font-weight: 700; }
+     @media (max-width: 600px) { .score-dock { left: 10px; right: 10px; bottom: 10px; justify-content: center; } }
+
+     .text-section { display: contents; text-align: left; line-height: 1.6; font-size: 0.95rem; }
+     .text-section > h3, .text-section > p:first-of-type { grid-column: 2; }
+     .learning-block { grid-column: 1 / -1; width: 100%; }
+
+    .panel-content img {
+      width: 100%; height: auto; border-radius: 8px;
+      cursor: zoom-in; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color);
+    }
+
+     h3 { 
+         color: var(--heading-color); filter: brightness(1.05); text-shadow: 0 1px 3px rgba(0,0,0,.65);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0;
+    }
+     strong { color: var(--heading-color); filter: brightness(1.05); }
+
+    /* --- LOADING & MODAL & EXPORT --- */
+    .loading { display: none; margin: 30px auto; text-align: center; }
+    .loading-spinner {
+      border: 4px solid rgba(255,255,255,0.1); border-radius: 50%;
+      border-top: 4px solid var(--accent-color); width: 50px; height: 50px;
+      animation: spin 1s linear infinite; margin: 0 auto 15px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center;
+      padding: 20px; opacity: 0; transition: opacity 0.3s;
+    }
+    .modal.active { display: flex; opacity: 1; }
+    .modal img { max-width: 100%; max-height: 90vh; object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+    .modal-close { position: absolute; top: 15px; right: 20px; color: white; font-size: 40px; cursor: pointer; }
+
+    .export-btn { 
+        display: none; background: #2e7d32; color: white; border: none; padding: 15px 30px; 
+        border-radius: 50px; cursor: pointer; font-size: 1rem; margin: 30px auto; 
+        font-weight: bold; width: 80%; max-width: 300px;
+        box-shadow: 0 0 20px rgba(46, 125, 50, 0.4);
+    }
+    .export-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(46, 125, 50, 0.6); }
+
+    .controls-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 10px; }
+    .controls-box input { width: 100%; margin-bottom: 5px; }
+
+    /* --- MOBILE OPTIMIZATIONS --- */
+     @media (max-width: 600px) {
+         .container { padding: 10px; }
+         .title-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) 64px; gap: 8px; }
+         .title-row img { height: 36.4px; }
+         .title-row img:first-child, .title-row img:last-child { margin: 0; }
+         h1 { font-size: 1.45rem; }
+         .level { padding: 15px 10px; }
+        .entries { grid-template-columns: 1fr; }
+        .panel-content.active { max-height: 100000px; padding: 14px 12px 28px; overflow: visible; }
+         .content-layout { display: flex; flex-direction: column; gap: 16px; align-items: stretch; }
+         .image-section { width: 100%; max-width: none; flex: none; }
+         .text-section { display: block; width: 100%; min-width: 0; }
+         .text-section > h3, .text-section > p:first-of-type, .learning-block { width: 100%; }
+         .learning-block { margin-top: 14px; margin-bottom: 14px; padding: 15px; overflow-wrap: anywhere; }
+    }
+
+    /* --- CUESTIONARIOS --- */
+    .quiz-box { margin-top: 12px; display: flex; flex-direction: column; gap: 14px; }
+    .qz { background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
+    .qz-q { margin: 0 0 10px; font-weight: 700; }
+    .qz-opts { display: flex; flex-direction: column; gap: 8px; }
+    .qz-opt { text-align: left; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--entry-bg); color: var(--text-color); font-size: 0.95rem; cursor: pointer; transition: background .2s, border-color .2s; }
+    .qz-opt:hover { background: var(--entry-hover-bg); }
+    .qz.done .qz-opt { cursor: default; opacity: .75; }
+    .qz-opt.correct { background: rgba(46,160,67,.35); border-color: #3fb950; opacity: 1 !important; }
+    .qz-opt.wrong { background: rgba(218,54,51,.35); border-color: #f85149; opacity: 1 !important; }
+    .qz-why { display: none; margin: 10px 0 0; font-size: .9rem; opacity: .95; }
+    .quiz-final, .quiz-results { margin: 30px 0; padding: 20px; border-radius: 12px; background: var(--level-bg); border: 1px solid var(--border-color); }
+    .quiz-final h2, .quiz-results h2 { margin-top: 0; }
+    .res-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: .95rem; }
+    .res-row .res-label { flex: 0 0 38%; text-align: left; }
+    .res-bar { flex: 1; height: 10px; border-radius: 6px; background: rgba(255,255,255,.12); overflow: hidden; }
+    .res-bar i { display: block; height: 100%; width: 0; background: #3fb950; transition: width .4s; }
+    .res-score { flex: 0 0 64px; text-align: right; font-weight: 700; }
+     .res-total { margin-top: 14px; font-size: 1.15rem; font-weight: 800; }
+     .res-msg { margin-top: 6px; opacity: .9; }
+     .quiz-role-note { margin: 0 0 14px; font-size: .9rem; opacity: .9; }
+     .teacher-export { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color); }
+     .teacher-export h3 { margin: 0 0 6px; font-size: 1rem; border: none; }
+     .teacher-export p { margin: 0 0 10px; font-size: .9rem; opacity: .9; }
+     .teacher-export label { display: block; margin: 0 0 10px; font-size: .9rem; }
+     .teacher-export input { margin-left: 8px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(0,0,0,.3); color: var(--text-color); max-width: 260px; }
+     .teacher-export-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+     .teacher-export-buttons button { border: 1px solid var(--border-color); background: var(--entry-bg); color: var(--text-color); border-radius: 8px; padding: 9px 12px; cursor: pointer; font-weight: 700; }
+     .teacher-export-buttons button:hover { background: var(--entry-hover-bg); }
+     .teacher-export small { display: block; margin-top: 8px; font-size: .78rem; opacity: .75; }
+     .sources-options { display: none; margin-top: 4px; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,.18); }
+     .sources-options.visible { display: block; }
+     .sources-options label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; }
+     .sources-options small { display: block; margin: 6px 0 0 26px; opacity: .8; }
+     .references { margin: 30px 0; padding: 20px; border-radius: 12px; background: var(--level-bg); border: 1px solid var(--border-color); text-align: left; }
+     .references h2 { margin-top: 0; }
+     .references ol { margin-bottom: 0; padding-left: 24px; }
+     .references li { margin: 9px 0; overflow-wrap: anywhere; word-break: break-word; }
+     .references a { color: var(--text-color); overflow-wrap: anywhere; }
+     .export-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px auto; }
+     .export-tools button { display: none; border: 1px solid var(--border-color); border-radius: 999px; padding: 10px 16px; background: rgba(0,0,0,.35); color: var(--heading-color); cursor: pointer; font-weight: 700; }
+     .export-tools .export-btn {
+         width: auto;
+         max-width: none;
+         margin: 0;
+         padding: 10px 18px;
+         border-radius: 999px;
+         font-size: inherit;
+         box-shadow: none;
+         white-space: nowrap;
+     }
+     .export-tools #themeToggleBtn { display: inline-block; }
+     .export-tools.visible button { display: inline-block; }
+     .export-help { display: none; flex-basis: 100%; margin: 4px auto 0; max-width: 760px; font-size: .82rem; line-height: 1.5; opacity: .85; text-align: center; }
+     .export-tools.visible .export-help { display: block; }
+     .export-status { flex-basis: 100%; margin: 2px auto 0; min-height: 1.2em; font-size: .82rem; color: var(--heading-color); text-align: center; }
+     .export-status:empty { display: none; }
+     .export-tools button:hover { background: var(--entry-hover-bg); border-color: var(--heading-color); }
+     .export-tools button:disabled { opacity: .6; cursor: wait; }
+     .academic-meta-box { margin: 4px 0; padding: 12px 14px; border: 1px dashed var(--border-color); border-radius: 10px; background: rgba(0,0,0,.18); text-align: left; }
+     .academic-meta-box summary { cursor: pointer; font-weight: 700; color: var(--heading-color); }
+     .academic-meta-box .input-row { margin-top: 12px; }
+     .academic-meta-box small { display: block; margin-top: 10px; opacity: .82; line-height: 1.45; }
+     .broken-image { min-height: 120px; border: 1px dashed var(--border-color); background: rgba(0,0,0,.2); }
+     .citation-note { font-size: .85rem; border-left: 3px solid #d97706; background: rgba(217,119,6,.12); padding: 8px 10px; margin: 10px 0; }
+     .quiz-warning { font-size: .9rem; border-left: 4px solid #d97706; background: rgba(217,119,6,.14); padding: 10px 12px; margin: 10px 0 14px; }
+     .references details { margin-top: 12px; }
+     .references summary { cursor: pointer; font-weight: 700; }
+     .reference-note { font-size: .85rem; opacity: .85; }
+     body.light-mode { --text-color: #172033; --body-color: #1f2937; --heading-color: #111827; --entry-bg: rgba(255,255,255,.78); --entry-hover-bg: rgba(255,255,255,.96); --panel-bg: rgba(255,255,255,.88); --level-bg: rgba(248,250,252,.92); --border-color: rgba(15,23,42,.2); background-color: #eef2f7 !important; background-image: linear-gradient(135deg, rgba(255,255,255,.84), rgba(226,232,240,.82)), url('fondo.jpg') !important; }
+     body.light-mode .input-area, body.light-mode .panel-content, body.light-mode .learning-plan, body.light-mode .learning-block, body.light-mode .references { color: var(--body-color); }
+     body.light-mode .input-area input, body.light-mode .input-area select { background: rgba(255,255,255,.9); color: #172033; }
+     body.light-mode .export-tools button { background: rgba(255,255,255,.8); color: #111827; }
+     @media print { .input-area, .loading, .export-tools, .app-footer, .controls-box, .modal, .quiz-results, .score-dock, .role-banner { display: none !important; } body { background: #fff !important; color: #111827 !important; } .container, .iceberg-chart { max-width: none; margin: 0; } .level, .panel-content { break-inside: avoid; } .panel-content { max-height: none !important; padding: 12px !important; overflow: visible !important; } .panel-wrapper { display: block !important; } .entry-trigger { font-weight: 800; } }
+     .level-introduction { margin: 0 0 16px; padding: 12px 14px; border-left: 3px solid var(--accent-color); background: rgba(0,0,0,.16); line-height: 1.6; }
+     .level-introduction[contenteditable="true"] { cursor: text; outline: none; }
+     .level-introduction[contenteditable="true"]:focus { box-shadow: 0 0 0 2px var(--accent-color); }
+     .entry-introduction[contenteditable="true"] { cursor: text; outline: none; }
+     .entry-introduction[contenteditable="true"]:focus { box-shadow: 0 0 0 2px var(--accent-color); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title-row">
+      <img src="logoPB1.png" alt="Logo Pascual Bravo">
+      <h1>Generador de Iceberg Pro</h1>
+      <img src="logo_escuela.png" alt="Logo de la escuela">
+    </div>
+
+    <div class="role-banner" id="roleBanner">
+      <strong>Modo docente:</strong> genera, edita y exporta el material. El alumnado responde los cuestionarios en el <strong>HTML interactivo</strong> descargado y devuelve su archivo CSV/JSON de resultados.
+    </div>
+    
+    <div class="input-area">
+      <div class="input-group">
+        <label for="themeInput">Tema Central</label>
+        <input type="text" id="themeInput" placeholder="Ej: Teoría de Internet Muerta, Biología Marina...">
+      </div>
+      <details class="academic-meta-box">
+        <summary>📄 Datos del documento académico</summary>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="authorInput">Autoría</label>
+            <input type="text" id="authorInput" placeholder="Nombre y apellidos">
+          </div>
+          <div class="input-group">
+            <label for="institutionInput">Institución</label>
+            <input type="text" id="institutionInput" placeholder="Universidad, escuela o red">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="courseInput">Área o curso</label>
+            <input type="text" id="courseInput" placeholder="Ej: Pensamiento crítico, Formación docente">
+          </div>
+          <div class="input-group">
+            <label for="licenseInput">Licencia</label>
+            <input type="text" id="licenseInput" value="CC BY-NC-SA 4.0" placeholder="CC BY-NC-SA 4.0">
+          </div>
+        </div>
+        <small>Estos datos aparecen en la portada, en la ficha pedagógica y en las propiedades del Word. Puedes dejarlos en blanco y completarlos después.</small>
+      </details>
+      <div class="input-row">
+        <div class="input-group">
+          <label for="providerSelect">🔗 Proveedor de IA</label>
+          <select id="providerSelect">
+            <option value="free">Red Descartes (gratis)</option>
+            <option value="pollinations" selected>Pollinations</option>
+            <option value="openrouter">OpenRouter</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="levelSelect">Profundidad</label>
+          <select id="levelSelect">
+            <option value="3">3 Niveles (Rápido)</option>
+            <option value="4">4 Niveles (Estándar)</option>
+            <option value="5" selected>5 Niveles (Completo)</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group" id="providerKeyField">
+        <label for="apiKeyInput" id="apiKeyLabel">🔑 API Key de Pollinations</label>
+        <div class="key-row">
+          <input type="password" id="apiKeyInput" placeholder="plln_sk_...">
+          <button type="button" id="validateKeyBtn" class="small-btn">✓ Validar</button>
+          <button type="button" id="clearKeyBtn" class="small-btn">🗑️ Limpiar</button>
+          <button type="button" id="getApiKeyBtn" class="small-btn">🔑 Obtener</button>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label for="styleSelect">Estilo Visual</label>
+          <select id="styleSelect"></select>
+        </div>
+        <div class="input-group">
+          <label for="textModelSelect" id="textModelLabel">🧠 Modelo de texto · Pollinations</label>
+          <select id="textModelSelect"></select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="modelSelect" id="imageModelLabel">🖌️ Modelo de imagen · Pollinations</label>
+        <select id="modelSelect"></select>
+      </div>
+      <div class="sources-options" id="sourcesOptions">
+        <label><input type="checkbox" name="sourceMode" id="sourcesEnabled" value="enabled"> 📚 Fuentes verificables</label>
+        <small>La IA deberá consultar la web y citar únicamente fuentes que realmente haya consultado. Si no puede verificarlas, no las inventará.</small>
+      </div>
+      <button type="button" id="paletteBtn" class="secondary-btn">🎨 Cambiar Paleta de Colores (Sorpréndeme)</button>
+      <button id="generateBtn">🔮 Generar Iceberg</button>
+    </div>
+    
+    <div class="loading" id="loadingIndicator">
+      <div class="loading-spinner"></div>
+      <p id="loadingText">Iniciando análisis del tema...</p>
+      <div class="progress-text" id="progressText">0% completado</div>
+    </div>
+    
+     <div class="iceberg-chart" id="icebergChart"></div>
+     <div class="export-tools" id="exportTools">
+       <button type="button" id="themeToggleBtn">☀️ Modo claro</button>
+       <button type="button" id="resultsBtn" title="Ir al resumen de resultados de los cuestionarios.">📊 Resultados</button>
+       <button type="button" id="previewDocBtn" title="Abre el documento académico completo en una pestaña nueva.">👁️ Vista académica</button>
+       <button type="button" id="downloadPdfBtn" title="Abre la vista académica y el diálogo para guardar como PDF.">📄 PDF académico</button>
+       <button type="button" id="downloadWordBtn" title="Descarga un archivo .docx editable con el documento académico.">📝 Word (.docx)</button>
+       <button type="button" id="downloadWordVisualBtn" title="Descarga un .doc HTML con las fórmulas ya renderizadas por MathJax, como en la versión original. Útil si necesitas ver las ecuaciones en Word.">📝 Word visual (.doc)</button>
+       <button type="button" id="academicHtmlBtn" title="Documento lineal con portada, índice, referencias y anexos; para leer o imprimir.">🌐 HTML académico</button>
+       <button class="export-btn" id="exportBtn" title="HTML autocontenido para el alumnado: paneles, cuestionarios y exportación de resultados CSV/JSON.">📥 HTML interactivo (alumno)</button>
+       <p class="export-help">El <strong>documento académico</strong> (PDF, Word y HTML académico) es para el docente. El <strong>Word (.docx)</strong> es editable; el <strong>Word visual (.doc)</strong> conserva las fórmulas ya renderizadas, como en la versión original. El <strong>HTML interactivo</strong> se entrega al alumnado: allí responde, obtiene su puntuación y descarga el CSV/JSON para el profesor.</p>
+       <p class="export-status" id="exportStatus" role="status" aria-live="polite"></p>
+     </div>
+  </div>
+
+  <footer class="app-footer">Diseñado por Juan Guillermo Rivera Berrío y Ángel Cabezudo Bueno con tecnología GPT-5.6 Luna y asistencia de DeepSeek Harness</footer>
+
+  <div class="score-dock" id="scoreDock" hidden>
+    <span>Resultados: <strong id="scoreDockValue">0 / 0</strong></span>
+    <button type="button" id="scoreDockBtn">Ver detalle</button>
+  </div>
+
+  <div class="modal" id="imageModal">
+    <span class="modal-close">&times;</span>
+    <img src="" alt="" id="modalImage">
+  </div>
+
+  <script src="academic-export.js"></script>
+  <script>
+    // --- VARIABLES & SELECTORES ---
+    const themeInput = document.getElementById('themeInput');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const getApiKeyBtn = document.getElementById('getApiKeyBtn');
+     const providerSelect = document.getElementById('providerSelect');
+     const providerKeyField = document.getElementById('providerKeyField');
+     const validateKeyBtn = document.getElementById('validateKeyBtn');
+     const clearKeyBtn = document.getElementById('clearKeyBtn');
+     const apiKeyLabel = document.getElementById('apiKeyLabel');
+     const textModelLabel = document.getElementById('textModelLabel');
+     const imageModelLabel = document.getElementById('imageModelLabel');
+    const styleSelect = document.getElementById('styleSelect');
+    const textModelSelect = document.getElementById('textModelSelect');
+    const modelSelect = document.getElementById('modelSelect');
+    const levelSelect = document.getElementById('levelSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const paletteBtn = document.getElementById('paletteBtn'); 
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const loadingText = document.getElementById('loadingText');
+    const progressText = document.getElementById('progressText');
+    const icebergChart = document.getElementById('icebergChart');
+     const exportBtn = document.getElementById('exportBtn');
+     const themeToggleBtn = document.getElementById('themeToggleBtn');
+     const downloadWordBtn = document.getElementById('downloadWordBtn');
+     const downloadWordVisualBtn = document.getElementById('downloadWordVisualBtn');
+     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+     const academicHtmlBtn = document.getElementById('academicHtmlBtn');
+     const previewDocBtn = document.getElementById('previewDocBtn');
+     const exportTools = document.getElementById('exportTools');
+     const exportStatus = document.getElementById('exportStatus');
+     const resultsBtn = document.getElementById('resultsBtn');
+     const scoreDock = document.getElementById('scoreDock');
+     const scoreDockValue = document.getElementById('scoreDockValue');
+     const scoreDockBtn = document.getElementById('scoreDockBtn');
+     const authorInput = document.getElementById('authorInput');
+     const institutionInput = document.getElementById('institutionInput');
+     const courseInput = document.getElementById('courseInput');
+     const licenseInput = document.getElementById('licenseInput');
+     const sourcesOptions = document.getElementById('sourcesOptions');
+     const sourcesEnabled = document.getElementById('sourcesEnabled');
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+     const closeBtn = document.querySelector('.modal-close');
+     let lightMode = false;
+
+     // --- MODELO DE DOCUMENTO ACADÉMICO ---
+     // La app sigue renderizando el HTML interactivo, pero además conserva
+     // una representación estructurada para PDF y DOCX. Los exportadores no
+     // clonan el DOM: consumen este objeto.
+     const icebergData = {
+       metadata: {},
+       plan: null,
+       levels: [],
+       finalQuiz: [],
+       references: { consulted: [], cited: [] },
+       generatedAt: null
+     };
+     window.__icebergData = icebergData;
+
+     function currentMetadata() {
+       const theme = themeInput.value.trim() || 'Iceberg educativo';
+       return {
+         title: theme,
+         subtitle: 'Material para formar pensamiento crítico',
+         author: authorInput.value.trim(),
+         institution: institutionInput.value.trim(),
+         course: courseInput.value.trim(),
+         date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }),
+         version: '1.0',
+         license: licenseInput.value.trim() || 'CC BY-NC-SA 4.0',
+         language: 'Español'
+       };
+     }
+
+     function resetIcebergData(theme) {
+       icebergData.metadata = currentMetadata();
+       if (theme) icebergData.metadata.title = theme;
+       icebergData.plan = null;
+       icebergData.levels = [];
+       icebergData.finalQuiz = [];
+       icebergData.references = { consulted: [], cited: [] };
+       icebergData.generatedAt = new Date().toISOString();
+     }
+
+     function syncMetadata() {
+       const fresh = currentMetadata();
+       if (!fresh.title) fresh.title = icebergData.metadata.title || 'Iceberg educativo';
+       icebergData.metadata = Object.assign({}, icebergData.metadata, fresh);
+     }
+
+     function setLightMode(enabled) {
+         lightMode = enabled;
+         document.body.classList.toggle('light-mode', enabled);
+         themeToggleBtn.textContent = enabled ? '🌙 Modo oscuro' : '☀️ Modo claro';
+         storageSet('iceberg_light_mode', enabled ? '1' : '0');
+     }
+     function toggleTheme() { setLightMode(!lightMode); }
+     function hasMathIn(container) {
+         return /\\\(|\\\[|\$[^$\n]+\$/.test((container && container.textContent) || '');
+     }
+     function hasMathText(value) {
+         return /\\\(|\\\[|\$[^$\n]+\$/.test(safeText(value));
+     }
+     function dataHasMath(value, key) {
+         if (key && /image/i.test(key)) return false;
+         if (typeof value === 'string') return hasMathText(value);
+         if (Array.isArray(value)) return value.some(item => dataHasMath(item));
+         if (value && typeof value === 'object') {
+             return Object.entries(value).some(([childKey, childValue]) => dataHasMath(childValue, childKey));
+         }
+         return false;
+     }
+     async function waitForMathJax(timeoutMs = 8000) {
+         const started = Date.now();
+         while (Date.now() - started < timeoutMs) {
+             if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+                 try { await window.MathJax.startup.promise; } catch (error) { /* se comprueba abajo */ }
+                 if (window.MathJax.typesetPromise) return true;
+             }
+             if (window.MathJax && window.MathJax.typesetPromise) return true;
+             await sleep(200);
+         }
+         return false;
+     }
+     async function renderMath(container = icebergChart) {
+         if (!hasMathIn(container)) return true;
+         const ready = await waitForMathJax();
+         if (!ready) {
+             console.warn('MathJax no está disponible; las fórmulas podrían mostrarse como TeX.');
+             return false;
+         }
+         try {
+             if (window.MathJax.startup && window.MathJax.startup.promise) {
+                 await window.MathJax.startup.promise;
+             }
+             await window.MathJax.typesetPromise([container]);
+             return true;
+         } catch (error) {
+             console.warn('No se pudieron componer las fórmulas:', error);
+             return false;
+         }
+     }
+     function softenMathErrors(container) {
+         const errors = Array.from(container.querySelectorAll('mjx-merror'));
+         errors.forEach(error => {
+             const wrapper = error.closest('mjx-container');
+             if (!wrapper) return;
+             const detail = error.getAttribute('data-mjx-error') || 'Fórmula no válida';
+             wrapper.setAttribute('title', detail);
+             wrapper.classList.add('math-error');
+             wrapper.innerHTML = '<span class="math-error-badge">⚠ fórmula no válida</span>';
+         });
+         return errors.length;
+     }
+     function storageGet(key) {
+         try { return localStorage.getItem(key); } catch (error) { return null; }
+     }
+     function storageSet(key, value) {
+         try { localStorage.setItem(key, value); } catch (error) { console.warn('No se pudo guardar en localStorage:', error); }
+     }
+     function storageRemove(key) {
+         try { localStorage.removeItem(key); } catch (error) { console.warn('No se pudo borrar de localStorage:', error); }
+     }
+     function shortTitle(value, maxLength = 64) {
+         let clean = safeText(value).replace(/\s+/g, ' ').trim();
+         if (clean.length <= maxLength) return clean;
+         clean = clean.slice(0, maxLength);
+         const lastSpace = clean.lastIndexOf(' ');
+         if (lastSpace > maxLength * 0.6) clean = clean.slice(0, lastSpace);
+         return clean.replace(/[\s,;:.!?]+$/g, '').trim();
+     }
+     function downloadStem(label) {
+         const title = (icebergData && icebergData.metadata && icebergData.metadata.title) || 'Iceberg';
+         // El apelativo va delante para que no se pierda cuando Windows acorta
+         // el final del nombre en rutas largas.
+         const raw = `Iceberg_${label}_${shortTitle(title, 24)}`;
+         return safeFilename(raw + '.pdf').replace(/\.pdf$/i, '');
+     }
+     function safeFilename(name) {
+         const raw = safeText(name);
+         const extensionMatch = raw.match(/\.[a-z0-9]{1,8}$/i);
+         const extension = extensionMatch ? extensionMatch[0] : '';
+         const base = raw.slice(0, extension ? -extension.length : raw.length)
+             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+             .replace(/[\\/:*?"<>|]+/g, '_')
+             .replace(/\s+/g, '_')
+             .replace(/_+/g, '_')
+             .replace(/^_|_$/g, '')
+             .slice(0, Math.max(1, 80 - extension.length));
+         return (base || 'Iceberg') + extension;
+     }
+     function downloadBlob(content, filename, type) {
+         const blob = content instanceof Blob ? content : new Blob([content], { type: type || 'application/octet-stream' });
+         const safeName = safeFilename(filename);
+         if (window.navigator && typeof window.navigator.msSaveBlob === 'function') {
+             window.navigator.msSaveBlob(blob, safeName);
+             return;
+         }
+         const url = URL.createObjectURL(blob);
+         const link = document.createElement('a');
+         link.href = url;
+         link.download = safeName;
+         link.style.display = 'none';
+         document.body.appendChild(link);
+         link.click();
+         // No revocar a 1 s: en archivos grandes el navegador aún no ha leído
+         // el blob y la descarga falla con "Reintentar". 60 s es seguro.
+         setTimeout(() => {
+             link.remove();
+             URL.revokeObjectURL(url);
+         }, 60000);
+     }
+
+     function setExportStatus(message) {
+         if (exportStatus) exportStatus.textContent = message || '';
+     }
+
+     function requireAcademicData() {
+         if (!icebergData.levels.length) {
+             alert('Genera primero un iceberg. El documento académico se construye con el contenido generado.');
+             return false;
+         }
+         if (!window.AcademicExport) {
+             alert('No se cargó el módulo de exportación académica. Comprueba que academic-export.js esté junto a index.html.');
+             return false;
+         }
+         syncMetadata();
+         return true;
+     }
+
+     function buildAcademicHtml() {
+         syncMetadata();
+         return window.AcademicExport.buildHtml(icebergData, {});
+     }
+
+     async function waitForAcademicResources(win) {
+         try {
+             await win.document.fonts.ready;
+             // MathJax se carga de forma asíncrona; solo se espera si el
+             // documento contiene fórmulas.
+             const needsMath = /\\\(|\\\[|\$[^$\n]+\$/.test(win.document.body.textContent || '');
+             for (let attempt = 0; needsMath && attempt < 50; attempt++) {
+                 if (win.MathJax && win.MathJax.startup && win.MathJax.startup.promise) {
+                     await win.MathJax.startup.promise;
+                     break;
+                 }
+                 if (win.MathJax && win.MathJax.typesetPromise) {
+                     await win.MathJax.typesetPromise();
+                     break;
+                 }
+                 await new Promise(resolve => setTimeout(resolve, 200));
+             }
+             const images = Array.from(win.document.images || []);
+             await Promise.all(images.map(img => img.complete ? Promise.resolve() : new Promise(resolve => {
+                 img.onload = resolve;
+                 img.onerror = resolve;
+             })));
+         } catch (error) {
+             console.warn('No se pudieron esperar todos los recursos del documento:', error);
+         }
+     }
+
+     function openAcademicPreview(autoPrint = false, mode = 'academico') {
+         if (!requireAcademicData()) return;
+         const html = buildAcademicHtml();
+         const win = window.open('', '_blank');
+         if (!win) {
+             alert('El navegador bloqueó la ventana del documento. Permite ventanas emergentes para este sitio e inténtalo de nuevo.');
+             return;
+         }
+         win.document.open();
+         win.document.write(html);
+         win.document.close();
+         setExportStatus('Vista académica abierta. Para el PDF, usa “Imprimir o guardar como PDF” en la barra superior.');
+
+         // El nombre que propone “Guardar como PDF” sale del <title>. Se cambia
+         // solo durante la impresión y se restaura al cerrar el diálogo.
+         const pdfTitle = downloadStem(mode === 'vista' ? 'vista_academica' : 'academico');
+         const fullTitle = win.document.title;
+         win.addEventListener('beforeprint', () => { win.document.title = pdfTitle; });
+         win.addEventListener('afterprint', () => { win.document.title = fullTitle; });
+
+         const printWhenReady = async () => {
+             await waitForAcademicResources(win);
+             setTimeout(() => {
+                 try { win.focus(); win.print(); } catch (error) { console.warn(error); }
+             }, 350);
+         };
+
+         if (autoPrint) {
+             if (win.document.readyState === 'complete') printWhenReady();
+             else win.addEventListener('load', printWhenReady);
+         }
+     }
+
+     function downloadAcademicHtml() {
+         if (!requireAcademicData()) return;
+         try {
+             setExportStatus('Preparando HTML académico...');
+             const html = buildAcademicHtml();
+             downloadBlob(html, `${downloadStem('academico')}.html`, 'text/html;charset=utf-8');
+             setExportStatus('Descarga iniciada. Si no aparece, revisa la barra de descargas del navegador.');
+         } catch (error) {
+             console.error('Error exportando HTML académico:', error);
+             setExportStatus('No se pudo preparar el HTML académico: ' + (error && error.message ? error.message : error));
+             alert('No se pudo preparar el HTML académico: ' + (error && error.message ? error.message : error));
+         }
+     }
+
+     let docxLibraryPromise = null;
+     function loadDocxLibrary() {
+         if (window.docx && window.docx.Document) return Promise.resolve(window.docx);
+         if (docxLibraryPromise) return docxLibraryPromise;
+         const sources = [
+             'vendor/docx.iife.js',
+             'https://cdn.jsdelivr.net/npm/docx@9.15.4/dist/index.iife.js'
+         ];
+         docxLibraryPromise = new Promise((resolve, reject) => {
+             let index = 0;
+             const tryNext = () => {
+                 if (window.docx && window.docx.Document) return resolve(window.docx);
+                 if (index >= sources.length) {
+                     return reject(new Error('No se pudo cargar la librería docx. Comprueba la conexión o que vendor/docx.iife.js exista.'));
+                 }
+                 const script = document.createElement('script');
+                 script.src = sources[index++];
+                 script.onload = () => {
+                     if (window.docx && window.docx.Document) resolve(window.docx);
+                     else tryNext();
+                 };
+                 script.onerror = () => {
+                     script.remove();
+                     tryNext();
+                 };
+                 document.head.appendChild(script);
+             };
+             tryNext();
+         });
+         docxLibraryPromise = docxLibraryPromise.catch(error => {
+             docxLibraryPromise = null;
+             throw error;
+         });
+         return docxLibraryPromise;
+     }
+
+     async function downloadWord() {
+         if (!requireAcademicData()) return;
+         const formulasAsText = dataHasMath(icebergData);
+         const original = downloadWordBtn.textContent;
+         downloadWordBtn.disabled = true;
+         downloadWordBtn.textContent = '⏳ Generando Word...';
+         setExportStatus('Generando el documento Word...');
+         try {
+             const docx = await loadDocxLibrary();
+             const doc = window.AcademicExport.buildDocx(docx, icebergData, {});
+             const blob = await docx.Packer.toBlob(doc);
+             downloadBlob(blob, `${downloadStem('word')}.docx`, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+             setExportStatus(formulasAsText
+                 ? 'Word generado. Las fórmulas se conservan como texto TeX en el DOCX; usa el PDF, el HTML académico o Word visual (.doc) para verlas renderizadas.'
+                 : 'Word generado. Si no se descarga, revisa la barra de descargas del navegador.');
+         } catch (error) {
+             console.error('Error generando DOCX:', error);
+             setExportStatus('No se pudo generar el Word: ' + (error && error.message ? error.message : error));
+             alert('No se pudo generar el Word (.docx): ' + (error && error.message ? error.message : error));
+         } finally {
+             downloadWordBtn.disabled = false;
+             downloadWordBtn.textContent = original;
+         }
+     }
+
+     async function downloadPdf() {
+         openAcademicPreview(true, 'academico');
+     }
+
+     async function downloadWordVisual() {
+         if (!requireAcademicData()) return;
+         const original = downloadWordVisualBtn.textContent;
+         downloadWordVisualBtn.disabled = true;
+         downloadWordVisualBtn.textContent = '⏳ Preparando Word visual...';
+         setExportStatus('Preparando el Word visual con las fórmulas ya renderizadas...');
+         let win = null;
+         try {
+             const html = buildAcademicHtml();
+             win = window.open('', '_blank');
+             if (!win) {
+                 alert('El navegador bloqueó la ventana necesaria para renderizar las fórmulas. Permite ventanas emergentes para este sitio e inténtalo de nuevo.');
+                 return;
+             }
+             win.document.open();
+             win.document.write(html);
+             win.document.close();
+             await waitForAcademicResources(win);
+             const clone = win.document.documentElement.cloneNode(true);
+             clone.querySelectorAll('script').forEach(script => script.remove());
+             // La barra de impresión solo sirve en la vista de pantalla; en Word
+             // se superpone a la portada. Se elimina antes de serializar el .doc.
+             clone.querySelectorAll('.no-print, .toolbar, button').forEach(node => node.remove());
+             const output = '<!DOCTYPE html>' + clone.outerHTML;
+             downloadBlob(output, `${downloadStem('word_visual')}.doc`, 'application/msword;charset=utf-8');
+             setExportStatus('Word visual generado. Word puede avisar de que el formato no coincide con la extensión; ábrelo igualmente. Para un .docx nativo, usa Word (.docx).');
+         } catch (error) {
+             console.error('Error generando el Word visual:', error);
+             setExportStatus('No se pudo generar el Word visual: ' + (error && error.message ? error.message : error));
+         } finally {
+             if (win) { try { win.close(); } catch (error) { /* ignore */ } }
+             downloadWordVisualBtn.disabled = false;
+             downloadWordVisualBtn.textContent = original;
+         }
+     }
+    
+    const levelNames = [ "Nivel 1: La Superficie", "Nivel 2: Aguas Poco Profundas", "Nivel 3: La Zona de Penumbra", "Nivel 4: El Abismo", "Nivel 5: El Vacío Insondable" ];
+    // Progresión cognitiva: la metáfora del iceberg organiza la profundidad,
+    // pero la exigencia intelectual sigue una secuencia de pensamiento crítico.
+    const levelProgression = [
+        {
+            short: "Identificar y contextualizar",
+            focus: "Hechos visibles, definiciones, actores y contexto. Distinguir qué se sabe de lo que se supone.",
+            verbs: "identificar, describir, definir, contextualizar"
+        },
+        {
+            short: "Explicar y relacionar",
+            focus: "Causas, consecuencias, mecanismos y relaciones entre conceptos. Pasar del dato aislado a una explicación.",
+            verbs: "explicar, comparar, relacionar, ejemplificar"
+        },
+        {
+            short: "Analizar e interpretar",
+            focus: "Interpretaciones, debates, intereses y diferencias entre hecho, interpretación e hipótesis.",
+            verbs: "analizar, contrastar, interpretar, distinguir"
+        },
+        {
+            short: "Evaluar evidencias",
+            focus: "Calidad de las fuentes, sesgos, límites de la evidencia y argumentos rivales.",
+            verbs: "evaluar, valorar, criticar, argumentar"
+        },
+        {
+            short: "Crear y revisar",
+            focus: "Preguntas abiertas, síntesis, propuestas y revisión de conclusiones; reconocimiento de la incertidumbre.",
+            verbs: "crear, sintetizar, proponer, revisar, metacognición"
+        }
+    ];
+    const difficultyDescriptions = levelProgression.map(level => level.focus);
+    const MATH_RULES = `Reglas de matemáticas: puedes usar \\( ... \\) o $ ... $ para fórmulas en línea, y \\[ ... \\] o $$ ... $$ para bloques; mantén los delimitadores emparejados. Escribe \\frac{a}{b}, \\sqrt{x}, \\vec{E}, \\mathbf{E}, \\hat{n} y \\text{...} con llaves completas; no dejes \\frac, \\sqrt, \\vec, \\mathbf, \\hat ni \\bar sin argumento. Cierra todas las llaves antes del delimitador. Si una fórmula es compleja, divídela en pasos y no inventes notación.`;
+    const imageStyles = [ "Cinemático Fotorrealista", "Arte Conceptual Digital", "Horror Análogo (VHS)", "Ilustración Científica Vintage", "Cyberpunk Neón", "Pintura al Óleo Oscura", "Surrealismo Onírico", "Render 3D Hiperrealista", "Estilo Anime Dark Fantasy", "Pixel Art Retro", "Estilo Lovecraftiano", "Acuarela Delicada", "Grabado en Madera (Xilografía)", "Arte Pop Vintage", "Low Poly Minimalista", "Cómic Clásico de Tinta", "Fotografía Documental en Blanco y Negro", "Art Nouveau Ornamental", "Vaporwave Retro", "Papel Recortado (Paper Cut)" ];
+
+    const PROVIDERS = {
+      free: { name: 'Red Descartes', placeholder: '', keyRequired: false, images: [['zimage','zimage (Rápido)'],['flux','flux (Detallado)'],['gptimage','GPT image (Creativo)'],['klein','klein (Realista)'],['black-forest-labs/flux-3-image-klein','Flux 3 Image (Nuevo)'],['recraft/recraft-v4.1-flash','Recraft 4.1']], text: [['openai/gpt-5.4-nano','GPT-5.4 Nano'],['anthropic/claude-haiku-5.5','Claude Haiku 5.5'],['gemini-search','Gemini 2.5 (Search)'],['google/gemini-3.8-flash','Gemini-3.8 Flash (Search)'],['qwen/qwen3.8-flash','Qwen-3.8 Flash'],['llama','Llama-3.3 70B'],['xiaomi/mimo-v2.6-flash','MiMo-2.6 Flash'],['perplexity-fast','Perplexity Fast (Search)'],['gpt-5.4-mini','GPT-5.4 Mini'],['nova-fast','Nova Fast']], imageDefault: 'zimage', textDefault: 'openai/gpt-5.4-nano' },
+      pollinations: { name: 'Pollinations', placeholder: 'plln_sk_...', keyRequired: true, images: [['zimage','zimage (Rápido)'],['krea/krea-2-medium','Krea 2 Medium'],['black-forest-labs/flux.2-pro','Flux 2 Pro'],['x-ai/grok-imagine-image','Grok Imagine'],['openai/gpt-image-2.5-flare','GPT Image Flare'],['klein','Klein'],['gptimage','GPT Image']], text: [['openai','GPT-5.4 Nano'],['openai/gpt-5.6-luna','GPT-6 Luna'],['google/gemini-3.8-flash','Gemini 3.8 Flash'],['google/gemini-3.5-flash-lite','Gemini 3.5 Flash Lite'],['google/gemini-2.5-flash-lite:search','Gemini 2.5 Flash Lite Search'],['perplexity/sonar','Perplexity Sonar'],['moonshotai/kimi-k2.6','Kimi K2.6'],['x-ai/grok-4.3','Grok 4.3'],['mistral-small-3.2','Mistral Small'],['gemini-fast','Gemini Flash']], imageDefault: 'zimage', textDefault: 'openai' },
+      openrouter: { name: 'OpenRouter', placeholder: 'sk-or-...', keyRequired: true, images: [['google/gemini-2.5-flash-image','Gemini 2.5 Flash Image'],['openai/gpt-5-image-mini','GPT Image mini'],['google/gemini-3.1-flash-image-preview','Gemini 3.1 Flash Image'],['black-forest-labs/flux.2-klein-4b','Klein'],['microsoft/mai-image-2.5','MAI Image'],['x-ai/grok-imagine-image-quality','Grok xAI'],['recraft/recraft-v4.1-vector','Recraft V4.1'],['bytedance-seed/seedream-4.5','Seedream 4.5'],['black-forest-labs/flux.2-flex','Flux 2 Flex']], text: [['deepseek/deepseek-chat-v3-0324','DeepSeek V3'],['google/gemini-3.8-flash','Gemini 3.8 Flash'],['google/gemini-3.5-flash-lite','Gemini 3.5 Flash Lite'],['perplexity/sonar','Perplexity Sonar'],['google/gemini-2.5-flash','Gemini 2.5 Flash'],['openai/gpt-5-mini','GPT 5 Mini'],['moonshotai/kimi-k2.6','Kimi K2.6'],['mistralai/mistral-small-2603','Mistral Small'],['openrouter/free','Enrutador libre']], imageDefault: 'google/gemini-2.5-flash-image', textDefault: 'google/gemini-2.5-flash' }
+    };
+    function storageKey(provider) { return `${provider}_api_key`; }
+     function populateProviderModels(provider) {
+       const config = PROVIDERS[provider];
+       modelSelect.innerHTML = config.images.map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
+       textModelSelect.innerHTML = config.text.map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
+       modelSelect.value = config.imageDefault; textModelSelect.value = config.textDefault;
+       imageModelLabel.textContent = `🖌️ Modelo de imagen · ${config.name}`;
+       textModelLabel.textContent = `🧠 Modelo de texto · ${config.name}`;
+       apiKeyInput.value = storageGet(storageKey(provider)) || '';
+       apiKeyInput.placeholder = config.placeholder;
+       apiKeyLabel.textContent = `🔑 API Key de ${config.name} ${config.keyRequired ? '(obligatoria)' : '(no requerida)'}`;
+       providerKeyField.classList.toggle('hidden', !config.keyRequired);
+       validateKeyBtn.classList.toggle('hidden', !config.keyRequired); clearKeyBtn.classList.toggle('hidden', !config.keyRequired); getApiKeyBtn.classList.toggle('hidden', provider !== 'pollinations');
+       updateSourcesVisibility();
+     }
+     providerSelect.onchange = () => { storageSet('preferred_provider', providerSelect.value); populateProviderModels(providerSelect.value); };
+     textModelSelect.onchange = updateSourcesVisibility;
+    apiKeyInput.oninput = () => { if (PROVIDERS[providerSelect.value].keyRequired) storageSet(storageKey(providerSelect.value), apiKeyInput.value.trim()); };
+    clearKeyBtn.onclick = () => { storageRemove(storageKey(providerSelect.value)); apiKeyInput.value = ''; alert(`API key de ${PROVIDERS[providerSelect.value].name} eliminada del navegador.`); };
+    validateKeyBtn.onclick = async () => {
+      const provider = providerSelect.value, key = apiKeyInput.value.trim(); if (!key) return alert('Introduce una API key.');
+      validateKeyBtn.disabled = true; validateKeyBtn.textContent = 'Validando...';
+      try { const url = provider === 'openrouter' ? 'https://openrouter.ai/api/v1/key' : 'https://gen.pollinations.ai/v1/models'; const headers = { Authorization: `Bearer ${key}` }; if (provider === 'openrouter') { headers['HTTP-Referer'] = location.origin; headers['X-Title'] = 'Generador de Iceberg Pro'; } const response = await fetch(url, { headers }); if (!response.ok) throw new Error(`HTTP ${response.status}`); storageSet(storageKey(provider), key); alert(`✓ API key de ${PROVIDERS[provider].name} válida.`); } catch (error) { alert(`✗ No se pudo validar la API key: ${error.message}`); } finally { validateKeyBtn.disabled = false; validateKeyBtn.textContent = '✓ Validar'; }
+    };
+
+    // --- MOTOR DE TEMAS AVANZADO (NUEVA LÓGICA) ---
+    function getRandomTheme() {
+        const themes = [
+            {
+                name: "Océano Profundo",
+                bg1: "#0f2027", bg2: "#203a43", 
+                accent: "#2c5364", text: "#e0f7fa"
+            },
+            {
+                name: "Vaporwave Neon",
+                bg1: "#2a0845", bg2: "#6441a5", 
+                accent: "#f538a0", text: "#ffffff" // Pink accent
+            },
+            {
+                name: "Matrix Terminal",
+                bg1: "#000000", bg2: "#0a1f0a", 
+                accent: "#00ff41", text: "#ccffcc"
+            },
+            {
+                name: "Horror Sangriento",
+                bg1: "#1a0505", bg2: "#380000", 
+                accent: "#8a0303", text: "#ffe6e6"
+            },
+            {
+                name: "Lovecraft Void",
+                bg1: "#0a0a0a", bg2: "#1c1c1c", 
+                accent: "#4b0082", text: "#dcdcdc" // Indigo accent
+            },
+            {
+                name: "Atardecer Dorado",
+                bg1: "#3e1e1e", bg2: "#68321a", 
+                accent: "#d4af37", text: "#fff8dc"
+            },
+            {
+                name: "Toxic Waste",
+                bg1: "#1a1a2e", bg2: "#16213e", 
+                accent: "#00ff9d", text: "#eafff5"
+            },
+            {
+                name: "Blueprint Azul",
+                bg1: "#001f3f", bg2: "#003366", 
+                accent: "#0074D9", text: "#ffffff"
+            }
+        ];
+        
+        return themes[Math.floor(Math.random() * themes.length)];
+    }
+
+    function applyPalette() {
+        const theme = getRandomTheme();
+        const root = document.documentElement;
+        
+        // Mostrar feedback en el botón
+        const originalText = paletteBtn.textContent;
+        paletteBtn.textContent = `🎨 Aplicado: ${theme.name}`;
+        setTimeout(() => paletteBtn.textContent = originalText, 1500);
+
+        // Definir variables
+        const props = {
+            '--bg-color-1': theme.bg1,
+            '--bg-color-2': theme.bg2,
+            '--accent-color': theme.accent,
+            '--accent-color-hover': theme.accent, // Simplificado
+            '--text-color': theme.text,
+            '--level-bg': `linear-gradient(90deg, ${theme.bg1}EE, ${theme.bg2}EE)`, // EE = alpha
+            '--border-color': `${theme.text}20`, // 20 = baja opacidad
+            '--entry-bg': `${theme.text}10`,
+            '--entry-hover-bg': `${theme.text}25`
+        };
+
+        // 1. Aplicar CSS Variables
+        for (const [key, value] of Object.entries(props)) {
+            root.style.setProperty(key, value);
+        }
+
+        // 2. Forzar repintado del body (Crucial)
+        document.body.style.backgroundImage = `linear-gradient(135deg, ${theme.bg1}CC 0%, ${theme.bg2}CC 100%), url('fondo.jpg')`;
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.backgroundAttachment = 'fixed';
+    }
+
+    // --- GENERACIÓN IA ---
+    function populateStyles() {
+        imageStyles.forEach(style => {
+            const option = document.createElement('option');
+            option.value = style; option.textContent = style;
+            styleSelect.appendChild(option);
+        });
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Reintenta errores transitorios (429, 5xx) sin repetir errores de contrato.
+    async function sendWithRetry(send, attempts = 3) {
+        let response;
+        for (let attempt = 0; attempt < attempts; attempt++) {
+            response = await send();
+            if (response.ok) return response;
+            if ((response.status === 429 || response.status >= 500) && attempt < attempts - 1) {
+                await sleep(800 * Math.pow(2, attempt));
+                continue;
+            }
+            return response;
+        }
+        return response;
+    }
+
+    async function fetchText(prompt, includeSources = false, options = {}) {
+      const provider = providerSelect.value;
+      const textModel = textModelSelect.value;
+      const apiKey = apiKeyInput.value.trim();
+      const wantsJson = !!options.json;
+      const maxTokens = Number(options.maxTokens) || 2500;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 180000);
+      const signal = controller.signal;
+      const systemPrompt = includeSources
+        ? 'Eres un asistente experto. Nunca inventes fuentes, URLs, autores, títulos, fechas ni DOI. Solo cita fuentes web que hayas consultado realmente. Devuelve referencias verificables y citas en el texto mediante marcadores [[n]] cuando se te pida.'
+        : 'Eres un asistente experto. Responde exactamente lo solicitado.';
+      const userPrompt = prompt + (includeSources ? sourceInstruction() : '');
+      try {
+        let response;
+        if (provider === 'free') {
+          const body = {
+            prompt: userPrompt,
+            system: systemPrompt,
+            model: textModel,
+            json: wantsJson,
+            max_tokens: maxTokens
+          };
+          const sendFree = () => fetch('https://node.proyectodescartes.org/api/ia/text', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal
+          });
+          response = await sendWithRetry(sendFree);
+          // Si el endpoint no acepta json:true, se reintenta como texto.
+          if (!response.ok && wantsJson && response.status === 400) {
+            body.json = false;
+            response = await sendWithRetry(sendFree);
+          }
+        } else {
+          const url = provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://gen.pollinations.ai/v1/chat/completions';
+          const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` };
+          if (provider === 'openrouter') { headers['HTTP-Referer'] = location.origin; headers['X-Title'] = 'Generador de Iceberg Pro'; }
+          const body = {
+            model: textModel,
+            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+            temperature: 0.2,
+            max_tokens: maxTokens
+          };
+          if (wantsJson) body.response_format = { type: 'json_object' };
+          const send = () => fetch(url, { method: 'POST', headers, body: JSON.stringify(body), signal });
+          response = await sendWithRetry(send);
+          // Algunos modelos no aceptan response_format: se reintenta sin él.
+          if (!response.ok && wantsJson && response.status === 400) {
+            delete body.response_format;
+            response = await sendWithRetry(send);
+          }
+          // Otros no aceptan max_tokens: se reintenta sin ese límite.
+          if (!response.ok && response.status === 400 && body.max_tokens) {
+            delete body.max_tokens;
+            response = await sendWithRetry(send);
+          }
+        }
+        if (!response.ok) {
+          let detail = '';
+          try { detail = (await response.text()).slice(0, 600); } catch (error) { detail = ''; }
+          throw new Error(`HTTP ${response.status}${detail ? ': ' + detail : ''}`);
+        }
+        const payload = await response.text();
+        if (provider === 'free') {
+          try {
+            const parsed = JSON.parse(payload);
+            if (parsed && parsed.error) throw new Error(parsed.error.message || JSON.stringify(parsed.error));
+            return parsed.text || parsed.response || parsed.content || payload;
+          } catch (error) {
+            if (error && /HTTP|error/i.test(error.message || '')) throw error;
+            return payload;
+          }
+        }
+        const parsed = JSON.parse(payload);
+        if (parsed && parsed.error) throw new Error(parsed.error.message || JSON.stringify(parsed.error));
+        const choice = parsed.choices?.[0];
+        const content = choice?.message?.content || choice?.text;
+        if (Array.isArray(content)) {
+          return content.map(part => typeof part === 'string' ? part : part?.text || part?.content || '').join('');
+        }
+        if (content && typeof content === 'object') {
+          if (Array.isArray(content.parts)) {
+            return content.parts.map(part => typeof part === 'string' ? part : part?.text || '').join('');
+          }
+          return content.text || content.content || '';
+        }
+        return content || payload;
+      } catch (error) {
+        if (error && error.name === 'AbortError') {
+          console.error('Tiempo de espera agotado al generar texto.');
+          throw new Error('La IA tardó demasiado en responder (más de 3 minutos). Inténtalo de nuevo o cambia de modelo.');
+        }
+        console.error('Error generando texto:', error);
+        throw error;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
+    
+     async function generateVisualPrompt(title, theme, style, levelIndex) {
+         const mood = levelIndex > 3 ? "ominous, abstract, dark" : "clear, detailed";
+         const prompt = `Image prompt for "${title}" related to "${theme}". Style: ${style}. Mood: ${mood}. NO TEXT. Under 20 words. Return ONLY prompt.`;
+         try {
+             const result = await fetchText(prompt, false, { maxTokens: 120 });
+             const cleaned = sanitizeProse(result.split(/\breferences\s*:/i)[0])
+                 .replace(/^\s*(?:[-*]\s*)?/, '')
+                 .replace(/^['"]|['"]$/g, '')
+                 .trim();
+             return cleaned || `${title}, ${theme}, ${style}, ${mood}, no text`;
+         } catch {
+             return `${title}, ${theme}, ${style}, ${mood}, no text`;
+         }
+    }
+    
+    function generateImageUrl(visualPrompt, model) {
+      const seed = Math.floor(Math.random() * 99999);
+      if (providerSelect.value === 'free') return `https://node.proyectodescartes.org/api/ia/image?prompt=${encodeURIComponent(visualPrompt)}&model=${encodeURIComponent(model)}&seed=${seed}&width=600&height=800`;
+      const apiKey = apiKeyInput.value.trim();
+      return `https://enter.pollinations.ai/api/generate/image/${encodeURIComponent(visualPrompt)}?key=${encodeURIComponent(apiKey)}&nologo=true&seed=${seed}&model=${encodeURIComponent(model)}&width=600&height=800`;
+    }
+    
+    async function generateImageSource(prompt, model) {
+      if (providerSelect.value === 'openrouter') {
+        const apiKey = apiKeyInput.value.trim();
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+            'HTTP-Referer': location.origin,
+            'X-Title': 'Generador de Iceberg Pro'
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: `Genera una imagen para esta entrada educativa: ${prompt}. Sin texto dentro de la imagen.` }],
+            modalities: ['image', 'text']
+          })
+        });
+        if (!response.ok) throw new Error(`Error de imagen OpenRouter: HTTP ${response.status}`);
+        const payload = await response.json();
+        const image = payload.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        if (!image) throw new Error('OpenRouter no devolvió una imagen utilizable.');
+        return image;
+      }
+      if (providerSelect.value !== 'free') return generateImageUrl(prompt, model);
+      const response = await fetch('https://node.proyectodescartes.org/api/ia/image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, model, seed: Math.floor(Math.random() * 99999), width: 600, height: 800 }) });
+      if (!response.ok) throw new Error(`Error de imagen Red Descartes: HTTP ${response.status}`);
+      const blob = await response.blob();
+      if (!/^image\//i.test(blob.type || '')) throw new Error('La API de imágenes no devolvió una imagen válida (posible rechazo de contenido).');
+      return await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
+    }
+
+     async function generateLevelTitlesBatch(theme, levelIndex, count) {
+         const progression = levelProgression[levelIndex] || { focus: difficultyDescriptions[levelIndex] || "", verbs: "" };
+         const prompt = `Lista de ${count} títulos cortos y únicos para un iceberg educativo sobre "${theme}". Nivel: ${levelNames[levelIndex]}. Enfoque cognitivo: ${progression.focus} Verbos esperados: ${progression.verbs}. Los títulos deben ser académicos, concretos y adecuados para formación en pensamiento crítico; evita títulos sensacionalistas, conspirativos o de terror. Separados por "||". Ejemplo: A || B || C. No devuelvas JSON ni explicaciones.`;
+         let rawText;
+         try { rawText = await fetchText(prompt, false, { maxTokens: 400 }); }
+         catch { return Array.from({ length: count }, (_, index) => `${theme}: ${levelNames[levelIndex]} ${index + 1}`); }
+         if (/^\s*[\[{]/.test(rawText)) {
+             try {
+                 const parsed = parseModelJson(rawText);
+                 const candidate = Array.isArray(parsed) ? parsed : (parsed && (parsed.titles || parsed.entries));
+                 if (Array.isArray(candidate)) rawText = candidate.map(safeText).join('||');
+             } catch (error) { /* se limpia abajo; nunca se muestra JSON como título */ }
+         }
+         rawText = sanitizeProse(rawText);
+         let titles = rawText.split('||').map(t => t.trim().replace(/^\d+\.\s*/, '').replace(/^- /, '')).filter(Boolean);
+         if (titles.length < count) titles = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0).slice(0, count);
+         titles = titles.map(t => sanitizeProse(t).replace(/^["'“”]+|["'“”]+$/g, '').trim()).filter(Boolean);
+         if (titles.length < count) {
+             const fallback = Array.from({ length: count }, (_, index) => `${theme}: ${levelNames[levelIndex]} ${index + 1}`);
+             titles = titles.concat(fallback).slice(0, count);
+         }
+         return titles.slice(0, count);
+    }
+    
+    function safeText(value) {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'string') {
+            // Algunos modelos devuelven \u200b como texto literal o insertan
+            // espacios de ancho cero entre fórmulas. Se limpian para que no
+            // aparezcan como "\u200b" en HTML, PDF o Word.
+            return value.replace(/\\u200b/gi, '').replace(/[\u200b\u200c\u200d\ufeff]/g, '');
+        }
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        if (Array.isArray(value)) return value.map(safeText).filter(Boolean).join(', ');
+        if (typeof value === 'object') return Object.values(value).map(safeText).filter(Boolean).join(' · ');
+        return String(value);
+    }
+    function stripOptionLabel(value) {
+        let text = safeText(value).replace(/\s+/g, ' ').trim();
+        // Algunos modelos devuelven "A) ...", "A. ..." o incluso "A.D) ...".
+        // Se retiran hasta dos etiquetas iniciales para que la app ponga una sola.
+        for (let i = 0; i < 2; i++) {
+            const next = text.replace(/^[A-Ha-h]\s*[\.\)\:\-·]\s*/, '').trim();
+            if (!next || next === text) break;
+            text = next;
+        }
+        return text;
+    }
+
+    function escapeHtml(value) {
+        return safeText(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+    }
+
+    function asList(value) {
+        if (Array.isArray(value)) return value.filter(item => item !== null && item !== undefined);
+        if (value && typeof value === 'object') return Object.values(value);
+        return value ? [value] : [];
+    }
+
+    function renderConcept(item) {
+        if (!item || typeof item !== 'object') return `<li>${escapeHtml(item)}</li>`;
+        const term = item.term ?? item.concept ?? item.name ?? item.key ?? '';
+        const meaning = item.meaning ?? item.definition ?? item.explanation ?? item.description ?? '';
+        const relations = item.relations ?? item.relation ?? item.relationship ?? item.connections ?? '';
+        if (!term && !meaning && !relations) return `<li>${escapeHtml(item)}</li>`;
+        return `<li><strong>${escapeHtml(term)}</strong>${meaning ? `: ${escapeHtml(meaning)}` : ''}${relations ? ` <em>Relación: ${escapeHtml(relations)}</em>` : ''}</li>`;
+    }
+
+    async function generateLearningPlan(theme) {
+         const prompt = `Diseña una experiencia de aprendizaje sobre "${theme}". Devuelve SOLO JSON válido, sin markdown, con esta estructura exacta:
+{"objectives":["3 a 5 resultados con verbos observables: identificar, explicar, comparar, interpretar, argumentar, evaluar o relacionar"],"priorKnowledge":["3 preguntas iniciales: qué sabe, qué cree saber y qué quiere descubrir"],"metacognition":["4 preguntas finales sobre cambios en ideas, dificultades, estrategias y qué investigar"]}.
+Los objetivos deben ser concretos y adecuados para un iceberg histórico o conceptual. No incluyas referencias ni bibliografía en esta respuesta. ${MATH_RULES}`;
+         try { const raw = await fetchText(prompt, false, { json: true, maxTokens: 1000 }); const plan = parseModelJson(raw); if (!plan || typeof plan !== 'object' || Array.isArray(plan)) throw new Error('El plan no es un objeto JSON.'); return plan; }
+         catch { return { objectives: [`Explicar los conceptos fundamentales de ${theme}`, `Comparar distintas interpretaciones sobre ${theme}`, `Evaluar evidencias y construir una explicación argumentada`], priorKnowledge: [`¿Qué sabes ya sobre ${theme}?`, `¿Qué crees saber y qué dudas tienes?`, `¿Qué te gustaría descubrir?`], metacognition: [`¿Qué cambió en tus ideas iniciales?`, `¿Qué dificultad encontraste y cómo la resolviste?`, `¿Qué estrategia te ayudó más a aprender?`, `¿Qué necesitas investigar después?`] }; }
+    }
+
+    async function generateEntryContent(title, theme, levelIndex) {
+         const progression = levelProgression[levelIndex] || { focus: "", verbs: "" };
+         const prompt = `Convierte la entrada "${title}" del tema "${theme}" en una pequeña experiencia de aprendizaje. Nivel ${levelIndex + 1}: ${levelNames[levelIndex]}. Enfoque cognitivo: ${progression.focus} Verbos esperados: ${progression.verbs}. La explicación, la actividad, las preguntas socráticas y la evaluación deben exigir ese nivel de pensamiento; no conviertas todos los niveles en lo mismo. Devuelve SOLO JSON válido, sin markdown, con esta estructura exacta:
+{"explanation":"explicación clara", "keyConcepts":[{"term":"concepto", "meaning":"significado", "relations":"relación causal o conceptual con otros conceptos del iceberg"}], "evidenceQuestion":"pregunta para distinguir hecho, interpretación, hipótesis, leyenda o debate y valorar las limitaciones de la evidencia", "socraticQuestions":["pregunta de comprensión","pregunta de profundización","pregunta que cuestione un supuesto","pregunta para buscar evidencias","pregunta para formular una conclusión"], "activity":"actividad breve: resolver un problema, interpretar una imagen, comparar explicaciones, construir un mapa conceptual o analizar un documento", "transfer":"relación con una situación actual, otro contexto histórico o un problema real", "checkQuestion":"pregunta de comprobación o aplicación", "feedback":"retroalimentación que explique qué debe incluir una respuesta adecuada y cuándo necesita revisión", "quiz":[{"q":"pregunta de selección múltiple sobre la entrada","options":["opción A","opción B","opción C","opción D"],"answer":0,"why":"por qué la opción correcta lo es"}],"references":[{"title":"título exacto consultado","author":"autor u organización","shortAuthor":"apellido o apellido et al.","year":"año o vacío","url":"URL HTTP(S) exacta"}]}. En "quiz" incluye exactamente 2 preguntas de selección múltiple con 4 opciones plausibles y una sola correcta; "answer" es el índice (0-3) de la correcta. REGLAS DE LAS OPCIONES: las 4 opciones deben tener longitud y nivel de detalle similares (diferencia máxima de ~15% en caracteres); la correcta NO debe ser la más larga ni la más detallada ni la que tenga más matices; los distractores deben ser plausibles, específicos y bien redactados (errores conceptuales comunes, no absurdos); evita palabras absolutas (siempre, nunca) solo en los distractores y evita pistas gramaticales. En "options" escribe solo el texto de la opción; no incluyas etiquetas A), B), C), A., B., C. ni similares.
+En "explanation", marca cada afirmación factual con [[n]] al final de la frase, donde n es el número de la fuente en "references" (1, 2...). Ejemplo: "La IA transforma las prácticas educativas [[1]]." No añadas una cita al final del párrafo si no corresponde a una afirmación concreta. Si no tienes una fuente verificable para una afirmación, no inventes el marcador.
+${MATH_RULES}
+Usa lenguaje educativo, no inventes certezas y señala cuando algo es discutido. La explicación debe comenzar directamente con el sujeto, la obra, el concepto o el hecho principal; no empieces con "Esta experiencia de aprendizaje", "Esta entrada" ni fórmulas similares.`;
+         let raw = '';
+         const fallbackExplanation = `La entrada "${title}" puede estudiarse como un caso de interpretación dentro de ${theme}. Su análisis debe reconstruir el contexto en que aparece, identificar las decisiones formales o conceptuales que la hacen significativa y comparar las lecturas que han producido especialistas, instituciones y públicos. No basta con afirmar que la obra es importante, polémica o representativa: es necesario explicar qué criterios sostienen esa valoración, qué evidencias la respaldan y qué aspectos permanecen discutibles. La actividad invita a separar descripción, interpretación y juicio crítico para construir una conclusión argumentada y revisable.`;
+         try {
+             raw = await fetchText(prompt, true, { json: true, maxTokens: 3200 });
+             const obj = parseModelJson(raw);
+             if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('La respuesta de la entrada no es un objeto JSON.');
+             if (!safeText(obj.explanation).trim()) throw new Error('La entrada no incluye una explicación utilizable.');
+             const localReferences = sourcesAreEnabled() ? normalizeReferences(obj.references) : [];
+             const references = localReferences.length ? localReferences : (sourcesAreEnabled() ? extractMarkdownReferences(raw) : []);
+             addReferences(references);
+             const resolved = resolveCitations(cleanEntryOpening(obj.explanation), references);
+             obj.explanation = resolved.text;
+             obj.references = references;
+             obj.citedReferences = resolved.cited;
+             markCited(resolved.cited);
+             obj.quiz = await balanceOptions(obj.quiz);
+             return obj;
+         } catch (error) {
+             const references = sourcesAreEnabled() ? extractMarkdownReferences(raw) : [];
+             addReferences(references);
+             const recovered = extractJsonStringField(raw, 'explanation');
+             const narrative = sanitizeProse(recovered || raw).split(/references\s*:/i)[0].replace(/^\s*[#*_>-]+|[\s*_>-]+$/g, '').trim();
+             const explanation = narrative.length >= 80 ? narrative : fallbackExplanation;
+             const resolved = resolveCitations(cleanEntryOpening(explanation), references);
+             markCited(resolved.cited);
+             return { explanation: resolved.text, references, citedReferences: resolved.cited, keyConcepts: [{ term: title, meaning: `Idea central para analizar ${title} en el contexto de ${theme}.`, relations: 'Se relaciona con los procesos, actores y evidencias que explican el nivel.' }], evidenceQuestion: '¿Qué fuentes primarias y secundarias permitirían comprobar esta explicación y cuáles son sus limitaciones?', socraticQuestions: ['¿Qué significa esta idea?', '¿Qué factores la explican?', '¿Qué supuesto podría estar oculto?', '¿Qué evidencia independiente necesitamos?', '¿Qué conclusión provisional podemos defender?'], activity: 'Construye un mapa conceptual que conecte la entrada con sus causas, consecuencias y fuentes.', transfer: `Relaciona ${title} con un caso actual o con otro contexto histórico y compara sus diferencias.`, checkQuestion: `Explica ${title}, distingue hechos de interpretaciones y cita la evidencia utilizada.`, feedback: 'Una respuesta adecuada desarrolla la idea, distingue evidencia de interpretación y usa citas bibliográficas verificables.', quiz: [] };
+         }
+     }
+
+
+    // --- CUESTIONARIOS ---
+
+    // Evita que la respuesta correcta sea la más larga (pista fácil): reescribe distractores si hace falta
+    function correctIsTooLong(q) {
+        const opts = asList(q && q.options).map(safeText), idx = Number(q && q.answer);
+        if (opts.length < 3 || !Number.isInteger(idx) || idx < 0 || idx >= opts.length) return false;
+        const others = opts.filter((_, i) => i !== idx), mean = others.reduce((a, o) => a + o.length, 0) / others.length;
+        return opts[idx].length > Math.max(...others.map(o => o.length)) && opts[idx].length > mean * 1.15;
+    }
+    async function balanceOptions(list) {
+        const arr = asList(list);
+        return Promise.all(arr.map(async q => {
+            if (!correctIsTooLong(q)) return q;
+            try {
+                const opts = asList(q.options).map(safeText), idx = Number(q.answer), correct = opts[idx];
+                const prompt = `Pregunta: "${q.q}"\nOpción correcta: "${correct}"\nOpciones actuales: ${JSON.stringify(opts)}\nReescribe SOLO las opciones incorrectas para que tengan una longitud y un nivel de detalle casi iguales a los de la correcta (diferencia máxima ~10% en caracteres), manteniéndolas falsas pero plausibles. No modifiques la correcta. Devuelve SOLO un JSON array con las ${opts.length} opciones en el mismo orden.`;
+                 const fixed = parseModelJson(await fetchText(prompt, false, { json: true, maxTokens: 700 }));
+                if (Array.isArray(fixed) && fixed.length === opts.length && safeText(fixed[idx]) === correct) return { ...q, options: fixed.map(safeText) };
+            } catch (e) { console.error(e); }
+            return q;
+        }));
+    }
+    const allQuizzes = [];
+    function normQuiz(list) {
+        return asList(list).map(q => {
+            const opts = asList(q && q.options).map(value => stripOptionLabel(value));
+            const idx = Number(q && q.answer);
+            if (!q || !q.q || opts.length < 4 || !Number.isInteger(idx) || idx < 0 || idx >= opts.length) return null;
+            const items = opts.map((t, i) => ({ t, ok: i === idx }));
+            for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
+            const level = Number(q.level);
+            return { q: safeText(q.q), options: items.map(o => o.t), answer: items.findIndex(o => o.ok), why: safeText(q.why), level: Number.isInteger(level) ? level : null };
+        }).filter(Boolean);
+    }
+     function renderQuiz(questions, scope) {
+        return questions.map((q, n) => `<div class="qz" data-scope="${scope}" data-correct="${q.answer}" data-why="${escapeHtml(q.why)}">
+            <p class="qz-q">${n + 1}. ${escapeHtml(q.q)}</p>
+            <div class="qz-opts">${q.options.map((o, i) => `<button type="button" class="qz-opt" data-i="${i}">${'ABCDEFGH'[i] || ''}. ${escapeHtml(stripOptionLabel(o))}</button>`).join('')}</div>
+            <p class="qz-why"></p></div>`).join('');
+     }
+     const allReferences = [];
+     const WEB_SEARCH_MODELS = new Set(['gemini-search', 'google/gemini-3.8-flash', 'google/gemini-3.5-flash-lite', 'google/gemini-2.5-flash-lite:search', 'perplexity-fast', 'perplexity/sonar', 'openai/gpt-5.6-luna']);
+     function hasWebSearch() { return WEB_SEARCH_MODELS.has(textModelSelect.value); }
+     function updateSourcesVisibility() {
+         const visible = hasWebSearch();
+         sourcesOptions.classList.toggle('visible', visible);
+         if (!visible) sourcesEnabled.checked = false;
+     }
+     function sourcesAreEnabled() { return hasWebSearch() && sourcesEnabled.checked; }
+     function sourceInstruction() {
+         return sourcesAreEnabled() ? '\nMODO FUENTES ACTIVADO. Consulta la web antes de responder. Devuelve en "references" SOLO fuentes que hayas consultado realmente durante esta respuesta. Cada fuente debe tener una URL HTTP(S) directa y accesible, título, autor u organización, shortAuthor (apellido o "Apellido et al."), año si está disponible y fecha de consulta. NO inventes fuentes, URLs, autores, títulos, DOI, fechas ni datos bibliográficos. No uses URLs de ejemplo, búsquedas, páginas inexistentes o referencias que recuerdes sin haberlas consultado. Si no puedes verificar una fuente, omítela y devuelve "references": []. Las afirmaciones que no estén respaldadas por una fuente consultada deben presentarse como interpretación, hipótesis o incertidumbre. Cuando se te pida, marca cada afirmación factual con [[n]] según el orden de "references".' : '';
+     }
+
+     function normalizeKey(value) {
+         return safeText(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+     }
+     function authorShort(author) {
+         const raw = safeText(author).replace(/\s+/g, ' ').trim();
+         if (!raw) return 'Autor';
+         if (/\b(Universidad|Organizaci[oó]n|Ministerio|Instituto|Centro|Fundaci[oó]n|UNESCO|OCDE|OMS|INTEF|UNAM|ISO|AWS|Wikipedia|Frontiers|Ciencia Latina|ScienceDirect|MERLOT|Dialnet|Educators? Technology)\b/i.test(raw)) return raw;
+         const first = raw.split(/\s*(?:;|\by\b|\band\b|&)\s*/).filter(Boolean)[0] || raw;
+         if (first.includes(',')) return first.split(',')[0].trim();
+         const tokens = first.split(/\s+/).filter(Boolean);
+         return tokens[tokens.length - 1] || first;
+     }
+     function inTextCitation(reference) {
+         const short = safeText(reference.shortAuthor).trim() || authorShort(reference.author);
+         const year = reference.year && /^\d{4}$/.test(reference.year) ? reference.year : 's. f.';
+         return `${short}, ${year}`;
+     }
+     function matchCitation(authorText, yearText, reference) {
+         const citedAuthor = normalizeKey(authorText);
+         const short = normalizeKey(reference.shortAuthor || authorShort(reference.author));
+         const full = normalizeKey(reference.author);
+         const citedYear = (safeText(yearText).match(/\d{4}/) || [])[0] || 's. f.';
+         const refYear = reference.year && /^\d{4}$/.test(reference.year) ? reference.year : 's. f.';
+         if (citedYear !== refYear && citedYear !== 's. f.' && refYear !== 's. f.') return false;
+         if (!citedAuthor) return false;
+         return citedAuthor === short || citedAuthor.includes(short) || short.includes(citedAuthor) || full.includes(citedAuthor) || citedAuthor.includes(full);
+     }
+     function resolveCitations(value, references) {
+         let output = safeText(value).trim();
+         const refs = normalizeReferences(references);
+         const cited = [];
+         const add = reference => {
+             if (reference && !cited.some(item => item.url === reference.url)) cited.push(reference);
+         };
+         output = output.replace(/\s*\[\[(\d+)\]\]/g, (match, number) => {
+             const reference = refs[Number(number) - 1];
+             if (!reference) return '';
+             add(reference);
+             return ` (${inTextCitation(reference)})`;
+         });
+         output = output.replace(/\[\[\d+\]\]/g, '');
+         const pattern = /\(([^()]{1,180}?),\s*((?:\d{4}|s\.\s*f\.)[^()]*?)\)/g;
+         let match;
+         while ((match = pattern.exec(output))) {
+             const found = refs.find(reference => matchCitation(match[1], match[2], reference));
+             if (found) add(found);
+         }
+         return { text: output.replace(/\s{2,}/g, ' ').replace(/\s+([.,;:])/g, '$1').trim(), cited };
+     }
+     function markCited(references) {
+         normalizeReferences(references).forEach(reference => {
+             if (!icebergData.references.cited.some(item => item.url === reference.url)) icebergData.references.cited.push(reference);
+         });
+     }
+
+     function normalizeReferences(value) {
+         return asList(value).map(item => {
+             if (!item || typeof item !== 'object') return null;
+             const url = safeText(item.url ?? item.href).trim();
+             if (!/^https?:\/\/[^\s<>"']+$/i.test(url)) return null;
+             try { const parsed = new URL(url); if (!parsed.hostname || /(?:example\.com|example\.org|localhost|127\.0\.0\.1)$/i.test(parsed.hostname)) return null; } catch { return null; }
+             const title = safeText(item.title ?? item.name).trim();
+             const author = safeText(item.author ?? item.organization ?? item.publisher).trim();
+             if (!title || !author) return null;
+             return {
+                 title,
+                 author,
+                 shortAuthor: safeText(item.shortAuthor ?? item.short_author).trim(),
+                 year: safeText(item.year).trim(),
+                 url
+             };
+         }).filter(Boolean).filter((item, index, list) => list.findIndex(other => other.url === item.url) === index);
+     }
+
+     function stripCodeFences(raw) {
+         return safeText(raw).replace(/```(?:json|javascript|js)?/gi, '').replace(/```/g, '').trim();
+     }
+     function jsonCandidates(value) {
+         const source = safeText(value);
+         const candidates = [];
+         for (let index = 0; index < source.length; index++) {
+             const open = source[index];
+             if (open !== '{' && open !== '[') continue;
+             const close = open === '{' ? '}' : ']';
+             let depth = 0, inString = false, escaped = false;
+             for (let cursor = index; cursor < source.length; cursor++) {
+                 const char = source[cursor];
+                 if (inString) {
+                     if (escaped) escaped = false;
+                     else if (char === '\\') escaped = true;
+                     else if (char === '"') inString = false;
+                     continue;
+                 }
+                 if (char === '"') { inString = true; continue; }
+                 if (char === open) depth++;
+                 else if (char === close) {
+                     depth--;
+                     if (depth === 0) {
+                         candidates.push(source.slice(index, cursor + 1));
+                         index = cursor;
+                         break;
+                     }
+                 }
+             }
+         }
+         return candidates;
+     }
+     function repairJson(value) {
+         return safeText(value).replace(/,\s*([}\]])/g, '$1');
+     }
+     function parseModelJson(raw) {
+         const source = stripCodeFences(raw);
+         const candidates = [source, ...jsonCandidates(source)].sort((a, b) => b.length - a.length);
+         for (const candidate of candidates) {
+             for (const variant of [candidate, repairJson(candidate)]) {
+                 try { return JSON.parse(variant); } catch (error) { /* siguiente candidato */ }
+             }
+         }
+         throw new Error('La respuesta no contiene JSON válido.');
+     }
+     function extractJsonStringField(raw, field) {
+         const source = stripCodeFences(raw);
+         const pattern = new RegExp('"' + field + '"\\s*:\\s*"((?:\\\\.|[^"\\\\])*)"', 's');
+         const match = source.match(pattern);
+         if (!match) return '';
+         try { return JSON.parse('"' + match[1] + '"'); }
+         catch (error) {
+             return match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+         }
+     }
+     function sanitizeProse(value) {
+         let output = safeText(value).trim();
+         output = output.replace(/```[\s\S]*?```/g, ' ').replace(/```/g, ' ').trim();
+         // Si el texto empieza como JSON o contiene la clave "references", no es prosa:
+         // se descarta en lugar de mostrar llaves y comillas al usuario.
+         if (/^\s*[\[{]/.test(output) || /"references"\s*:/.test(output)) return '';
+         // No se eliminan llaves ni corchetes: pueden ser LaTeX válido
+         // (\(...\), \[...\], \vec{E}, \frac{a}{b}, \sqrt{x}). La limpieza
+         // anterior convertía \vec{E} en \vec y provocaba errores de MathJax.
+         return output.replace(/\s+/g, ' ').trim();
+     }
+
+     function extractMarkdownReferences(raw) {
+         const text = safeText(raw);
+         const references = [];
+         const pattern = /\[[^\]]+\]\((https?:\/\/[^)]+)\)\s*-\s*([^\n-]+?)\s*-\s*([^\n-]+?)\s*-\s*(\d{4})(?:-\d{2}-\d{2})?/g;
+         let match;
+         while ((match = pattern.exec(text))) references.push({ url: match[1].trim(), title: match[2].trim(), author: match[3].trim(), year: match[4] });
+         return normalizeReferences(references);
+     }
+     function cleanEntryOpening(value) {
+         const cleaned = safeText(value).trim()
+             .replace(/^Esta experiencia de aprendizaje\s+(?:explora cómo|explora|analiza|presenta)\s+/i, '')
+             .replace(/^Esta entrada\s+(?:explora|analiza|presenta|describe)\s+/i, '')
+             .replace(/^La entrada\s+(?:explora|analiza|presenta|describe)\s+/i, '');
+         return cleaned ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : '';
+     }
+     function cleanLevelOpening(value) {
+         const cleaned = safeText(value).trim()
+             .replace(/^Este nivel\s+(?:aborda|examina|explora|analiza|presenta)\s+/i, '')
+             .replace(/^En este nivel\s+(?:se aborda|se examina|se explora|se analiza)\s+/i, '');
+         return cleaned ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : '';
+     }
+     function addReferences(references) {
+         normalizeReferences(references).forEach(reference => {
+             if (!allReferences.some(existing => existing.url === reference.url)) allReferences.push(reference);
+             if (!icebergData.references.consulted.some(existing => existing.url === reference.url)) icebergData.references.consulted.push(reference);
+         });
+     }
+     function dedupeReferences(list) {
+         const output = [];
+         asList(list).forEach(reference => {
+             if (!reference || typeof reference !== 'object') return;
+             const url = safeText(reference.url).trim();
+             if (!url || output.some(item => item.url === url)) return;
+             output.push(reference);
+         });
+         return output;
+     }
+     function sortReferences(list) {
+         return dedupeReferences(list).slice().sort((a, b) =>
+             normalizeKey(a.author).localeCompare(normalizeKey(b.author), 'es') ||
+             safeText(a.year).localeCompare(safeText(b.year)) ||
+             normalizeKey(a.title).localeCompare(normalizeKey(b.title), 'es')
+         );
+     }
+     function formatApa7(reference) {
+         const year = reference.year && /^\d{4}$/.test(reference.year) ? reference.year : 's. f.';
+         return `${safeText(reference.author).replace(/[\s.]+$/, '')}. (${year}). ${safeText(reference.title).replace(/[\s.]+$/, '')}. ${reference.url}`;
+     }
+     function formatApa7Html(reference) {
+         const year = reference.year && /^\d{4}$/.test(reference.year) ? reference.year : 's. f.';
+         const author = safeText(reference.author).replace(/[\s.]+$/, '');
+         const title = safeText(reference.title).replace(/[\s.]+$/, '');
+         return `${escapeHtml(author)}. (${year}). <em>${escapeHtml(title)}</em>. <a href="${escapeHtml(reference.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference.url)}</a>`;
+     }
+     function renderReferences() {
+         const section = document.createElement('section'); section.className = 'references';
+         const cited = sortReferences(icebergData.references.cited);
+         const consulted = sortReferences(allReferences);
+         let html = '<h2>📚 Referencias citadas</h2>';
+         if (!sourcesAreEnabled()) {
+             html += '<p class="reference-note">Este iceberg se generó sin el modo de fuentes verificables. Las citas deben revisarse antes de publicarlo.</p>';
+         }
+         if (cited.length) {
+             html += `<ol>${cited.map(reference => `<li>${formatApa7Html(reference)}</li>`).join('')}</ol>`;
+         } else {
+             html += '<p class="reference-note">No se registraron citas verificables en el texto. No se muestran referencias inventadas.</p>';
+         }
+         if (consulted.length > cited.length) {
+             html += `<details><summary>Fuentes consultadas (${consulted.length})</summary><ol>${consulted.map(reference => `<li>${formatApa7Html(reference)}</li>`).join('')}</ol></details>`;
+         }
+         section.innerHTML = html;
+         icebergChart.appendChild(section);
+     }
+     function initQuizzes() {
+        function stripOptionLabel(value) {
+            let text = String(value === null || value === undefined ? '' : value).replace(/\s+/g, ' ').trim();
+            for (let i = 0; i < 2; i++) {
+                const next = text.replace(/^[A-Ha-h]\s*[\.\)\:\-·]\s*/, '').trim();
+                if (!next || next === text) break;
+                text = next;
+            }
+            return text;
+        }
+        function csvEscape(value) {
+            let text = value === null || value === undefined ? '' : String(value);
+            // Evita que una celda empiece como fórmula en la hoja de cálculo.
+            if (/^[=+\-@]/.test(text)) text = "'" + text;
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+        function safePart(value, maxLength) {
+            const limit = maxLength || 40;
+            return String(value || '')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '_')
+                .replace(/^_|_$/g, '')
+                .slice(0, limit) || 'iceberg';
+        }
+        function downloadTextFile(filename, content, mime) {
+            const blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => { link.remove(); URL.revokeObjectURL(url); }, 10000);
+        }
+        function questionData(q) {
+            const options = Array.from(q.querySelectorAll('.qz-opt')).map(option => option.textContent.trim());
+            const selected = q.dataset.selected !== undefined ? Number(q.dataset.selected) : -1;
+            const correct = Number(q.dataset.correct);
+            return {
+                question: (q.querySelector('.qz-q')?.textContent || '').replace(/^\d+\.\s*/, '').trim(),
+                options: options,
+                selected: Number.isInteger(selected) ? selected : -1,
+                correct: Number.isInteger(correct) ? correct : -1,
+                done: q.dataset.done === '1',
+                ok: q.dataset.ok === '1',
+                why: q.dataset.why || ''
+            };
+        }
+        function collectResults() {
+            const box = document.querySelector('.quiz-results');
+            const rows = box ? Array.from(box.querySelectorAll('.res-row')) : [];
+            const levels = rows.map(row => {
+                const scope = row.dataset.scope;
+                const questions = Array.from(document.querySelectorAll('.qz[data-scope="' + scope + '"]')).map(questionData);
+                return {
+                    scope: scope,
+                    name: (row.querySelector('.res-label')?.textContent || '')
+                        .replace(/^🏁\s*/, '')
+                        .replace(/^📊\s*/, '')
+                        .trim(),
+                    questions: questions
+                };
+            });
+            const all = levels.reduce((acc, level) => acc.concat(level.questions), []);
+            const ok = all.filter(question => question.ok).length;
+            const answered = all.filter(question => question.done).length;
+            const studentInput = document.getElementById('studentNameInput');
+            return {
+                schema: 'iceberg-results-v1',
+                student: (studentInput && studentInput.value.trim()) || 'Sin nombre',
+                date: new Date().toLocaleString('es-ES'),
+                dateStamp: new Date().toISOString().slice(0, 10),
+                iceberg: (box && box.dataset.icebergTitle) || document.title || 'Iceberg',
+                levels: levels,
+                total: all.length,
+                ok: ok,
+                answered: answered,
+                percent: all.length ? Math.round((ok / all.length) * 100) : 0
+            };
+        }
+        function optionText(question, index) {
+            if (index < 0 || index >= question.options.length) return 'Sin responder';
+            return stripOptionLabel(question.options[index]);
+        }
+        function buildSummaryCsv() {
+            const data = collectResults();
+            const header = ['fecha', 'estudiante', 'iceberg',
+                'nivel_1_aciertos', 'nivel_1_total', 'nivel_2_aciertos', 'nivel_2_total',
+                'nivel_3_aciertos', 'nivel_3_total', 'nivel_4_aciertos', 'nivel_4_total',
+                'nivel_5_aciertos', 'nivel_5_total', 'final_aciertos', 'final_total',
+                'total_aciertos', 'total_preguntas', 'respondidas', 'porcentaje'];
+            const values = [data.date, data.student, data.iceberg];
+            for (let level = 0; level < 5; level++) {
+                const entry = data.levels.find(item => item.scope === String(level));
+                if (entry) {
+                    values.push(entry.questions.filter(question => question.ok).length, entry.questions.length);
+                } else {
+                    values.push('', '');
+                }
+            }
+            const final = data.levels.find(item => item.scope === 'final');
+            values.push(final ? final.questions.filter(question => question.ok).length : '', final ? final.questions.length : '');
+            values.push(data.ok, data.total, data.answered, data.percent + '%');
+            return [header, values].map(row => row.map(csvEscape).join(',')).join('\r\n');
+        }
+        function buildDetailCsv() {
+            const data = collectResults();
+            const header = ['fecha', 'estudiante', 'iceberg', 'nivel', 'numero', 'pregunta', 'opcion_elegida', 'opcion_correcta', 'acierto', 'explicacion'];
+            const rows = [header];
+            data.levels.forEach(level => {
+                level.questions.forEach((question, index) => {
+                    rows.push([
+                        data.date,
+                        data.student,
+                        data.iceberg,
+                        level.name,
+                        index + 1,
+                        question.question,
+                        optionText(question, question.selected),
+                        optionText(question, question.correct),
+                        question.done ? (question.ok ? 'Sí' : 'No') : 'Sin responder',
+                        question.why
+                    ]);
+                });
+            });
+            return rows.map(row => row.map(csvEscape).join(',')).join('\r\n');
+        }
+        function downloadResults(kind) {
+            const data = collectResults();
+            const base = 'resultados_' + safePart(data.student, 18) + '_' + safePart(data.iceberg, 28) + '_' + data.dateStamp;
+            if (kind === 'summary') {
+                downloadTextFile(base + '_resumen.csv', '\uFEFF' + buildSummaryCsv(), 'text/csv;charset=utf-8');
+            } else if (kind === 'detail') {
+                downloadTextFile(base + '_detalle.csv', '\uFEFF' + buildDetailCsv(), 'text/csv;charset=utf-8');
+            } else {
+                downloadTextFile(base + '.json', JSON.stringify(data, null, 2), 'application/json;charset=utf-8');
+            }
+        }
+        function bindTeacherExports() {
+            const bind = (id, handler) => {
+                const button = document.getElementById(id);
+                if (button && button.dataset.bound !== '1') {
+                    button.dataset.bound = '1';
+                    button.onclick = handler;
+                }
+            };
+            bind('exportSummaryCsv', () => downloadResults('summary'));
+            bind('exportDetailCsv', () => downloadResults('detail'));
+            bind('exportResultsJson', () => downloadResults('json'));
+        }
+        function refresh() {
+            const box = document.querySelector('.quiz-results'); if (!box) return;
+            let ok = 0, total = 0;
+            box.querySelectorAll('.res-row').forEach(row => {
+                const qs = [...document.querySelectorAll('.qz[data-scope="' + row.dataset.scope + '"]')];
+                const done = qs.filter(q => q.dataset.done), good = qs.filter(q => q.dataset.ok === '1');
+                row.querySelector('.res-score').textContent = good.length + ' / ' + qs.length;
+                row.querySelector('.res-bar i').style.width = (qs.length ? good.length / qs.length * 100 : 0) + '%';
+                ok += good.length; total += qs.length;
+            });
+            const answered = document.querySelectorAll('.qz[data-done]').length;
+            box.querySelector('.res-total').textContent = 'Total: ' + ok + ' / ' + total + ' (' + (total ? Math.round(ok / total * 100) : 0) + '%)';
+            const pct = total ? ok / total : 0;
+            box.querySelector('.res-msg').textContent = answered < total ? 'Respondidas ' + answered + ' de ' + total + ' preguntas.' : (pct >= 0.8 ? '¡Excelente dominio del tema!' : pct >= 0.5 ? 'Buen avance: revisa las preguntas falladas y sus explicaciones.' : 'Te conviene repasar los niveles y volver a intentarlo.');
+            const dock = document.getElementById('scoreDock');
+            const dockValue = document.getElementById('scoreDockValue');
+            const resultButton = document.getElementById('resultsBtn');
+            if (dock) {
+                dock.hidden = false;
+                if (dockValue) dockValue.textContent = ok + ' / ' + total;
+            }
+            if (resultButton) resultButton.textContent = `📊 Resultados (${ok}/${total})`;
+            bindTeacherExports();
+        }
+        if (document.__qzInit) { document.dispatchEvent(new Event('qz-refresh')); return; }
+        document.__qzInit = true;
+        document.addEventListener('qz-refresh', refresh);
+        function paint(el, bg, bd) { el.style.setProperty('background', bg, 'important'); el.style.setProperty('border-color', bd, 'important'); el.style.setProperty('opacity', '1', 'important'); }
+        document.addEventListener('click', e => {
+            const t = e.target.closest ? e.target : e.target.parentElement;
+            const b = t && t.closest('.qz-opt'); if (!b) return;
+            e.stopPropagation();
+            const q = b.closest('.qz'); if (q.dataset.done) return;
+            q.dataset.done = '1'; q.classList.add('done');
+            q.dataset.selected = b.dataset.i;
+            const good = Number(b.dataset.i) === Number(q.dataset.correct);
+            q.dataset.ok = good ? '1' : '0';
+            b.classList.add(good ? 'correct' : 'wrong');
+            if (good) paint(b, 'rgba(46,160,67,.55)', '#3fb950'); else paint(b, 'rgba(218,54,51,.55)', '#f85149');
+            if (!good) { const c = q.querySelectorAll('.qz-opt')[Number(q.dataset.correct)]; c.classList.add('correct'); paint(c, 'rgba(46,160,67,.55)', '#3fb950'); }
+            const why = q.querySelector('.qz-why');
+            why.textContent = (good ? '✅ ¡Correcto! ' : '❌ No es esa. ') + (q.dataset.why || '');
+            why.style.display = 'block';
+            refresh();
+        }, true);
+        refresh();
+    }
+
+    async function generateFinalQuiz(theme, levelsInfo) {
+        const count = Math.min(10, Math.max(5, levelsInfo.length * 2));
+        const resumen = levelsInfo.map((l, i) => `Nivel ${i + 1} (${l.name})${l.focus ? ' · ' + l.focus : ''}: ${l.titles.join('; ')}`).join('\n');
+        const prompt = `Crea un cuestionario final de ${count} preguntas de selección múltiple sobre el iceberg "${theme}" que evalúe TODOS los niveles (al menos una pregunta por nivel, de comprensión a evaluación crítica).\n${resumen}\nDevuelve SOLO JSON válido, sin markdown: [{"q":"pregunta","options":["A","B","C","D"],"answer":0,"why":"explicación","level":1}] con 4 opciones, una sola correcta y "answer" como índice 0-3. Debes devolver exactamente ${count} preguntas y al menos una por cada nivel (${levelsInfo.length} niveles); incluye "level" con el número de nivel, de 1 a ${levelsInfo.length}. REGLAS DE LAS OPCIONES: las 4 opciones deben tener longitud y nivel de detalle similares (diferencia máxima de ~15% en caracteres); la correcta NO debe ser la más larga ni la más detallada ni la que tenga más matices; los distractores deben ser plausibles, específicos y bien redactados (errores conceptuales comunes, no absurdos); evita palabras absolutas (siempre, nunca) solo en los distractores y evita pistas gramaticales. En "options" escribe solo el texto de la opción; no incluyas etiquetas A), B), C), A., B., C. ni similares. ${MATH_RULES}`;
+        let generated = [];
+        try {
+            const parsed = parseModelJson(await fetchText(prompt, false, { json: true, maxTokens: 3200 }));
+            generated = normQuiz(await balanceOptions(parsed));
+        } catch (e) {
+            console.error(e);
+        }
+
+        // Una pregunta por nivel como mínimo. Si el modelo devuelve una sola,
+        // se completa con la primera pregunta disponible de cada nivel.
+        const fallback = allQuizzes.map(item => ({ ...item.raw, level: Number(item.level) + 1 }));
+        const selected = [];
+        const keyOf = q => safeText(q && q.q).toLowerCase().replace(/\s+/g, ' ').trim();
+        levelsInfo.forEach((_, index) => {
+            const level = index + 1;
+            const question = generated.find(q => Number(q.level) === level) ||
+                fallback.find(q => Number(q.level) === level);
+            if (question && !selected.some(q => keyOf(q) === keyOf(question))) selected.push(question);
+        });
+        [...generated, ...fallback].forEach(question => {
+            if (selected.length >= count) return;
+            if (!selected.some(q => keyOf(q) === keyOf(question))) selected.push(question);
+        });
+        if (selected.length) return selected.slice(0, count);
+        return generated.slice(0, count);
+    }
+
+    function renderQuizSections(theme, levelsInfo, finalQs) {
+        const fin = document.createElement('section'); fin.className = 'quiz-final';
+        const coverageWarning = finalQs.length < levelsInfo.length
+            ? `<p class="quiz-warning">El cuestionario final tiene ${finalQs.length} pregunta(s) para ${levelsInfo.length} niveles. No se pudieron recuperar preguntas de todos los niveles; revísalo antes de publicar.</p>`
+            : '';
+        fin.innerHTML = `<h2>🏁 Cuestionario final</h2>${coverageWarning}<p>Pon a prueba lo aprendido en todos los niveles del iceberg.</p><div class="quiz-box">${renderQuiz(finalQs, 'final')}</div>`;
+        icebergChart.appendChild(fin);
+        const rows = levelsInfo.map((l, i) => `<div class="res-row" data-scope="${i}"><span class="res-label">${escapeHtml(l.name)}</span><span class="res-bar"><i></i></span><span class="res-score">0 / 0</span></div>`).join('')
+            + `<div class="res-row" data-scope="final"><span class="res-label">🏁 Cuestionario final</span><span class="res-bar"><i></i></span><span class="res-score">0 / 0</span></div>`;
+        const res = document.createElement('section'); res.className = 'quiz-results';
+        res.dataset.icebergTitle = (icebergData.metadata && icebergData.metadata.title) || theme || 'Iceberg';
+        res.innerHTML = `<h2>📊 Resultados</h2><p class="quiz-role-note">Responde los cuestionarios aquí. Al terminar, usa <strong>Resumen CSV</strong> o <strong>Detalle CSV</strong> y entrega el archivo al profesor.</p>${rows}<div class="res-total"></div><div class="res-msg"></div>
+          <div class="teacher-export">
+            <h3>📤 Para el profesor</h3>
+            <p>Descarga los resultados para llevarlos a una hoja de cálculo o a una app de rúbrica. El archivo se genera en este navegador; no se envía a ningún servidor.</p>
+            <label>Nombre del estudiante (opcional) <input type="text" id="studentNameInput" placeholder="Nombre y apellidos" autocomplete="off"></label>
+            <div class="teacher-export-buttons">
+              <button type="button" id="exportSummaryCsv">📊 Resumen CSV</button>
+              <button type="button" id="exportDetailCsv">📋 Detalle CSV</button>
+              <button type="button" id="exportResultsJson">🧾 JSON</button>
+            </div>
+            <small>Resumen: una fila por estudiante, con puntuación por nivel. Detalle: una fila por pregunta, con la opción elegida y la correcta.</small>
+          </div>`;
+        icebergChart.appendChild(res);
+        initQuizzes();
+    }
+
+    // --- DOM LOGIC ---
+    function createLevelStructure(levelIndex, title) {
+        const div = document.createElement('div');
+        div.className = 'level';
+        div.style.animation = `fadeIn 0.5s ease forwards ${levelIndex * 0.2}s`;
+         const progression = levelProgression[levelIndex] || { short: "Nivel " + (levelIndex + 1), focus: "" };
+         div.innerHTML = `<h2 class="level-title">${title} <span class="level-desc-tag" title="${escapeHtml(progression.focus)}">${escapeHtml(progression.short)}</span></h2>`;
+         const introduction = document.createElement('p');
+         introduction.className = 'level-introduction';
+         introduction.contentEditable = 'true';
+         introduction.spellcheck = true;
+         introduction.setAttribute('role', 'textbox');
+         introduction.setAttribute('aria-label', `Introducción editable del ${title}`);
+         introduction.title = 'Haz clic para editar esta introducción manualmente';
+         introduction.textContent = 'Preparando la introducción documentada de este nivel...';
+         const ul = document.createElement('ul');
+         ul.className = 'entries';
+         div.append(introduction, ul);
+         return { container: div, list: ul, introduction };
+    }
+
+    function createEntry(title, content, visualPrompt, imageUrl, theme, levelIndex, entryData) {
+        const quizQs = normQuiz(content.quiz);
+        quizQs.forEach(x => allQuizzes.push({ level: levelIndex, raw: { q: x.q, options: x.options, answer: x.answer, why: x.why } }));
+        const li = document.createElement('li');
+        li.className = 'entry-trigger';
+        li.textContent = title;
+        
+        const panelWrapper = document.createElement('li');
+        panelWrapper.className = 'panel-wrapper';
+
+        const panel = document.createElement('div');
+        panel.className = 'panel-content';
+        
+        const layout = document.createElement('div');
+        layout.className = 'content-layout';
+        
+        const imgSection = document.createElement('div');
+        imgSection.className = 'image-section';
+        const img = document.createElement('img');
+        if (imageUrl) {
+            img.src = imageUrl;
+        } else {
+            img.classList.add('broken-image');
+            img.alt = 'Imagen no disponible';
+        }
+        img.alt = title;
+        img.onerror = () => {
+            img.classList.add('broken-image');
+            img.alt = 'Imagen no disponible';
+        };
+        
+        const controls = document.createElement('div');
+        controls.className = 'controls-box';
+        const promptInput = document.createElement('input');
+        promptInput.value = visualPrompt || '';
+        promptInput.setAttribute('aria-label', 'Prompt visual de la imagen');
+        const regenerateBtn = document.createElement('button');
+        regenerateBtn.type = 'button';
+        regenerateBtn.textContent = '🔄 Regenerar';
+        controls.append(promptInput, regenerateBtn);
+        regenerateBtn.onclick = (e) => {
+            e.stopPropagation();
+            img.style.opacity = 0.5;
+            generateImageSource(promptInput.value, modelSelect.value).then(async url => {
+                img.src = url;
+                if (entryData) {
+                    entryData.imageUrl = url;
+                    entryData.imageDataUrl = /^data:image\//i.test(url) ? url : await toDataURL(url);
+                }
+            }).catch(() => { img.style.opacity = 1; });
+            img.onload = () => img.style.opacity = 1;
+        };
+        imgSection.append(img, controls);
+
+        const textSection = document.createElement('div');
+        textSection.className = 'text-section';
+        // Formato seguro de HTML
+         const concepts = asList(content.keyConcepts).map(renderConcept).join('');
+         const socratic = asList(content.socraticQuestions).map(item => `<li>${escapeHtml(item)}</li>`).join('');
+         textSection.innerHTML = `<h3>${escapeHtml(title)}</h3><p class="entry-introduction" contenteditable="true" spellcheck="true" role="textbox" aria-label="Introducción editable de ${escapeHtml(title)}" title="Haz clic para editar esta introducción manualmente">${escapeHtml(content.explanation)}</p>
+           ${sourcesAreEnabled() && !asList(content.citedReferences).length ? '<p class="citation-note">Esta entrada no registra citas verificables en el texto. Revisa las fuentes antes de publicarla.</p>' : ''}
+           <div class="learning-block"><h4>🧩 Conceptos clave y relaciones</h4><ul>${concepts}</ul></div>
+          <div class="learning-block"><h4>🔎 Pensamiento crítico y evidencias</h4><p>${escapeHtml(content.evidenceQuestion)}</p></div>
+          <div class="learning-block"><h4>💬 Preguntas socráticas</h4><ol>${socratic}</ol></div>
+          <div class="learning-block"><h4>🛠️ Actividad de aprendizaje</h4><p>${escapeHtml(content.activity)}</p></div>
+          <div class="learning-block"><h4>🌍 Transferencia</h4><p>${escapeHtml(content.transfer)}</p></div>
+           <div class="learning-block"><h4>✅ Evaluación formativa</h4><p><strong>${escapeHtml(content.checkQuestion)}</strong></p><p class="feedback">${escapeHtml(content.feedback)}</p>${quizQs.length ? `<div class="quiz-box">${renderQuiz(quizQs, levelIndex)}</div>` : ''}</div>`;
+
+        layout.append(imgSection, textSection);
+        panel.appendChild(layout);
+        panelWrapper.appendChild(panel);
+
+        li.onclick = () => { li.classList.toggle('open'); panel.classList.toggle('active'); };
+        img.onclick = (e) => { e.stopPropagation(); modal.classList.add('active'); modalImg.src = img.src; };
+
+        return { trigger: li, content: panelWrapper };
+    }
+
+    async function renderLearningPlan(plan) {
+         const planBox = document.createElement('section'); planBox.className = 'learning-plan';
+         planBox.innerHTML = `<h2>🎯 Objetivos de aprendizaje</h2><ul>${asList(plan.objectives).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul><h2>🧠 Activación de conocimientos previos</h2><ol>${asList(plan.priorKnowledge).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ol>`;
+         icebergChart.appendChild(planBox);
+    }
+
+    function renderMetacognition(plan) {
+         const box = document.createElement('section'); box.className = 'metacognition';
+         box.innerHTML = `<h2>🪞 Cierre metacognitivo</h2><p>Reflexiona sobre tu recorrido de aprendizaje:</p><ol>${asList(plan.metacognition).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ol>`;
+          icebergChart.appendChild(box);
+     }
+
+     async function generateLevelIntroduction(theme, levelIndex, titles) {
+         const fallback = `${titles.join(', ')} permiten analizar problemas de interpretación dentro de ${theme}. El análisis no se limita a describir las obras o los acontecimientos: compara sus contextos de producción, las decisiones de sus autores, las instituciones que intervienen y las respuestas de los públicos. También distingue entre información documentada, lectura crítica e hipótesis, y pregunta quién define el valor, la originalidad y la relevancia de cada caso. El recorrido invita a contrastar testimonios, catálogos, estudios especializados y fuentes institucionales antes de formular una conclusión, reconociendo que toda interpretación depende de la evidencia seleccionada y de los criterios utilizados.`;
+         const progression = levelProgression[levelIndex] || { focus: "", verbs: "" };
+         const basePrompt = `Escribe la introducción del nivel ${levelIndex + 1} (${levelNames[levelIndex]}) de un iceberg educativo sobre "${theme}". Las entradas del nivel son: ${titles.join('; ')}. Enfoque cognitivo del nivel: ${progression.focus} Verbos esperados: ${progression.verbs}. La introducción debe tener entre 80 y 120 palabras, presentar ese enfoque y comenzar directamente con los conceptos, obras o hechos principales; no uses "Este nivel aborda", "Este nivel examina" ni fórmulas semejantes. No inventes citas ni fuentes. ${MATH_RULES}`;
+         let raw = '';
+         try {
+             if (!sourcesAreEnabled()) {
+                 raw = await fetchText(basePrompt, false, { maxTokens: 700 });
+                 const introduction = sanitizeProse(raw) || fallback;
+                 return { introduction: cleanLevelOpening(introduction), references: [], citedReferences: [] };
+             }
+             const prompt = basePrompt + ` Devuelve SOLO JSON válido, sin markdown, con esta estructura exacta: {"introduction":"un párrafo introductorio de 80 a 120 palabras", "references":[{"title":"título exacto consultado","author":"autor u organización","shortAuthor":"apellido o apellido et al.","year":"año o vacío","url":"URL HTTP(S) exacta"}]}. La introducción debe incluir al menos una cita por cada afirmación factual importante. Marca cada afirmación factual con [[n]] al final de la frase, donde n es el número de la fuente en references (1, 2...). Ejemplo: "La IA transforma la educación [[1]]." No pongas marcadores sin una fuente correspondiente. Cada marcador debe corresponder exactamente a una fuente de references. Consulta la web antes de responder. No inventes fuentes, URLs, autores, títulos, años ni citas. Si no puedes consultar una fuente real, devuelve references como [].`;
+             raw = await fetchText(prompt, true, { json: true, maxTokens: 1000 });
+             const result = parseModelJson(raw);
+             if (!result || typeof result !== 'object' || Array.isArray(result)) throw new Error('La introducción del nivel no es un objeto JSON.');
+             const references = normalizeReferences(result.references);
+             addReferences(references);
+             const resolved = resolveCitations(cleanLevelOpening(safeText(result.introduction) || fallback), references);
+             markCited(resolved.cited);
+             return { introduction: resolved.text, references, citedReferences: resolved.cited };
+         } catch (error) {
+             const references = extractMarkdownReferences(raw);
+             addReferences(references);
+             const recovered = extractJsonStringField(raw, 'introduction');
+             const introduction = sanitizeProse(recovered || raw) || fallback;
+             const resolved = resolveCitations(cleanLevelOpening(introduction.length >= 80 ? introduction : fallback), references);
+             markCited(resolved.cited);
+             return { introduction: resolved.text, references, citedReferences: resolved.cited };
+         }
+     }
+
+      async function generateIceberg() {
+         const theme = themeInput.value.trim();
+         if (!theme) return alert("¡Necesitas un tema!");
+         
+         icebergChart.innerHTML = ''; icebergChart.style.display = 'none'; allQuizzes.length = 0; allReferences.length = 0; const levelsInfo = [];
+        resetIcebergData(theme);
+        exportTools.classList.remove('visible');
+        exportBtn.style.display = 'none';
+        if (scoreDock) scoreDock.hidden = true;
+        if (resultsBtn) resultsBtn.textContent = '📊 Resultados';
+        loadingIndicator.style.display = 'block';
+        generateBtn.disabled = true;
+        [providerSelect, textModelSelect, modelSelect, levelSelect, sourcesEnabled].forEach(el => { if (el) el.disabled = true; });
+        
+        const levels = parseInt(levelSelect.value);
+        
+        try {
+            const learningPlan = await generateLearningPlan(theme);
+             icebergData.plan = learningPlan;
+             await renderLearningPlan(learningPlan);
+             for (let i = 0; i < levels; i++) {
+                progressText.textContent = `${Math.round((i/levels)*100)}% - Nivel ${i+1}...`;
+                 const levelData = {
+                     index: i,
+                     name: levelNames[i],
+                     cognitiveFocus: (levelProgression[i] || {}).short || '',
+                     cognitiveDescription: (levelProgression[i] || {}).focus || '',
+                     cognitiveVerbs: (levelProgression[i] || {}).verbs || '',
+                     introduction: '',
+                     entries: [],
+                     references: [],
+                     citedReferences: []
+                 };
+                 icebergData.levels.push(levelData);
+                 const { container, list, introduction } = createLevelStructure(i, levelNames[i]);
+                icebergChart.appendChild(container); icebergChart.style.display = 'block';
+
+                 const titles = await generateLevelTitlesBatch(theme, i, 3);
+                 const levelIntro = await generateLevelIntroduction(theme, i, titles);
+                 introduction.textContent = levelIntro.introduction;
+                 levelData.introduction = levelIntro.introduction;
+                 levelData.references = levelIntro.references || [];
+                 levelData.citedReferences = levelIntro.citedReferences || [];
+                 levelsInfo.push({ name: levelNames[i], titles, focus: (levelProgression[i] || {}).short || '' });
+                const entryPayloads = await Promise.all(titles.map(async title => {
+                    const [content, visual] = await Promise.all([
+                        generateEntryContent(title, theme, i),
+                        generateVisualPrompt(title, theme, styleSelect.value, i)
+                    ]);
+                     let imageUrl = '';
+                     try { imageUrl = await generateImageSource(visual, modelSelect.value); } catch (error) { console.warn('No se pudo generar la imagen de la entrada:', error); }
+                     let imageDataUrl = /^data:image\//i.test(imageUrl) ? imageUrl : '';
+                     if (!imageDataUrl && /^https?:\/\//i.test(imageUrl)) imageDataUrl = await toDataURL(imageUrl);
+                     return { title, content, visual, imageUrl, imageDataUrl, imageModel: modelSelect.value };
+                }));
+                entryPayloads.forEach(payload => {
+                     const { title, content, visual, imageUrl, imageDataUrl, imageModel } = payload;
+                     const entryObject = {
+                         ...content,
+                         title,
+                         visualPrompt: visual,
+                         imageUrl,
+                         imageDataUrl,
+                         imageModel,
+                         imageAlt: `Imagen de la entrada ${title}`,
+                         imageCredit: `Imagen generada con IA para esta entrada (${imageModel}).`
+                     };
+                     levelData.entries.push(entryObject);
+                     const item = createEntry(title, content, visual, imageUrl, theme, i, entryObject);
+                     list.appendChild(item.trigger); list.appendChild(item.content);
+                 });
+            }
+            progressText.textContent = 'Generando cuestionario final...';
+             const finalQs = await generateFinalQuiz(theme, levelsInfo);
+             icebergData.finalQuiz = finalQs;
+             renderQuizSections(theme, levelsInfo, finalQs);
+             renderMetacognition(learningPlan);
+             renderReferences();
+             const mathOk = await renderMath();
+             const mathErrors = softenMathErrors(icebergChart);
+             progressText.textContent = '100% - Documento listo';
+             loadingIndicator.style.display = 'none';
+             exportTools.classList.add('visible');
+             exportBtn.style.display = 'block';
+             if (mathErrors > 0) {
+                 setExportStatus(`Se detectaron ${mathErrors} fórmulas con errores de sintaxis. Edita esas entradas o regenera el contenido con las reglas matemáticas actuales.`);
+             } else if (!mathOk && hasMathIn(icebergChart)) {
+                 setExportStatus('No se pudo cargar MathJax: las fórmulas pueden verse como TeX. Revisa la conexión al CDN.');
+             }
+        } catch (e) { alert("Error de IA: " + (e && e.message ? e.message : e)); console.error(e); loadingIndicator.style.display = 'none'; } 
+        finally {
+            generateBtn.disabled = false;
+            [providerSelect, textModelSelect, modelSelect, levelSelect, sourcesEnabled].forEach(el => { if (el) el.disabled = false; });
+        }
+    }
+
+    async function toDataURL(url) {
+        if (/^data:image\//i.test(url)) return url;
+        try {
+            const res = await fetch(url, { mode: 'cors' });
+            if (!res.ok) return '';
+            const blob = await res.blob();
+            if (!/^image\//i.test(blob.type || '')) return '';
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+                reader.onerror = () => resolve('');
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.warn('No se pudo convertir la imagen a data URL:', error);
+            return '';
+        }
+    }
+
+    exportBtn.onclick = async () => {
+        exportBtn.textContent = "Procesando..."; exportBtn.disabled = true;
+        setExportStatus('Preparando HTML interactivo e incrustando imágenes...');
+        try {
+        const clone = document.documentElement.cloneNode(true);
+        
+        // Limpieza de UI
+         ['.input-area', '.loading', '#exportBtn', '#downloadWordBtn', '#downloadWordVisualBtn', '#downloadPdfBtn', '#academicHtmlBtn', '#previewDocBtn', '#roleBanner', '.export-help', '#exportStatus'].forEach(s => clone.querySelector(s)?.remove());
+        clone.querySelectorAll('script').forEach(s => s.remove());
+        clone.querySelectorAll('.controls-box').forEach(el => el.remove());
+        clone.querySelectorAll('.title-row img').forEach(el => el.remove());
+        // Título del clon = tema del iceberg
+        const temaTitulo = themeInput.value.trim() || 'Iceberg';
+        const tEl = clone.querySelector('title'); if (tEl) tEl.textContent = temaTitulo;
+        const h1El = clone.querySelector('h1'); if (h1El) h1El.textContent = temaTitulo;
+        // El HTML exportado no debe depender de fondo.jpg ni de los logos locales.
+        const exportStyle = document.createElement('style');
+        exportStyle.textContent = `.title-row{grid-template-columns:1fr!important}body{background-image:linear-gradient(135deg,#0f0c29 0%,#302b63 100%)!important}body.light-mode{background-image:linear-gradient(135deg,#eef2f7 0%,#dbe4f0 100%)!important}.broken-image{min-height:120px;border:1px dashed rgba(255,255,255,.25);background:rgba(0,0,0,.2)}`;
+        clone.querySelector('head').appendChild(exportStyle);
+        // Reiniciar cuestionarios en el clon (sin las respuestas dadas en la app)
+        clone.querySelectorAll('.qz').forEach(q => { q.removeAttribute('data-done'); q.removeAttribute('data-ok'); q.removeAttribute('data-selected'); q.classList.remove('done'); });
+        clone.querySelectorAll('.qz-opt').forEach(o => { o.classList.remove('correct', 'wrong'); o.removeAttribute('style'); });
+        clone.querySelectorAll('.qz-why').forEach(w => { w.textContent = ''; w.removeAttribute('style'); });
+        clone.querySelectorAll('.res-bar i').forEach(b => b.removeAttribute('style'));
+        clone.querySelectorAll('.res-score').forEach(r => r.textContent = '0 / 0');
+        clone.querySelectorAll('.res-total, .res-msg').forEach(r => r.textContent = '');
+        const clonedDock = clone.querySelector('#scoreDock');
+        if (clonedDock) {
+            clonedDock.hidden = true;
+            const clonedDockValue = clonedDock.querySelector('#scoreDockValue');
+            if (clonedDockValue) clonedDockValue.textContent = '0 / 0';
+        }
+        const clonedResultsBtn = clone.querySelector('#resultsBtn');
+        if (clonedResultsBtn) clonedResultsBtn.textContent = '📊 Resultados';
+        // Los manejadores onclick no se serializan al clonar el DOM. Hay que
+        // borrar la marca data-bound para que el HTML exportado vuelva a enlazar
+        // los botones de exportación de resultados.
+        clone.querySelectorAll('#exportSummaryCsv, #exportDetailCsv, #exportResultsJson').forEach(button => {
+            button.removeAttribute('data-bound');
+        });
+        const clonedStudentName = clone.querySelector('#studentNameInput');
+        if (clonedStudentName) clonedStudentName.value = '';
+
+        // Base64 Imágenes: data URLs se conservan; el resto se intenta incrustar
+        // en paralelo y con un límite de tiempo para no perder el gesto de usuario.
+        const imgs = Array.from(clone.querySelectorAll('img'));
+        await Promise.all(imgs.map(async img => {
+            const source = img.getAttribute('src') || '';
+            if (/^data:image\//i.test(source)) return;
+            const data = source ? await Promise.race([toDataURL(img.src), sleep(1500).then(() => '')]) : '';
+            if (data) {
+                img.src = data;
+            } else {
+                img.removeAttribute('src');
+                img.classList.add('broken-image');
+                img.alt = 'Imagen no disponible en el archivo exportado';
+            }
+        }));
+
+        // Script para el archivo descargado (Interacción)
+         const script = document.createElement('script');
+         script.textContent = `
+             const themeButton = document.getElementById('themeToggleBtn');
+             let exportedLightMode = ${lightMode};
+             const updateExportedTheme = () => { exportedLightMode = !exportedLightMode; document.body.classList.toggle('light-mode', exportedLightMode); themeButton.textContent = exportedLightMode ? '🌙 Modo oscuro' : '☀️ Modo claro'; };
+             if (themeButton) themeButton.onclick = updateExportedTheme;
+             const exportedResultsBtn = document.getElementById('resultsBtn');
+             const exportedDockBtn = document.getElementById('scoreDockBtn');
+             const goToExportedResults = () => {
+                 const box = document.querySelector('.quiz-results');
+                 if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+             };
+             if (exportedResultsBtn) exportedResultsBtn.onclick = goToExportedResults;
+             if (exportedDockBtn) exportedDockBtn.onclick = goToExportedResults;
+             const softenExportedMath = () => {
+                 document.querySelectorAll('mjx-merror').forEach(error => {
+                     const wrapper = error.closest('mjx-container');
+                     if (!wrapper) return;
+                     wrapper.setAttribute('title', error.getAttribute('data-mjx-error') || 'Fórmula no válida');
+                     wrapper.innerHTML = '<span style="display:inline-block;background:#fff7ed;color:#8a4b08;border:1px solid #d97706;border-radius:4px;padding:0 5px;font:700 .82em system-ui,sans-serif">⚠ fórmula no válida</span>';
+                 });
+             };
+             let exportedMathChecks = 0;
+             const exportedMathTimer = setInterval(() => {
+                 if (document.querySelector('mjx-merror')) {
+                     softenExportedMath();
+                     clearInterval(exportedMathTimer);
+                 } else if (++exportedMathChecks > 20) {
+                     clearInterval(exportedMathTimer);
+                 }
+             }, 500);
+             document.querySelectorAll('.entry-trigger').forEach(li => {
+                li.onclick = () => {
+                    li.classList.toggle('open');
+                    li.nextElementSibling.querySelector('.panel-content').classList.toggle('active');
+                }
+            });
+            (${initQuizzes.toString()})();
+            const modal = document.querySelector('.modal');
+            const modalImg = document.getElementById('modalImage');
+            document.querySelector('.modal-close').onclick = () => modal.classList.remove('active');
+            modal.onclick = (e) => { if(e.target === modal || e.target === modalImg) modal.classList.remove('active'); };
+            document.querySelectorAll('.panel-content img').forEach(img => {
+                img.onclick = (e) => { e.stopPropagation(); modal.classList.add('active'); modalImg.src = img.src; }
+            });
+         `;
+         const mathConfig = document.createElement('script');
+         mathConfig.textContent = `window.MathJax = {
+             tex: {
+                 inlineMath: [['\\\\(', '\\\\)'], ['$', '$']],
+                 displayMath: [['\\\\[', '\\\\]'], ['$$', '$$']]
+             },
+             options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+         };`;
+         clone.querySelector('head').appendChild(mathConfig);
+         const mathScript = document.createElement('script');
+         mathScript.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+         clone.querySelector('head').appendChild(mathScript);
+         clone.querySelector('body').appendChild(script);
+
+        downloadBlob(`<!DOCTYPE html>${clone.outerHTML}`, `${downloadStem('interactivo')}.html`, 'text/html;charset=utf-8');
+        setExportStatus('HTML interactivo generado. Si no se descarga, revisa la barra de descargas del navegador.');
+        } catch (error) {
+            console.error('Error exportando HTML interactivo:', error);
+            setExportStatus('No se pudo exportar el HTML interactivo: ' + (error && error.message ? error.message : error));
+            alert('No se pudo exportar el HTML interactivo: ' + (error && error.message ? error.message : error));
+        } finally {
+            exportBtn.textContent = "📥 HTML interactivo (alumno)";
+            exportBtn.disabled = false;
+        }
+    };
+
+    // Events
+     generateBtn.onclick = generateIceberg;
+     paletteBtn.onclick = applyPalette;
+     themeToggleBtn.onclick = toggleTheme;
+     downloadWordBtn.onclick = downloadWord;
+     if (downloadWordVisualBtn) downloadWordVisualBtn.onclick = downloadWordVisual;
+     downloadPdfBtn.onclick = downloadPdf;
+     academicHtmlBtn.onclick = downloadAcademicHtml;
+     previewDocBtn.onclick = () => openAcademicPreview(false, 'vista');
+     const goToResults = () => {
+         const box = document.querySelector('.quiz-results');
+         if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+     };
+     resultsBtn.onclick = goToResults;
+     scoreDockBtn.onclick = goToResults;
+     setLightMode(storageGet('iceberg_light_mode') === '1');
+    
+    // BYOP Flow
+    getApiKeyBtn.onclick = () => {
+        const redirectUrl = window.location.href.split('#')[0];
+        window.location.href = `https://enter.pollinations.ai/authorize?redirect_url=${encodeURIComponent(redirectUrl)}`;
+    };
+
+    // La API key se guarda por proveedor en el controlador definido arriba.
+
+    closeBtn.onclick = () => modal.classList.remove('active');
+    modal.onclick = (e) => { if(e.target===modal || e.target===modalImg) modal.classList.remove('active'); };
+
+    // DOMContentLoaded logic for BYOP
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Load from localStorage
+        const storedKey = storageGet(storageKey(providerSelect.value));
+        if (storedKey) apiKeyInput.value = storedKey;
+
+        // 2. Capture from URL hash
+        const hashParams = new URLSearchParams(window.location.hash.slice(1));
+        const apiKey = hashParams.get('api_key');
+        if (apiKey) {
+            apiKeyInput.value = apiKey;
+            storageSet(storageKey(providerSelect.value), apiKey);
+            window.history.replaceState(null, null, window.location.pathname + window.location.search);
+            alert("¡API Key vinculada con éxito!");
+        }
+    });
+
+    // Init
+    initQuizzes();
+    populateStyles();
+     const preferredProvider = storageGet('preferred_provider');
+     if (preferredProvider && PROVIDERS[preferredProvider]) providerSelect.value = preferredProvider;
+     populateProviderModels(providerSelect.value);
+     // Precargar la librería de Word para que el clic de descarga no pierda
+     // el gesto de usuario mientras se descarga el bundle.
+     setTimeout(() => { loadDocxLibrary().catch(() => {}); }, 1800);
+    document.head.appendChild(document.createElement("style")).innerText = `@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`;
+
+    // Utilidades expuestas para diagnóstico y pruebas automatizadas.
+    window.__icebergTest = {
+        parseModelJson,
+        sanitizeProse,
+        extractJsonStringField,
+        resolveCitations,
+        normalizeReferences,
+        authorShort,
+        buildAcademicHtml,
+        currentMetadata,
+        shortTitle,
+        safeFilename,
+        renderQuizSections,
+        initQuizzes,
+        renderMath,
+        hasMathIn,
+        dataHasMath,
+        softenMathErrors,
+        stripOptionLabel
+    };
+  </script>
+</body>
+</html>

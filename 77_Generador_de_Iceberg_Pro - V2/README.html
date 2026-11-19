@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>README · Generador de Iceberg Pro</title>
+<style>
+:root { --bg:#10131a; --fg:#f1f5ff; --muted:#c0c9dc; --line:#394256; --accent:#b9a2ff; --code:#252b3a; --panel:#191f2b; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.65 'Segoe UI',Tahoma,Verdana,sans-serif; }
+main { max-width:900px; margin:0 auto; padding:32px 20px 60px; }
+h1 { font-size:2rem; margin-top:0; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+h2 { margin-top:2rem; color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:6px; }
+h3 { margin-top:1.4rem; color:#e8e2ff; }
+code { background:var(--code); color:#f4f7ff; padding:2px 6px; border-radius:5px; font-size:.9em; }
+a { color:#c9b8ff; }
+li { margin:5px 0; }
+.note { background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); padding:12px 16px; border-radius:8px; }
+.table-wrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; background:var(--panel); }
+th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:var(--code); color:#fff; }
+</style>
+</head>
+<body><main>
+<h1>Generador de Iceberg Pro</h1>
+<p>Aplicación web autónoma para crear <strong>icebergs educativos</strong> con niveles de profundidad creciente, imágenes generadas por IA, actividades de pensamiento crítico, citas bibliográficas y cuestionarios.</p>
+<p>El objetivo no es solo generar una página vistosa: es producir un <strong>material formativo</strong> que un estudiante pueda leer, cuestionar y citar, y que un docente pueda imprimir, adaptar y evaluar.</p>
+
+<h2>Roles de uso</h2>
+<div class="table-wrap"><table><thead><tr><th>Rol</th><th>Dónde trabaja</th><th>Qué hace</th></tr></thead><tbody>
+<tr><td><strong>Docente</strong></td><td><code>index.html</code> (la app)</td><td>Genera, edita, revisa la vista académica y exporta PDF, HTML académico, Word y HTML interactivo.</td></tr>
+<tr><td><strong>Alumnado</strong></td><td><strong>HTML interactivo</strong> descargado</td><td>Responde los cuestionarios, ve su puntuación y descarga su <strong>Resumen CSV</strong>, <strong>Detalle CSV</strong> o <strong>JSON</strong>.</td></tr>
+<tr><td><strong>Docente</strong></td><td>Su hoja de cálculo o app de rúbrica</td><td>Importa el CSV/JSON del alumno, registra la nota y evalúa con su rúbrica.</td></tr>
+</tbody></table></div>
+<p>La app también permite responder los cuestionarios, pero eso es una <strong>vista previa de prueba para el docente</strong>. El recorrido del alumno es el HTML interactivo, que no necesita API Key ni la app.</p>
+<div class="note">Los cuestionarios son formativos y se ejecutan en el navegador. Un HTML interactivo contiene las respuestas correctas en su código; para evaluaciones de alto impacto conviene usar un LMS o un servidor.</div>
+
+<h2>Características</h2>
+<ul>
+<li>Genera entre 3 y 5 niveles, con tres entradas por nivel.</li>
+<li>Incluye objetivos, conocimientos previos, metacognición y cuestionario final.</li>
+<li>Desarrolla cada entrada con explicación, conceptos, preguntas socráticas, actividad, transferencia y evaluación formativa.</li>
+<li>Crea dos preguntas de selección múltiple por entrada y un cuestionario final con al menos una pregunta por nivel; si el modelo devuelve menos, se completa con preguntas de las entradas y se avisa.</li>
+<li>Genera imágenes en distintos estilos y permite regenerarlas individualmente.</li>
+<li>Incluye modo claro y modo oscuro.</li>
+<li>Permite editar manualmente las introducciones.</li>
+<li><strong>Documento académico HTML</strong> con portada, ficha pedagógica, índice, referencias, clave de respuestas, rúbrica y guía docente.</li>
+<li><strong>Imágenes del documento académico</strong> centradas y con tamaño máximo proporcionado, tanto en HTML/PDF como en Word visual y Word.</li>
+<li><strong>PDF académico</strong> mediante la vista de impresión.</li>
+<li><strong>Word real (.docx)</strong> con estilos, índice, paginación, imágenes, tablas y propiedades.</li>
+<li><strong>Word visual (.doc)</strong> con el documento académico ya renderizado por MathJax; útil para ver las fórmulas en Word.</li>
+<li><strong>HTML interactivo</strong> para el aula.</li>
+</ul>
+
+<h2>Progresión cognitiva</h2>
+<p>La metáfora del iceberg organiza la profundidad, pero la exigencia intelectual sigue una secuencia de pensamiento crítico:</p>
+<div class="table-wrap"><table><thead><tr><th>Nivel</th><th>Metáfora</th><th>Enfoque cognitivo</th></tr></thead><tbody>
+<tr><td>1</td><td>La Superficie</td><td>Identificar y contextualizar: hechos visibles, definiciones y contexto.</td></tr>
+<tr><td>2</td><td>Aguas Poco Profundas</td><td>Explicar y relacionar: causas, consecuencias y mecanismos.</td></tr>
+<tr><td>3</td><td>La Zona de Penumbra</td><td>Analizar e interpretar: debates, intereses y diferencia entre hecho e interpretación.</td></tr>
+<tr><td>4</td><td>El Abismo</td><td>Evaluar evidencias: calidad de fuentes, sesgos y argumentos rivales.</td></tr>
+<tr><td>5</td><td>El Vacío Insondable</td><td>Crear y revisar: síntesis, propuestas, incertidumbre y metacognición.</td></tr>
+</tbody></table></div>
+<p>Los títulos y las entradas se generan con ese enfoque, no con criterios de oscuridad, conspiración o terror.</p>
+
+<h2>Fuentes y referencias</h2>
+<div class="note">El modo <strong>Fuentes verificables</strong> solo aparece para modelos con consulta web. La IA debe consultar fuentes reales y no inventar URLs, autores, títulos, fechas o DOI. La app convierte los marcadores <code>[[n]]</code> en citas APA y distingue <strong>referencias citadas</strong> de <strong>fuentes consultadas</strong>.</div>
+<p>Una bibliografía final no sustituye a las citas en el texto. Si una entrada no registra citas verificables, el documento lo advierte para que el docente la revise.</p>
+
+<h2>Documento académico</h2>
+<ol>
+<li>Portada con título, autoría, institución, área, fecha, versión y licencia.</li>
+<li>Ficha pedagógica con propósito, uso sugerido, objetivos, conocimientos previos, metodología y evaluación.</li>
+<li>Índice.</li>
+<li>Niveles con introducción y entradas.</li>
+<li>Cuestionario final.</li>
+<li>Cierre metacognitivo.</li>
+<li>Referencias citadas.</li>
+<li>Anexos: clave de respuestas, rúbrica, guía docente, fuentes consultadas y créditos de imágenes.</li>
+</ol>
+
+<h2>Formatos Word</h2>
+<div class="table-wrap"><table><thead><tr><th>Formato</th><th>Qué es</th><th>Cuándo usarlo</th></tr></thead><tbody>
+<tr><td><strong>Word (.docx)</strong></td><td>Documento Word real, editable, con estilos, índice, tablas y paginación.</td><td>Para editar la estructura, la rúbrica o la portada. Las fórmulas LaTeX se conservan como texto TeX.</td></tr>
+<tr><td><strong>Word visual (.doc)</strong></td><td>HTML del documento académico ya renderizado por MathJax, guardado con extensión <code>.doc</code>.</td><td>Para ver las fórmulas en Word o hacer una edición puntual. Word puede avisar de que el formato no coincide con la extensión.</td></tr>
+</tbody></table></div>
+<p>El <strong>PDF</strong> es la opción recomendada para entregar o imprimir documentos con fórmulas. El <strong>.doc visual</strong> no es un Word nativo: es una solución de compatibilidad. Para edición estructural, usa el <strong>.docx</strong>.</p>
+
+<h2>Requisitos</h2>
+<ul>
+<li>Navegador moderno: Chrome, Edge, Firefox o Safari.</li>
+<li>Conexión a internet para la generación con IA.</li>
+<li>API Key según el proveedor: Red Descartes no requiere; Pollinations y OpenRouter sí.</li>
+<li>Los archivos <code>academic-export.js</code> y <code>vendor/docx.iife.js</code> deben estar junto a <code>index.html</code> para la exportación académica y Word. Si el archivo local de <code>docx</code> no está, la app intenta cargarlo desde CDN.</li>
+</ul>
+<p><code>docx</code> se distribuye con licencia MIT; su código está en <code>vendor/docx.iife.js</code>.</p>
+
+<h2>Uso</h2>
+<ol>
+<li>Abre <code>index.html</code>.</li>
+<li>Escribe el tema y, si quieres, completa los datos del documento académico.</li>
+<li>Selecciona proveedor, profundidad, estilo y modelos.</li>
+<li>Introduce y valida la API Key cuando sea necesario.</li>
+<li>Activa <strong>Fuentes verificables</strong> si el modelo tiene consulta web.</li>
+<li>Pulsa <strong>Generar Iceberg</strong>.</li>
+<li>Revisa y edita las introducciones si hace falta.</li>
+<li>Usa <strong>Vista académica</strong>, <strong>PDF académico</strong>, <strong>Word (.docx)</strong>, <strong>Word visual (.doc)</strong>, <strong>HTML académico</strong> o <strong>HTML interactivo</strong>.</li>
+</ol>
+
+<h2>Exportación</h2>
+<div class="table-wrap"><table><thead><tr><th>Formato</th><th>Para qué sirve</th><th>Qué conserva</th></tr></thead><tbody>
+<tr><td><strong>Vista académica</strong></td><td>Revisar el documento completo</td><td>Portada, ficha, índice, niveles, referencias, anexos</td></tr>
+<tr><td><strong>PDF académico</strong></td><td>Entregar o imprimir</td><td>Diseño lineal, sin paneles</td></tr>
+<tr><td><strong>Word (.docx)</strong></td><td>Editar o adaptar</td><td>Estilos, índice, imágenes, tablas, clave</td></tr>
+<tr><td><strong>HTML académico</strong></td><td>Leer o archivar</td><td>Documento lineal, sin interacción</td></tr>
+<tr><td><strong>HTML interactivo</strong></td><td>Trabajar en pantalla</td><td>Paneles, cuestionarios y retroalimentación</td></tr>
+</tbody></table></div>
+<p><strong>HTML interactivo:</strong> conserva niveles, textos, imágenes, ediciones, paneles, cuestionarios y bibliografía. No incluye configuración ni API Keys. Es el material para el aula, no el documento formal. Incluye un bloque <strong>Para el profesor</strong> con exportación de resultados en CSV (resumen y detalle) y JSON.</p>
+<p><strong>HTML académico:</strong> documento lineal con portada, índice, citas, clave de respuestas y anexos. No depende de <code>fondo.jpg</code> ni de los logos locales.</p>
+<p><strong>DOCX:</strong> portada, ficha pedagógica, índice actualizable, encabezado, pie, numeración, imágenes con pie, cuestionarios con clave, tablas y metadatos. Si Word muestra el índice vacío, actualízalo con <code>Ctrl+A</code> y luego <code>F9</code>.</p>
+<p><strong>PDF:</strong> se obtiene desde la vista académica. El botón intenta abrir el diálogo de impresión; si el navegador lo bloquea, pulsa “Imprimir o guardar como PDF” en la barra superior y elige “Guardar como PDF”. El nombre propuesto es <code>Iceberg_academico_&lt;tema&gt;.pdf</code>; desde <strong>Vista académica</strong>, <code>Iceberg_vista_academica_&lt;tema&gt;.pdf</code>.</p>
+<p><strong>Nombres de archivo:</strong> el apelativo va al principio y el título se limita a unos 24 caracteres para que el nombre no se recorte en rutas largas. El título interno del HTML/PDF académico se mantiene completo en la portada y en el cuerpo; el nombre se acorta solo en la pestaña y en el diálogo de guardado.</p>
+<div class="table-wrap"><table><thead><tr><th>Exportación</th><th>Nombre propuesto</th></tr></thead><tbody>
+<tr><td>HTML académico</td><td><code>Iceberg_academico_&lt;tema&gt;.html</code></td></tr>
+<tr><td>PDF académico</td><td><code>Iceberg_academico_&lt;tema&gt;.pdf</code></td></tr>
+<tr><td>PDF desde Vista académica</td><td><code>Iceberg_vista_academica_&lt;tema&gt;.pdf</code></td></tr>
+<tr><td>Word (.docx)</td><td><code>Iceberg_word_&lt;tema&gt;.docx</code></td></tr>
+<tr><td>Word visual (.doc)</td><td><code>Iceberg_word_visual_&lt;tema&gt;.doc</code></td></tr>
+<tr><td>HTML interactivo</td><td><code>Iceberg_interactivo_&lt;tema&gt;.html</code></td></tr>
+</tbody></table></div>
+
+<h2>Resultados de los cuestionarios</h2>
+<p>Los resultados se calculan en el navegador mientras se responde. En la app aparecen en el panel <strong>Resultados</strong> y en la barra flotante <strong>Resultados: X / Y</strong>. No se guardan en el servidor ni en <code>localStorage</code>: al recargar o regenerar el iceberg se reinician.</p>
+<p>Cada <strong>HTML interactivo</strong> exportado es un documento independiente: empieza con los cuestionarios a cero y guarda sus propias respuestas en esa pestaña. Responder en la app no modifica el HTML exportado, y responder en el HTML exportado no modifica la app.</p>
+
+<h2>Exportar resultados para el profesor</h2>
+<p>El HTML interactivo está pensado para que cada estudiante lo use de forma independiente. Al final, en <strong>Resultados</strong>, hay un bloque <strong>“Para el profesor”</strong> con:</p>
+<ul>
+<li><strong>Resumen CSV</strong>: una fila por estudiante, con aciertos y total por nivel, cuestionario final, total, preguntas respondidas y porcentaje.</li>
+<li><strong>Detalle CSV</strong>: una fila por pregunta, con nivel, número, pregunta, opción elegida, opción correcta, acierto y explicación.</li>
+<li><strong>JSON</strong>: la misma información estructurada, para una app de rúbrica o un procesamiento propio.</li>
+</ul>
+<p>Flujo recomendado: el estudiante responde, escribe su nombre (opcional), pulsa <strong>Resumen CSV</strong>, <strong>Detalle CSV</strong> o <strong>JSON</strong>, y envía el archivo al profesor. El profesor importa el CSV en su hoja de cálculo o el JSON en su app de rúbrica. El resumen está pensado para acumular filas de varios estudiantes.</p>
+
+<h2>Expresiones matemáticas</h2>
+<p>La app y el HTML académico cargan MathJax con <code>\( ... \)</code> y <code>$ ... $</code> para matemáticas en línea, y <code>\[ ... \]</code> y <code>$$ ... $$</code> para bloques. La app espera a MathJax antes de componer el iceberg; la vista académica espera a MathJax, fuentes e imágenes antes de imprimir el PDF.</p>
+<div class="note"><strong>Limitación:</strong> el DOCX no convierte LaTeX a ecuaciones nativas de Word. Las expresiones se conservan como texto TeX. Para verlas renderizadas, usa el <strong>PDF</strong>, el <strong>HTML académico</strong> o el <strong>Word visual (.doc)</strong>, que conserva el HTML ya compuesto por MathJax. La app avisa de esta limitación al generar el Word .docx.</div>
+<p>La app conserva las llaves y los corchetes de LaTeX al limpiar respuestas recuperadas; no convierte <code>\vec{E}</code> en <code>\vec</code> ni <code>\frac{a}{b}</code> en <code>\frac</code>. También elimina los espacios de ancho cero y los literales <code>\u200b</code> que algunos modelos insertan entre fórmulas. Si aun así aparece un error de sintaxis, la app sustituye el error rojo/amarillo de MathJax por una insignia <strong>“⚠ fórmula no válida”</strong> y muestra el número de fórmulas afectadas. Revisa la fórmula o regenera el contenido.</p>
+
+<h2>Proveedores y endpoints</h2>
+<ul><li>Red Descartes: <code>node.proyectodescartes.org</code>.</li><li>Pollinations: <code>gen.pollinations.ai</code> y <code>enter.pollinations.ai</code>.</li><li>OpenRouter: <code>openrouter.ai</code>.</li></ul>
+<p>Las API Keys se guardan en el <code>localStorage</code> del navegador. No se incorporan a las exportaciones académicas ni al DOCX.</p>
+
+<h2>Solución de problemas</h2>
+<p>Solo se incluyen incidencias que pueden ocurrir con la versión actual. Las correcciones ya cerradas no se repiten aquí.</p>
+<div class="table-wrap"><table><thead><tr><th>Problema</th><th>Acción recomendada</th></tr></thead><tbody>
+<tr><td>Error de IA</td><td>Valida la API Key, cambia de modelo y vuelve a intentar. El mensaje incluye el código HTTP.</td></tr>
+<tr><td>Word no se descarga</td><td>Comprueba que <code>vendor/docx.iife.js</code> exista o que haya conexión para el CDN. El archivo se descarga como <code>.docx</code>.</td></tr>
+<tr><td>El PDF no se descarga</td><td>El botón abre la vista académica; pulsa “Imprimir o guardar como PDF” en la barra superior y elige “Guardar como PDF”.</td></tr>
+<tr><td>No sé qué HTML usar</td><td><strong>HTML académico</strong> es el documento formal; <strong>HTML interactivo</strong> es el iceberg con paneles y cuestionarios.</td></tr>
+<tr><td>Las fórmulas se ven como TeX en Word</td><td>El DOCX no convierte LaTeX a ecuaciones de Word. Usa el PDF, el HTML académico o <strong>Word visual (.doc)</strong>, que conserva las fórmulas renderizadas.</td></tr>
+<tr><td>Word visual (.doc) avisa del formato</td><td>Es un HTML con extensión <code>.doc</code>, como el Word de la versión original. Ábrelo igualmente; si necesitas un <code>.docx</code> nativo, usa <strong>Word (.docx)</strong>.</td></tr>
+<tr><td>Word abre sin índice</td><td>Actualiza el índice con <code>Ctrl+A</code> y <code>F9</code>.</td></tr>
+<tr><td>Imagen que no carga</td><td>Regenera la imagen o cambia el modelo visual.</td></tr>
+<tr><td>El cuestionario final no cubre todos los niveles</td><td>Revisa el aviso del cuestionario; regenera el iceberg o añade preguntas en las entradas que falten.</td></tr>
+<tr><td>La vista académica no abre</td><td>Permite ventanas emergentes para el archivo local o usa <strong>HTML académico</strong>.</td></tr>
+</tbody></table></div>
+
+<h2>Créditos</h2>
+<p>Desarrollado para contextos educativos en español en el ecosistema de la Red Descartes. La revisión de citas, la verificación de fuentes y la adaptación pedagógica son responsabilidad de la autoría del material.</p>
+</main>
+</body>
+</html>
